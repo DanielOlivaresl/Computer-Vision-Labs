@@ -1,0 +1,17 @@
+# Visual Studio-specific files and folders
+.vscode/
+.svn/
+*.suo
+*.user
+*.sln
+*.vcxproj
+*.vcxproj.user
+x64/
+Debug/
+Release/
+.vs/
+*.vsidx
+.vsix
+.ipch/
+FileContentInde/
+*.filters
