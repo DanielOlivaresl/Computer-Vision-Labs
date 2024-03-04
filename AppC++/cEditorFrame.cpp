@@ -16,6 +16,8 @@ wxEND_EVENT_TABLE()
 		
 	}
 
+
+// constructor given a process
 cEditorFrame::cEditorFrame(wxMDIParentFrame* parent, unsigned char* data, wxString prevFile,int w, int h) : wxMDIChildFrame(parent, wxID_ANY, prevFile+"Gray", wxDefaultPosition, wxSize(w, h))
 {
 	n_canvas = new cCanvas(this, data,w,h); // Nuevo constructor de canvas dado un unsigned
