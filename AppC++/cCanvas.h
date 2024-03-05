@@ -61,7 +61,7 @@ private:
 	virtual wxCoord OnGetRowHeight(size_t row) const; // for the slider
 	virtual wxCoord OnGetColumnWidth(size_t col)const; // for the slider
 	void OnMouseMove(wxMouseEvent& event); // function to get the user position in the canvas
-	//void OnMouseClick(wxMouseEvent& event); // function to draw rectangles
+	void OnMouseClick(wxMouseEvent& event); // function to draw rectangles
 	wxDECLARE_EVENT_TABLE();
 
 };
