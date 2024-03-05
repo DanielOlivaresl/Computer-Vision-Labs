@@ -12,6 +12,7 @@ wxEND_EVENT_TABLE()
 cCanvas::cCanvas(wxWindow* parent, wxString filename) : wxHVScrolledWindow(parent, wxID_ANY)  // ----- FINISHED
 {
 	Bind(wxEVT_MOTION, &cCanvas::OnMouseMove, this);
+	Bind(wxEVT_RIGHT_UP, &cCanvas::OnMouseClick, this);
 	SetRowColumnCount(40, 40); // see the changes if change that values
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	this->fileName = filename;
@@ -21,6 +22,7 @@ cCanvas::cCanvas(wxWindow* parent, wxString filename) : wxHVScrolledWindow(paren
 cCanvas::cCanvas(wxWindow* parent, unsigned char* data, int w, int h) : wxHVScrolledWindow(parent, wxID_ANY) // constuctor given a new image - FINISHED
 {
 	Bind(wxEVT_MOTION, &cCanvas::OnMouseMove, this);
+	Bind(wxEVT_RIGHT_UP, &cCanvas::OnMouseClick, this);
 	SetRowColumnCount(40, 40); // see the changes if change that values
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	this->m_myImage = data;
@@ -33,6 +35,7 @@ cCanvas::cCanvas(wxWindow* parent, unsigned char* data, int w, int h) : wxHVScro
 cCanvas::cCanvas(wxWindow* parent, Histogram* h) // constructor to create a histogram given a image  // ----- FINISHED
 {
 	Bind(wxEVT_MOTION, &cCanvas::OnMouseMove, this);
+	Bind(wxEVT_RIGHT_UP, &cCanvas::OnMouseClick, this);
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	this->hist = h;
 	this->m_imageRGB = nullptr;
@@ -271,6 +274,19 @@ void cCanvas::OnMouseMove(wxMouseEvent& event) //----- FINISHED
 	wxPoint pos = event.GetPosition();
 	this->user_x = pos.x;
 	this->user_y = pos.y;
+}
+
+void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
+{
+	if(this->points_left == 0)	
+	{
+		wxMessageBox(wxT("se han acabdo las clases a graficar"));
+		this->points_left = -1;
+		event.skip();
+		return;
+	}
+	wxMessageBox(wxT("Dibujando una clase"));
+	this->points_letft = this->points_left - 1;
 }
 
 	
