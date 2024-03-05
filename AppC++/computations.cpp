@@ -18,15 +18,24 @@
  * 
  * 
  */
-double static euclidean(Eigen::Vector2d vec1, Eigen::Vector2d vec2) {
+double static euclidean(std::vector<Eigen::Matrix<double,Eigen::Dynamic,3>> classes, Eigen::VectorXd point) {
 	
-	
-	
-	return sqrt(
-		pow(vec1.x() - vec2.x(), 2) +
-		pow(vec1.y() - vec2.y(), 2)
-	);
-	
+	std::vector<Eigen::Vector3d> centroids;
+
+
+	for (int i = 0; i < classes.size(); i++) {
+		centroids.push_back(
+			Eigen::Vector3d(
+				classes.at(i).row(0).mean(),
+				classes.at(i).row(1).mean(),
+				classes.at(i).row(2).mean()
+			));
+
+		
+
+	}
+
+
 
 
 }

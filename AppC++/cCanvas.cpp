@@ -282,11 +282,10 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 	{
 		wxMessageBox(wxT("se han acabdo las clases a graficar"));
 		this->points_left = -1;
-		event.skip();
 		return;
 	}
 	wxMessageBox(wxT("Dibujando una clase"));
-	this->points_letft = this->points_left - 1;
+	this->points_left = this->points_left - 1;
 }
 
 	

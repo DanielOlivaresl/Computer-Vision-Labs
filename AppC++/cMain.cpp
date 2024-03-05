@@ -108,11 +108,13 @@ void cMain::getEuclidian(wxCommandEvent& event) // falta que manejes los eventos
 	dialog.SetAutoLayout(true);
 	sizer->Fit(&dialog);
 
-	if (dialog.ShowModal() == wxID_OK) {
+	if (dialog.ShowModal() == wxID_OK)
+	{
 		wxString numberStr = numberEntry->GetValue();
 		long numberValue; 
 		if (numberStr.ToLong(&numberValue))
 		{
+			//Number of classes
 			int intValue = static_cast<int>(numberValue);
 			mychild->getCanvas()->points_left = intValue;
 		}
