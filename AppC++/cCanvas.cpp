@@ -278,8 +278,8 @@ void cCanvas::OnMouseMove(wxMouseEvent& event) //----- FINISHED
 
 void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 {
+	// primero deberia agregar el punto al vector de puntos, luego decremento de la variable
 	if (this->points_left == -1) return;
-	wxMessageBox(wxT("Dibujando una clase"));
 	if(this->points_left % 2 == 1)
 	{
 		wxMessageBox(wxT("Se dibujo el rectangulo"));
@@ -293,7 +293,6 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 		return;
 	}
 	wxMessageBox(wxT("Dibujando una clase"));
-	this->points_left = this->points_left - 1;
 }
 
 	
