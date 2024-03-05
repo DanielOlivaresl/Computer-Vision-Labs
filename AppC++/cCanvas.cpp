@@ -278,15 +278,22 @@ void cCanvas::OnMouseMove(wxMouseEvent& event) //----- FINISHED
 
 void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 {
+	if (this_>points_left == -1) return;
+	wxMessageBox(wxT("Dibujando una clase"));
+	if(this_>points_left % 2 == 1)
+	{
+			wxMessageBox(wxT("Se dibujo el rectangulo"));
+			// Agregar los puntos al vector de posiciones	
+	}
+	this->points_letft = this->points_left - 1;
 	if(this->points_left == 0)	
 	{
 		wxMessageBox(wxT("se han acabdo las clases a graficar"));
 		this->points_left = -1;
-		event.skip();
+		//llamar a liftshits
+		wxMessageBox(wxT("Las distancias son..."));
 		return;
 	}
-	wxMessageBox(wxT("Dibujando una clase"));
-	this->points_letft = this->points_left - 1;
 }
 
 	
