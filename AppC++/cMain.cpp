@@ -116,7 +116,7 @@ void cMain::getEuclidian(wxCommandEvent& event) // falta que manejes los eventos
 		{
 			//Number of classes
 			int intValue = static_cast<int>(numberValue);
-			mychild->getCanvas()->points_left = intValue;
+			mychild->getCanvas()->points_left = intValue*2;
 		}
 		else 
 		{
