@@ -127,18 +127,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\..\source\repos\DanielOlivaresl\Computer-Vision-Labs\AppC++\cApp.h" />
-    <ClInclude Include="..\..\..\..\..\..\source\repos\DanielOlivaresl\Computer-Vision-Labs\AppC++\cCanvas.h" />
-    <ClInclude Include="..\..\..\..\..\..\source\repos\DanielOlivaresl\Computer-Vision-Labs\AppC++\cEditorFrame.h" />
-    <ClInclude Include="..\..\..\..\..\..\source\repos\DanielOlivaresl\Computer-Vision-Labs\AppC++\cMain.h" />
-    <ClInclude Include="..\..\..\..\..\..\source\repos\DanielOlivaresl\Computer-Vision-Labs\AppC++\Histogram.h" />
+    <ClInclude Include="cApp.h" />
+    <ClInclude Include="cCanvas.h" />
+    <ClInclude Include="cEditorFrame.h" />
+    <ClInclude Include="cMain.h" />
+    <ClInclude Include="Histogram.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\..\source\repos\DanielOlivaresl\Computer-Vision-Labs\AppC++\cApp.cpp" />
-    <ClCompile Include="..\..\..\..\..\..\source\repos\DanielOlivaresl\Computer-Vision-Labs\AppC++\cCanvas.cpp" />
-    <ClCompile Include="..\..\..\..\..\..\source\repos\DanielOlivaresl\Computer-Vision-Labs\AppC++\cEditorFrame.cpp" />
-    <ClCompile Include="..\..\..\..\..\..\source\repos\DanielOlivaresl\Computer-Vision-Labs\AppC++\cMain.cpp" />
-    <ClCompile Include="..\..\..\..\..\..\source\repos\DanielOlivaresl\Computer-Vision-Labs\AppC++\Histogram.cpp" />
+    <ClCompile Include="cApp.cpp" />
+    <ClCompile Include="cCanvas.cpp" />
+    <ClCompile Include="cEditorFrame.cpp" />
+    <ClCompile Include="cMain.cpp" />
+    <ClCompile Include="Histogram.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
