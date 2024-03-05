@@ -282,8 +282,8 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 	wxMessageBox(wxT("Dibujando una clase"));
 	if(this_>points_left % 2 == 1)
 	{
-			wxMessageBox(wxT("Se dibujo el rectangulo"));
-			// Agregar los puntos al vector de posiciones	
+		wxMessageBox(wxT("Se dibujo el rectangulo"));
+		// Agregar los puntos al vector de posiciones	
 	}
 	this->points_letft = this->points_left - 1;
 	if(this->points_left == 0)	
