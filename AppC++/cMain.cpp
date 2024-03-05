@@ -15,6 +15,9 @@ EVT_MENU(2001, cMain::ToGray)
 EVT_MENU(2002, cMain::ToRGB)
 EVT_MENU(2003, cMain::ToHSV)
 EVT_MENU(2004, cMain::ToHSL)
+EVT_MENU(3001, cMain::getEuclidian) 
+EVT_MENU(3002, cMain::getMahalanobis)
+EVT_MENU(3003, cMain::getMinProb)
 wxEND_EVENT_TABLE()
 
 // The parent of all the components is wxMDIParentFrame
@@ -38,6 +41,11 @@ cMain::cMain() : wxMDIParentFrame(nullptr, wxID_ANY, "Image Wizard", wxPoint(30,
 	menuBf->Append(2003, "ToHSV");
 	menuBf->Append(2004, "ToHSL");
 	menuBar->Append(menuBf, " Convert ");
+	wxMenu* menuDis = new wxMenu();
+	menuDis->Append(3001, "Euclidian");
+	menuDis->Append(3002, "Mahalanobis");
+	menuDis->Append(3003, "Min Prob");
+	menuBar->Append(menuDis, " Distances ");
 
 }
 cMain:: ~cMain()
@@ -76,7 +84,71 @@ void cMain::ToHSV(wxCommandEvent& event)
 void cMain::ToHSL(wxCommandEvent& event)
 {
 }
+void cMain::getEuclidian(wxCommandEvent& event) // falta que manejes los eventos de guardar los rectangulos y dibujarlos jeje y maybe hacer una funcion q haga todo ese desma...
+{
+	wxMDIChildFrame* child = this->GetActiveChild();
+	if (child == nullptr)
+	{
+		wxMessageBox(wxT("You must open an image to get a Distance"));
+		event.Skip();
+		return;
+	}
+	cEditorFrame* mychild = wxDynamicCast(child, cEditorFrame);
+	mychild->getCanvas()->points_left = 0;
+	wxMessageBox(wxT("Proceso para la distancia euclidiana"));
+	// Crea un diálogo simple para la entrada numérica
+	wxDialog dialog(this, wxID_ANY, wxT("Ingresa Numero de clases"), wxDefaultPosition, wxSize(250, 100));
+	wxTextCtrl* numberEntry = new wxTextCtrl(&dialog, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC));
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(numberEntry, 1, wxEXPAND | wxALL, 10);
 
+	sizer->Add(dialog.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, 5);
+
+	dialog.SetSizer(sizer);
+	dialog.SetAutoLayout(true);
+	sizer->Fit(&dialog);
+
+	if (dialog.ShowModal() == wxID_OK) {
+		wxString numberStr = numberEntry->GetValue();
+		long numberValue; 
+		if (numberStr.ToLong(&numberValue))
+		{
+			int intValue = static_cast<int>(numberValue);
+			mychild->getCanvas()->points_left = intValue;
+		}
+		else 
+		{
+			wxMessageBox(wxT("Por favor, ingrese un número válido."), wxT("Error"), wxOK | wxICON_ERROR);
+		}
+	}
+	event.Skip();
+}
+
+void cMain::getMahalanobis(wxCommandEvent& event)
+{
+	wxMDIChildFrame* child = this->GetActiveChild();
+	if (child == nullptr)
+	{
+		wxMessageBox(wxT("You must open an image to get a Distance"));
+		event.Skip();
+		return;
+	}
+	wxMessageBox(wxT("Proceso para la distancia mahalanobis"));
+	event.Skip();
+}
+
+void cMain::getMinProb(wxCommandEvent& event)
+{
+	wxMDIChildFrame* child = this->GetActiveChild();
+	if (child == nullptr)
+	{
+		wxMessageBox(wxT("You must open an image to get a Distance"));
+		event.Skip();
+		return;
+	}
+	wxMessageBox(wxT("Proceso para la distancia MinProb"));
+	event.Skip();
+}
 void cMain::InMenuOpenNew(wxCommandEvent& event) // event to create a new window (wxMDIChildFrame)
 {
 	// Deberia crear una v
