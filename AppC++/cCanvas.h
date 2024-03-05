@@ -37,8 +37,11 @@ private:
 	unsigned char* m_myImage = nullptr;	// used to process the image (raw data) pixels in 1d  //
 	//-----------------------------------------------------------------------------------------
 public:
+	//---- Process data
 	int user_x = 0;
-	int user_y = 0;
+	int user_y = 0; // this variables always have the user position
+	int points_left = 0; // the amount of points left to get
+
 	//--------Image functions--------------------------------------------------------------------------------------------
 
 	void LoadImage(); // for load the image and set m_imageHeight , m_imageWidth, m_imageBitmap, m_imageRGB, m_myImage //

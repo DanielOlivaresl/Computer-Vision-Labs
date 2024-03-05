@@ -9,7 +9,7 @@ wxEND_EVENT_TABLE()
 // agregar logica para un nuevo constructor dado un histograma y que en la funcion de dibujar compruebe si sse va a dibujar un histograma 
 
 // mandarle la imagen de el histograma y solamente dibujar mas 
-cCanvas::cCanvas(wxWindow* parent, wxString filename) : wxHVScrolledWindow(parent, wxID_ANY)
+cCanvas::cCanvas(wxWindow* parent, wxString filename) : wxHVScrolledWindow(parent, wxID_ANY)  // ----- FINISHED
 {
 	Bind(wxEVT_MOTION, &cCanvas::OnMouseMove, this);
 	SetRowColumnCount(40, 40); // see the changes if change that values
@@ -18,7 +18,7 @@ cCanvas::cCanvas(wxWindow* parent, wxString filename) : wxHVScrolledWindow(paren
 	this->img_load = true;
 }
 
-cCanvas::cCanvas(wxWindow* parent, unsigned char* data, int w, int h) : wxHVScrolledWindow(parent, wxID_ANY) // constuctor given a new image
+cCanvas::cCanvas(wxWindow* parent, unsigned char* data, int w, int h) : wxHVScrolledWindow(parent, wxID_ANY) // constuctor given a new image - FINISHED
 {
 	Bind(wxEVT_MOTION, &cCanvas::OnMouseMove, this);
 	SetRowColumnCount(40, 40); // see the changes if change that values
@@ -30,7 +30,7 @@ cCanvas::cCanvas(wxWindow* parent, unsigned char* data, int w, int h) : wxHVScro
 	this->img_load = true;
 }
 
-cCanvas::cCanvas(wxWindow* parent, Histogram* h) // constructor to create a histogram given a image 
+cCanvas::cCanvas(wxWindow* parent, Histogram* h) // constructor to create a histogram given a image  // ----- FINISHED
 {
 	Bind(wxEVT_MOTION, &cCanvas::OnMouseMove, this);
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
@@ -43,22 +43,22 @@ cCanvas::cCanvas(wxWindow* parent, Histogram* h) // constructor to create a hist
 
 }
 
-int cCanvas::getWidth()
+int cCanvas::getWidth()  // ----- FINISHED
 {
 	return this->m_imageWidth;
 }
 
-int cCanvas::getHeight()
+int cCanvas::getHeight()  // ----- FINISHED
 {
 	return this->m_imageHeight;
 }
 
-cCanvas::~cCanvas()
+cCanvas::~cCanvas()  // ----- FINISHED
 {
 	delete this->hist;
 }
 
-void cCanvas::setPixelSize(int p)
+void cCanvas::setPixelSize(int p)  // ----- FINISHED
 {
 	m_nPixelSize = p; // se the changes of that variable
 	wxVarHScrollHelper::RefreshAll();
@@ -100,7 +100,7 @@ void cCanvas::OnDraw(wxDC& dc) // Arregla esta problematica para dibujar la imag
 	}
 		
 }
-unsigned char* cCanvas::ToGray() // testing...
+unsigned char* cCanvas::ToGray()  // ----- FINISHED
 {
 	// generar un buffer que guarda los nuevos valores, y retornar eso, para asi crear una nueva ventana
 	
@@ -134,7 +134,7 @@ unsigned char* cCanvas::ToGray() // testing...
 	}
 	
 }
-wxString cCanvas::getformat()
+wxString cCanvas::getformat()   // ----- FINISHED
 {
 	for (int i = 0; i < this->m_imageHeight; i++)
 	{
@@ -162,7 +162,7 @@ wxString cCanvas::getformat()
 
 	
 }
-void cCanvas::saveImage(wxString filename)
+void cCanvas::saveImage(wxString filename)  // ----- FINISHED
 {
 	bool b;
 
@@ -173,7 +173,7 @@ void cCanvas::saveImage(wxString filename)
 	if (!b)
 		wxMessageBox(wxT("A problem occured during saving"));
 }
-void cCanvas::LoadImage()
+void cCanvas::LoadImage()  // ----- FINISHED
 {
 	if (m_myImage)
 		free(m_myImage);
@@ -202,16 +202,16 @@ void cCanvas::LoadImage()
 	this->SetSize(m_imageHeight, m_imageWidth);
 	Refresh(false);
 }
-wxCoord cCanvas::OnGetRowHeight(size_t row) const
+wxCoord cCanvas::OnGetRowHeight(size_t row) const  // ----- FINISHED
 {
 	return wxCoord(m_nPixelSize);
 }
 
-wxCoord cCanvas::OnGetColumnWidth(size_t col) const
+wxCoord cCanvas::OnGetColumnWidth(size_t col) const // ----- FINISHED
 {
 	return wxCoord(m_nPixelSize);
 }
-Histogram* cCanvas::getHist()
+Histogram* cCanvas::getHist() // ----- FINISHED
 {
 	long int max_frec = 0;
 	long int frec_r[256] = { 0 };
@@ -266,7 +266,7 @@ Histogram* cCanvas::getHist()
 	
 }
 
-void cCanvas::OnMouseMove(wxMouseEvent& event)
+void cCanvas::OnMouseMove(wxMouseEvent& event) //----- FINISHED
 {
 	wxPoint pos = event.GetPosition();
 	this->user_x = pos.x;
