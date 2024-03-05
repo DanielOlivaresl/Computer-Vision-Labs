@@ -27,7 +27,10 @@ private:
 	void ToHSL(wxCommandEvent& event); // not yet ...    //
 	//------------------------------------------------------
 
-
+	// Distance Procedures------------------------------------
+	void getEuclidian(wxCommandEvent& event);
+	void getMahalanobis(wxCommandEvent& event);
+	void getMinProb(wxCommandEvent& event);
 
 	// APP HANDLERS-----------------
 	void InMenuOpenNew(wxCommandEvent& event);// Implemented
