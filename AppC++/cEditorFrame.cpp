@@ -44,7 +44,7 @@ cCanvas* cEditorFrame::getCanvas()
 
 void cEditorFrame::OnZoomChange(wxCommandEvent& event)
 {
-	n_StatusBar->SetStatusText(wxString("Position : ") << zoomSlider->GetValue(), 1);
+	n_StatusBar->SetStatusText(wxString("Position : ") << this->getCanvas()->points_left, 1);
 	n_canvas->setPixelSize(zoomSlider->GetValue());
 	event.Skip();
 }
