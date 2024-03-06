@@ -309,12 +309,12 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 		this->points_left = -1;
 		int* rgbU = this->getRGBPixel(event.GetPosition().x, event.GetPosition().y);
 		Eigen::Vector3d vec;
-		vec(0) = static_cast<double>(rgbU[0]); // Asigna valor a la primera componente (r)
-		vec(1) = static_cast<double>(rgbU[1]); // Asigna valor a la segunda componente (g)
-		vec(2) = static_cast<double>(rgbU[2]); // Asigna valor a la tercera componente (b)
+		vec(0) = static_cast<double>(rgbU[0]); // declare the r value
+		vec(1) = static_cast<double>(rgbU[1]); // declare the g value
+		vec(2) = static_cast<double>(rgbU[2]); // declare the b value
 
-		int minWidth = INT_MAX; // Inicializa minWidth a un valor muy grande
-		int minHeight = INT_MAX; // Inicializa minHeight a un valor muy grande
+		int minWidth = INT_MAX; 
+		int minHeight = INT_MAX;
 
 		for (int i = 0; i < this->rectangles.size(); i += 2)
 		{
@@ -326,19 +326,17 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 
 			if (width < minWidth) 
 			{
-				minWidth = width; // Actualiza minWidth si se encuentra un width más pequeño
+				minWidth = width; // getting the min value
 			}
 			if (height < minHeight) 
 			{
-				minHeight = height; // Actualiza minHeight si se encuentra un height más pequeño
+				minHeight = height; // min value
 			}
 		}
-
-		// Ahora minWidth y minHeight contienen los valores más pequeños encontrados
 		//wxString mess;
 		//mess.Printf(wxT("Width más pequeño: %d, Height más pequeño: %d"), minWidth, minHeight);
 		//wxMessageBox(mess);
-		for (int i = 0; i < this->rectangles.size(); i += 2) 
+		for (int i = 0; i < this->rectangles.size(); i += 2) // here is where we fill the matrix
 		{
 			// getting the upper left point (to iterate)
 			int startX = std::min(this->rectangles[i].x, this->rectangles[i + 1].x);
@@ -364,31 +362,31 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 		wxString messi;
 		messi.Printf(wxT("%d, %d,% d  pixel a clasificar "), (int)vec(0), (int)vec(1), (int)vec(2));
 		wxMessageBox(messi);
-		for (auto a : this->matrixClasses)
+		for (auto a : this->matrixClasses) // the shape of all the matrix must be the same
 		{
 			wxString mess;
 			mess.Printf(wxT("clases dimensiones %d, %d"), a.rows(), a.cols());
 			wxMessageBox(mess);
 		}
-		// cadena de ifs para comprobar el proceso
+		// take the correct procedure
 		if (this->process.CmpNoCase("Euclidian") == 0)
 		{
 			wxMessageBox("Se hara el proceso para distancia euclidiana");
-			// ------------LLAMAR A LA FUNCION Y MOSTRAR LA INFO
+			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
 			this->matrixClasses;// vector of each  matrix given a class
 			vec; /// vec to compare
 		}
 		if (this->process.CmpNoCase("mahalanobis") == 0)
 		{
 			wxMessageBox("Se hara el proceso para distancia mahalanobis");
-			// ------------LLAMAR A LA FUNCION Y MOSTRAR LA INFO
+			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
 			this->matrixClasses;// vector of each  matrix given a class
 			vec; /// vec to compare
 		}
 		if (this->process.CmpNoCase("MinProb") == 0)
 		{
 			wxMessageBox("Se hara el proceso para distancia MaxProb");
-			// ------------LLAMAR A LA FUNCION Y MOSTRAR LA INFO
+			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
 			this->matrixClasses;// vector of each  matrix given a class
 			vec; /// vec to compare
 		}
@@ -401,9 +399,8 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 
 	}
 	this->rectangles.push_back(event.GetPosition());
-	if ((this->points_left-1) % 2 == 1)
+	if ((this->points_left-1) % 2 == 1) // When one rectangle its done
 	{
-		//wxMessageBox(wxT("Se dibujo el rectangulo"));
 		Refresh();
 	}
 	this->points_left = this->points_left - 1;
