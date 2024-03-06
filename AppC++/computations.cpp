@@ -15,15 +15,16 @@
  * @param Eigen::Vector2d vector that represents the first (intiial) point
  * @param Eigen::Vector2d vector that represents the second (destiny) point
  * @return eucleidan distance between the two points
- * 
- * 
+ *
+ *
  */
-double static euclidean(std::vector<Eigen::Matrix<double,Eigen::Dynamic,3>> classes, Eigen::VectorXd point) {
-	
+std::vector<double> static euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
+
 	std::vector<Eigen::Vector3d> centroids;
 
 
 	for (int i = 0; i < classes.size(); i++) {
+		//We add the mean of every class
 		centroids.push_back(
 			Eigen::Vector3d(
 				classes.at(i).row(0).mean(),
@@ -31,20 +32,120 @@ double static euclidean(std::vector<Eigen::Matrix<double,Eigen::Dynamic,3>> clas
 				classes.at(i).row(2).mean()
 			));
 
-		
+
+
+	}
+	std::vector<double> distances;
+
+	//We now will calculate the distances for every class
+
+	for (int i = 0; i < classes.size(); i++) {
+
+		distances.push_back(
+			sqrt(
+				pow(point.x() - centroids.at(i).x(), 2) +
+				pow(point.y() - centroids.at(i).y(), 2) +
+				pow(point.z() - centroids.at(i).z(), 2)
+
+			));
+
+
 
 	}
 
-
+	return distances;
 
 
 }
 
 
-double static manhalanobis(Eigen::Vector2d point) {
+//Helper function to calculate the covariance matrix
+Eigen::MatrixXd static calculateCovMatrix(Eigen::MatrixXd data) {
+	Eigen::MatrixXd transposed = data.transpose();
 
-	euclidean(Eigen::Vector2d(2, 2), Eigen::Vector2d(2, 2));
+	// Center the data: subtract the mean of each column from all elements in the column
+	Eigen::MatrixXd centered = transposed.rowwise() - transposed.colwise().mean();
+	// Calculate the covariance matrix
+	Eigen::MatrixXd cov = (centered.adjoint() * centered) / double(centered.rows() - 1);
+
+	return cov;
 }
 
+
+std::vector<double> static manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
+
+	std::vector<Eigen::Vector3d> centroids;
+
+
+	for (int i = 0; i < classes.size(); i++) {
+		//We add the mean of every class
+		centroids.push_back(
+			Eigen::Vector3d(
+				classes.at(i).col(0).mean(),
+				classes.at(i).col(1).mean(),
+				classes.at(i).col(2).mean()
+			));
+
+
+
+	}
+
+	std::vector<double> distances;
+
+
+	for (int i = 0; i < classes.size(); i++) {
+		//We	first transpose the matrix
+
+
+		Eigen::MatrixXd cov = calculateCovMatrix(classes.at(i));
+
+		//The point minus the centroid of the current class
+		Eigen::Vector3d x_minus_mu = point - centroids.at(i);
+
+		Eigen::MatrixXd inv_cov = cov.inverse();
+
+
+
+		Eigen::MatrixXd left_term = x_minus_mu.transpose() * inv_cov;
+		Eigen::MatrixXd res = left_term * x_minus_mu;
+
+
+
+		distances.push_back(res(0, 0));
+
+	}
+
+	return distances;
+
+}
+
+std::vector<double> static max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
+
+	std::vector<double> manhalanobis_distance = manhalanobis(classes, point);
+
+	std::vector<double> probabilites;
+
+	for (int i = 0; i < classes.size(); i++) {
+		Eigen::MatrixXd cov = calculateCovMatrix(classes.at(i));
+		double det_cov = cov.determinant();
+
+		double pi_term = pow(2 * EIGEN_PI, (3 / 2));
+
+		double manh_dist = manhalanobis_distance.at(i);
+
+		probabilites.push_back((1 / (
+			pi_term * sqrt(det_cov)
+			)) *
+			exp(-0.5 * manh_dist));
+	}
+
+
+	return probabilites;
+
+
+
+
+
+}
 
 
