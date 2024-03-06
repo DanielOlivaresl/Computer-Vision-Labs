@@ -1,8 +1,7 @@
 Things to do                                          
-- Por medio de botones en cMain,que el usuario pueda elegir que practica o funcionalidad quiere(chevy)          
-- funcion para acceder a los pixeles de la imagen de manera image [][]                                      
-- Agregar la biblioteca eigen, hacer una funcion para pasar de la imagen en widgets a una matriz de eigen y hacer una funcion para pasar de una matriz a una imagen de wxwidgets(unsigned char)
-- implementar la distancia mahalanobis, eulidiana (Lifshitz)      
-- Funcionalidades para que el usuario pueda ingresar el numero de clases y pueda hacer un rectangulo encerrando a los representantes de la clase (chevy)
+- Tratar de hacer funciones las partes repetitivas del codigo, por ejemplo en cEditor.cpp se aplica la misma metologia para obtener los datos del usuario, pasarlo a una funcion
+- agregar la clase neurona,clase capa, clase red bla bla bla...
+- hacer una funcion para pasar de la imagen en widgets a una matriz de eigen y hacer una funcion para pasar de una matriz a una imagen de wxwidgets(unsigned char)      
 - modulo para graficar funciones.
--Implementar el criterio de maxima probabilidad (Lifshitz)
+- implementar la funcion para cambiar los valores de una imagen (rgb -> rgb)
+- implementar filtros y que el usuario pueda hacer sus propios elementos de estructura
