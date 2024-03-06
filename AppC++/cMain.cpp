@@ -137,7 +137,38 @@ void cMain::getMahalanobis(wxCommandEvent& event)
 		event.Skip();
 		return;
 	}
+	cEditorFrame* mychild = wxDynamicCast(child, cEditorFrame);
+	mychild->getCanvas()->points_left = 0;
 	wxMessageBox(wxT("Proceso para la distancia mahalanobis"));
+	// Crea un diálogo simple para la entrada numérica
+	wxDialog dialog(this, wxID_ANY, wxT("Ingresa Numero de clases"), wxDefaultPosition, wxSize(250, 100));
+	wxTextCtrl* numberEntry = new wxTextCtrl(&dialog, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC));
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(numberEntry, 1, wxEXPAND | wxALL, 10);
+
+	sizer->Add(dialog.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, 5);
+
+	dialog.SetSizer(sizer);
+	dialog.SetAutoLayout(true);
+	sizer->Fit(&dialog);
+
+	if (dialog.ShowModal() == wxID_OK)
+	{
+		wxString numberStr = numberEntry->GetValue();
+		long numberValue;
+		if (numberStr.ToLong(&numberValue))
+		{
+			//Number of classes
+			int intValue = static_cast<int>(numberValue);
+			mychild->getCanvas()->points_left = intValue * 2 + 1;
+			mychild->getCanvas()->process = "Mahalanobis";
+			// cambios
+		}
+		else
+		{
+			wxMessageBox(wxT("Por favor, ingrese un número válido."), wxT("Error"), wxOK | wxICON_ERROR);
+		}
+	}
 	event.Skip();
 }
 
@@ -150,7 +181,38 @@ void cMain::getMinProb(wxCommandEvent& event)
 		event.Skip();
 		return;
 	}
-	wxMessageBox(wxT("Proceso para la distancia MinProb"));
+	cEditorFrame* mychild = wxDynamicCast(child, cEditorFrame);
+	mychild->getCanvas()->points_left = 0;
+	wxMessageBox(wxT("Proceso para la maxima Probabilidad"));
+	// Crea un diálogo simple para la entrada numérica
+	wxDialog dialog(this, wxID_ANY, wxT("Ingresa Numero de clases"), wxDefaultPosition, wxSize(250, 100));
+	wxTextCtrl* numberEntry = new wxTextCtrl(&dialog, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC));
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(numberEntry, 1, wxEXPAND | wxALL, 10);
+
+	sizer->Add(dialog.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, 5);
+
+	dialog.SetSizer(sizer);
+	dialog.SetAutoLayout(true);
+	sizer->Fit(&dialog);
+
+	if (dialog.ShowModal() == wxID_OK)
+	{
+		wxString numberStr = numberEntry->GetValue();
+		long numberValue;
+		if (numberStr.ToLong(&numberValue))
+		{
+			//Number of classes
+			int intValue = static_cast<int>(numberValue);
+			mychild->getCanvas()->points_left = intValue * 2 + 1;
+			mychild->getCanvas()->process = "MaxProb";
+			// cambios
+		}
+		else
+		{
+			wxMessageBox(wxT("Por favor, ingrese un número válido."), wxT("Error"), wxOK | wxICON_ERROR);
+		}
+	}
 	event.Skip();
 }
 void cMain::InMenuOpenNew(wxCommandEvent& event) // event to create a new window (wxMDIChildFrame)
