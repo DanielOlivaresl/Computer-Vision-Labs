@@ -5,6 +5,7 @@
 #include "wx/dcmemory.h"
 #include "wx/dcbuffer.h"
 #include "Histogram.h"
+#include <Eigen/Dense>
 #include <vector>
 // add a general function for convert that can iterate in the image an given a parameter (the format), apply that format
 // conver(RGB,HSL,HSV,GRAY)
@@ -25,15 +26,8 @@ public:
 	wxString fileFormat; // format of the file 
 	bool img_load; // if theres is an image loaded
 	Histogram* hist = nullptr;
-<<<<<<< Updated upstream
 
 private:
-=======
-	
-	
-	
-private: 
->>>>>>> Stashed changes
 	int m_nPixelSize = 8; // for the slider
 
 	//----- Image variables---------------------------------------------------------------------
@@ -48,15 +42,12 @@ public:
 	int user_x = 0;
 	int user_y = 0; // this variables always have the user position
 	int points_left = -1; // -1 if there is no process, 0 if the user draw all the rectangles (trigger to calculate and show)
-<<<<<<< Updated upstream
 	std::vector<wxPoint> rectangles;// Agregar el vector de puntos del usuario, los rectangulos de cada clase
 	int numClasses = 0;
 	wxString process = "";
-=======
+	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> matrixClasses;
 	int* getRGBPixel(int x, int y);
-	// Agregar el vector de puntos del usuario, los rectangulos de cada clase
 
->>>>>>> Stashed changes
 	//--------Image functions--------------------------------------------------------------------------------------------
 
 	void LoadImage(); // for load the image and set m_imageHeight , m_imageWidth, m_imageBitmap, m_imageRGB, m_myImage //
@@ -66,7 +57,6 @@ public:
 	wxString getformat(); // returns the format of the image       
 	void saveImage(wxString filename);//
 	Histogram* getHist();
-	
 
 
 	//-------------------------------------------------------------------------------------------------------------------
