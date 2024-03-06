@@ -7,7 +7,6 @@
 wxBEGIN_EVENT_TABLE(cCanvas, wxHVScrolledWindow)
 EVT_PAINT(cCanvas::OnPaint)
 wxEND_EVENT_TABLE()
-
 // agregar logica para un nuevo constructor dado un histograma y que en la funcion de dibujar compruebe si sse va a dibujar un histograma 
 
 // mandarle la imagen de el histograma y solamente dibujar mas 
@@ -128,35 +127,10 @@ void cCanvas::OnDraw(wxDC& dc) // Arregla esta problematica para dibujar la imag
 	}
 
 }
-int* cCanvas::getRGBPixel(int x, int y) {
-	
-	unsigned char redC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3];
-	unsigned char greenC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3 + 1];
-	unsigned char blueC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3 + 2];
-	/*
-		If we want to find the (2,2) position in this matrix, we obtain 9 
-		1 2 3
-		4 5 6 
-		7 8 9 
-		Now, if thw matrix is lineal, we have something like
-		1 2 3 4 5 6 7 8 9
-		So 
-		WidthMatrix = 3
-		Vecto[3*2+2=8]=9
-
-	*/
-
-	int* channels = new int[3];
-	channels[0] = static_cast<int>(redC);
-	channels[1] = static_cast<int>(greenC);
-	channels[2] = static_cast<int>(blueC);
-
-	return channels;
-}
 unsigned char* cCanvas::ToGray()  // ----- FINISHED
 {
 	// generar un buffer que guarda los nuevos valores, y retornar eso, para asi crear una nueva ventana
-	
+
 	if (this->getformat() == (wxString)"RGB" || this->getformat() == (wxString)"RGBA")
 	{
 		//wxMessageBox(wxT("RGB to gray"));
@@ -173,7 +147,7 @@ unsigned char* cCanvas::ToGray()  // ----- FINISHED
 			temp[i * 3 + 2] = gray;
 		}
 		return temp;
-		
+
 	}
 	else if (this->getformat() == (wxString)"GRAY")
 	{
@@ -185,7 +159,7 @@ unsigned char* cCanvas::ToGray()  // ----- FINISHED
 		wxMessageBox(wxT("Not implemented..."));
 		return nullptr;
 	}
-	
+
 }
 wxString cCanvas::getformat()   // ----- FINISHED
 {
@@ -195,7 +169,7 @@ wxString cCanvas::getformat()   // ----- FINISHED
 		{
 			int offset = (i * this->m_imageWidth + j) * 3; // 3 canales (RGB)
 			unsigned char red = this->m_myImage[offset] - 0;
-			unsigned char green = this->m_myImage[offset + 1]- 0;
+			unsigned char green = this->m_myImage[offset + 1] - 0;
 			unsigned char blue = this->m_myImage[offset + 2] - 0;
 			//ofs << "[" << red + ","<< green << "," << blue << "]";
 			if (red != green || green != blue)
@@ -213,7 +187,7 @@ wxString cCanvas::getformat()   // ----- FINISHED
 	}
 	return (wxString)"GRAY";
 
-	
+
 }
 void cCanvas::saveImage(wxString filename)  // ----- FINISHED
 {
@@ -272,7 +246,7 @@ Histogram* cCanvas::getHist() // ----- FINISHED
 	long int frec_b[256] = { 0 };
 	if (this->getformat() == (wxString)"RGB" || this->getformat() == (wxString)"RGBA")
 	{
-		
+
 		wxImageHistogram hist;
 		unsigned long colors = this->m_imageRGB->ComputeHistogram(hist);
 		for (auto iter = hist.begin(); iter != hist.end(); ++iter) {
@@ -295,15 +269,15 @@ Histogram* cCanvas::getHist() // ----- FINISHED
 			wxLogMessage("Color %i (%li, %li, %li) and the maxf is  %li", i, frec_r[i], frec_g[i], frec_b[i], max_frec);
 		}
 	}
-	else if(this->getformat() == (wxString)"GRAY")
+	else if (this->getformat() == (wxString)"GRAY")
 	{
 		wxImageHistogram histogram;
 		this->m_imageRGB->ComputeHistogram(histogram);
-		for (auto iter = histogram.begin(); iter != histogram.end(); ++iter) 
+		for (auto iter = histogram.begin(); iter != histogram.end(); ++iter)
 		{
 			unsigned long color = iter->first;
 			unsigned long frequency = iter->second.value;
-			
+
 			// In grayscale, R = G = B, so just extract one of them
 			unsigned char intensity = (unsigned char)(color >> 16); // Extracting red component
 			frec_r[intensity] = frequency;
@@ -316,7 +290,7 @@ Histogram* cCanvas::getHist() // ----- FINISHED
 	}
 	Histogram* histT = new Histogram(max_frec, frec_r, frec_g, frec_b);
 	return histT;
-	
+
 }
 
 void cCanvas::OnMouseMove(wxMouseEvent& event) //----- FINISHED
@@ -324,29 +298,6 @@ void cCanvas::OnMouseMove(wxMouseEvent& event) //----- FINISHED
 	wxPoint pos = event.GetPosition();
 	this->user_x = pos.x;
 	this->user_y = pos.y;
-<<<<<<< Updated upstream
-=======
-	
-}
-
-void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
-{
-	// primero deberia agregar el punto al vector de puntos, luego decremento de la variable
-	if (this->points_left == -1) return;
-	if(this->points_left % 2 == 1)
-	{
-		wxMessageBox(wxT("Se dibujo el rectangulo"));
-		// Agregar los puntos al vector de posiciones	
-	}
-	this->points_left = this->points_left - 1;
-	if(this->points_left == 0)	
-	{
-		wxMessageBox(wxT("se han acabdo las clases a graficar"));
-		this->points_left = -1;
-		return;
-	}
-	wxMessageBox(wxT("Dibujando una clase"));
->>>>>>> Stashed changes
 }
 
 void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
@@ -356,9 +307,12 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 	if (this->points_left == -2)
 	{
 		this->points_left = -1;
-		wxString message;
-		message.Printf(wxT("vector en (%d, %d)"), event.GetPosition().x, event.GetPosition().y);
-		wxMessageBox(message);
+		int* rgbU = this->getRGBPixel(event.GetPosition().x, event.GetPosition().y);
+		Eigen::Vector3d vec;
+		vec(0) = static_cast<double>(rgbU[0]); // Asigna valor a la primera componente (r)
+		vec(1) = static_cast<double>(rgbU[1]); // Asigna valor a la segunda componente (g)
+		vec(2) = static_cast<double>(rgbU[2]); // Asigna valor a la tercera componente (b)
+
 		int minWidth = INT_MAX; // Inicializa minWidth a un valor muy grande
 		int minHeight = INT_MAX; // Inicializa minHeight a un valor muy grande
 
@@ -367,42 +321,81 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 			int width = this->rectangles[i + 1].x - this->rectangles[i].x;
 			int height = this->rectangles[i + 1].y - this->rectangles[i].y;
 
-			// Asegúrate de que width y height sean positivos
 			width = abs(width);
 			height = abs(height);
 
-			if (width < minWidth) {
+			if (width < minWidth) 
+			{
 				minWidth = width; // Actualiza minWidth si se encuentra un width más pequeño
 			}
-			if (height < minHeight) {
+			if (height < minHeight) 
+			{
 				minHeight = height; // Actualiza minHeight si se encuentra un height más pequeño
 			}
 		}
 
 		// Ahora minWidth y minHeight contienen los valores más pequeños encontrados
-		wxString mess;
-		mess.Printf(wxT("Width más pequeño: %d, Height más pequeño: %d"), minWidth, minHeight);
-		wxMessageBox(mess);
-		for (int i = 0; i < this->rectangles.size(); i += 2) {
-			// Determina la esquina superior izquierda
+		//wxString mess;
+		//mess.Printf(wxT("Width más pequeño: %d, Height más pequeño: %d"), minWidth, minHeight);
+		//wxMessageBox(mess);
+		for (int i = 0; i < this->rectangles.size(); i += 2) 
+		{
+			// getting the upper left point (to iterate)
 			int startX = std::min(this->rectangles[i].x, this->rectangles[i + 1].x);
 			int startY = std::min(this->rectangles[i].y, this->rectangles[i + 1].y);
-
-			// Itera desde la esquina superior izquierda hasta startX + minWidth y startY + minHeight
-			for (int x = startX; x < startX + minWidth; ++x) {
+			Eigen::Matrix<double, Eigen::Dynamic, 3> matrix;
+			for (int x = startX; x < startX + minWidth; ++x) 
+			{
 				for (int y = startY; y < startY + minHeight; ++y) 
 				{
-				 // llamar a la funcion y agregar a la funcion 
+					matrix.conservativeResize(matrix.rows() + 1, Eigen::NoChange);
+
+					int* rgb = this->getRGBPixel(x, y); 
+
+					matrix.row(matrix.rows() - 1) << static_cast<double>(rgb[0]),
+													static_cast<double>(rgb[1]),
+													static_cast<double>(rgb[2]);
+					
+					delete[] rgb;
 				}
 			}
+			this->matrixClasses.push_back(matrix);
 		}
-
+		wxString messi;
+		messi.Printf(wxT("%d, %d,% d  pixel a clasificar "), (int)vec(0), (int)vec(1), (int)vec(2));
+		wxMessageBox(messi);
+		for (auto a : this->matrixClasses)
+		{
+			wxString mess;
+			mess.Printf(wxT("clases dimensiones %d, %d"), a.rows(), a.cols());
+			wxMessageBox(mess);
+		}
 		// cadena de ifs para comprobar el proceso
 		if (this->process.CmpNoCase("Euclidian") == 0)
 		{
 			wxMessageBox("Se hara el proceso para distancia euclidiana");
+			// ------------LLAMAR A LA FUNCION Y MOSTRAR LA INFO
+			this->matrixClasses;// vector of each  matrix given a class
+			vec; /// vec to compare
+		}
+		if (this->process.CmpNoCase("mahalanobis") == 0)
+		{
+			wxMessageBox("Se hara el proceso para distancia mahalanobis");
+			// ------------LLAMAR A LA FUNCION Y MOSTRAR LA INFO
+			this->matrixClasses;// vector of each  matrix given a class
+			vec; /// vec to compare
+		}
+		if (this->process.CmpNoCase("MinProb") == 0)
+		{
+			wxMessageBox("Se hara el proceso para distancia MaxProb");
+			// ------------LLAMAR A LA FUNCION Y MOSTRAR LA INFO
+			this->matrixClasses;// vector of each  matrix given a class
+			vec; /// vec to compare
 		}
 		this->rectangles.clear();
+		this->matrixClasses.clear();
+		delete[] rgbU;
+		this->process = "";
 		Refresh();
 		return;
 
@@ -416,7 +409,7 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 	this->points_left = this->points_left - 1;
 	if (this->points_left == 1)
 	{
-		wxMessageBox(wxT("se han acabdo las clases a graficar"));
+		wxMessageBox(wxT("Has Ingresado las clases, a continuacion ingresa el pixel el cual quieras clasificar "));
 		this->points_left = -2;
 		this->numClasses = 0;
 		Refresh();
@@ -424,6 +417,28 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 	}
 	//wxMessageBox(wxT("Dibujando una clase"));
 }
+int* cCanvas::getRGBPixel(int x, int y) {
+	unsigned char redC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3 ];
+	unsigned char greenC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3 + 1];
+	unsigned char blueC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3 + 2];
 
+	/*
+	If we want to find the (2,2) position in this matrix, we obtain 9
+		1 2 3
+		4 5 6
+		7 8 9
+	Now, if thw matrix is lineal, we have something like
+		1 2 3 4 5 6 7 8 9
+	So
+		WidthMatrix = 3
+		Vecto[3*2+2-8]=9
+	*/
 
-	
+	int* channels = new int[3];
+	channels[0] = static_cast<int>(redC);
+	channels[1] = static_cast<int>(greenC);
+	channels[2] = static_cast<int>(blueC);
+
+	return channels;
+}
+
