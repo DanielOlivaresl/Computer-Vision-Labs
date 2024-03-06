@@ -5,7 +5,7 @@
 #include "wx/dcmemory.h"
 #include "wx/dcbuffer.h"
 #include "Histogram.h"
-#include "vector"
+#include <vector>
 // add a general function for convert that can iterate in the image an given a parameter (the format), apply that format
 // conver(RGB,HSL,HSV,GRAY)
 
@@ -14,7 +14,7 @@
 // canvas in wich wee can edite the sprite
 class cCanvas : public wxHVScrolledWindow
 {
-public: 
+public:
 	cCanvas(wxWindow* parent, wxString filename);
 	cCanvas(wxWindow* parent, unsigned char* data, int w, int h);
 	cCanvas(wxWindow* parent, Histogram* h);
@@ -25,10 +25,10 @@ public:
 	wxString fileFormat; // format of the file 
 	bool img_load; // if theres is an image loaded
 	Histogram* hist = nullptr;
-	
-private: 
+
+private:
 	int m_nPixelSize = 8; // for the slider
-	
+
 	//----- Image variables---------------------------------------------------------------------
 	int m_imageWidth;                                                                         //
 	int m_imageHeight;                                                                        //
@@ -41,8 +41,9 @@ public:
 	int user_x = 0;
 	int user_y = 0; // this variables always have the user position
 	int points_left = -1; // -1 if there is no process, 0 if the user draw all the rectangles (trigger to calculate and show)
-	// Agregar el vector de puntos del usuario, los rectangulos de cada clase
-	
+	std::vector<wxPoint> rectangles;// Agregar el vector de puntos del usuario, los rectangulos de cada clase
+	int numClasses = 0;
+	wxString process = "";
 	//--------Image functions--------------------------------------------------------------------------------------------
 
 	void LoadImage(); // for load the image and set m_imageHeight , m_imageWidth, m_imageBitmap, m_imageRGB, m_myImage //
@@ -53,9 +54,9 @@ public:
 	void saveImage(wxString filename);//
 	Histogram* getHist();
 
-	
+
 	//-------------------------------------------------------------------------------------------------------------------
-	
+
 	void setPixelSize(int p); // for the slider
 private:
 	virtual wxCoord OnGetRowHeight(size_t row) const; // for the slider
@@ -65,4 +66,3 @@ private:
 	wxDECLARE_EVENT_TABLE();
 
 };
-
