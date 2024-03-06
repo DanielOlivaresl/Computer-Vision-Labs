@@ -1,17 +1,12 @@
 # Visual Studio-specific files and folders
-.vscode/
-.svn/
+.vs/
+*.opendb
 *.suo
 *.user
-*.sln
-*.vcxproj
-*.vcxproj.user
+bin/
+obj/
+[Bb]uild/
+[Dd]ebug*/
+[Rr]elease*/
 x64/
-Debug/
-Release/
-.vs/
-*.vsidx
-.vsix
-.ipch/
-FileContentInde/
-*.filters
+x86/
