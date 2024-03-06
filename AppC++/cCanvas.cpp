@@ -128,6 +128,31 @@ void cCanvas::OnDraw(wxDC& dc) // Arregla esta problematica para dibujar la imag
 	}
 
 }
+int* cCanvas::getRGBPixel(int x, int y) {
+	
+	unsigned char redC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3];
+	unsigned char greenC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3 + 1];
+	unsigned char blueC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3 + 2];
+	/*
+		If we want to find the (2,2) position in this matrix, we obtain 9 
+		1 2 3
+		4 5 6 
+		7 8 9 
+		Now, if thw matrix is lineal, we have something like
+		1 2 3 4 5 6 7 8 9
+		So 
+		WidthMatrix = 3
+		Vecto[3*2+2=8]=9
+
+	*/
+
+	int* channels = new int[3];
+	channels[0] = static_cast<int>(redC);
+	channels[1] = static_cast<int>(greenC);
+	channels[2] = static_cast<int>(blueC);
+
+	return channels;
+}
 unsigned char* cCanvas::ToGray()  // ----- FINISHED
 {
 	// generar un buffer que guarda los nuevos valores, y retornar eso, para asi crear una nueva ventana
@@ -299,6 +324,29 @@ void cCanvas::OnMouseMove(wxMouseEvent& event) //----- FINISHED
 	wxPoint pos = event.GetPosition();
 	this->user_x = pos.x;
 	this->user_y = pos.y;
+<<<<<<< Updated upstream
+=======
+	
+}
+
+void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
+{
+	// primero deberia agregar el punto al vector de puntos, luego decremento de la variable
+	if (this->points_left == -1) return;
+	if(this->points_left % 2 == 1)
+	{
+		wxMessageBox(wxT("Se dibujo el rectangulo"));
+		// Agregar los puntos al vector de posiciones	
+	}
+	this->points_left = this->points_left - 1;
+	if(this->points_left == 0)	
+	{
+		wxMessageBox(wxT("se han acabdo las clases a graficar"));
+		this->points_left = -1;
+		return;
+	}
+	wxMessageBox(wxT("Dibujando una clase"));
+>>>>>>> Stashed changes
 }
 
 void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
