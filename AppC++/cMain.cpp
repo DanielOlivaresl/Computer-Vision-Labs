@@ -15,13 +15,13 @@ EVT_MENU(2001, cMain::ToGray)
 EVT_MENU(2002, cMain::ToRGB)
 EVT_MENU(2003, cMain::ToHSV)
 EVT_MENU(2004, cMain::ToHSL)
-EVT_MENU(3001, cMain::getEuclidian) 
+EVT_MENU(3001, cMain::getEuclidian)
 EVT_MENU(3002, cMain::getMahalanobis)
 EVT_MENU(3003, cMain::getMinProb)
 wxEND_EVENT_TABLE()
 
 // The parent of all the components is wxMDIParentFrame
-cMain::cMain() : wxMDIParentFrame(nullptr, wxID_ANY, "Image Wizard", wxPoint(30,30), wxSize(600,400 ))
+cMain::cMain() : wxMDIParentFrame(nullptr, wxID_ANY, "Image Wizard", wxPoint(30, 30), wxSize(600, 400))
 {
 	// menu bar  []
 	wxMenuBar* menuBar = new wxMenuBar();
@@ -51,7 +51,7 @@ cMain::cMain() : wxMDIParentFrame(nullptr, wxID_ANY, "Image Wizard", wxPoint(30,
 cMain:: ~cMain()
 {
 }
-void cMain::ToGray(wxCommandEvent& event) 
+void cMain::ToGray(wxCommandEvent& event)
 {
 	wxMDIChildFrame* child = this->GetActiveChild();
 	if (child == nullptr)
@@ -67,7 +67,7 @@ void cMain::ToGray(wxCommandEvent& event)
 		event.Skip();
 		return;
 	}
-	cEditorFrame* process = new cEditorFrame(this, temp,mychild->GetName(), mychild->getCanvas()->getWidth(), mychild->getCanvas()->getHeight());
+	cEditorFrame* process = new cEditorFrame(this, temp, mychild->GetName(), mychild->getCanvas()->getWidth(), mychild->getCanvas()->getHeight());
 	process->Show();
 	// nuevo constructor dado un unsigned char
 	event.Skip();
@@ -111,14 +111,16 @@ void cMain::getEuclidian(wxCommandEvent& event) // falta que manejes los eventos
 	if (dialog.ShowModal() == wxID_OK)
 	{
 		wxString numberStr = numberEntry->GetValue();
-		long numberValue; 
+		long numberValue;
 		if (numberStr.ToLong(&numberValue))
 		{
 			//Number of classes
 			int intValue = static_cast<int>(numberValue);
-			mychild->getCanvas()->points_left = intValue*2;
+			mychild->getCanvas()->points_left = intValue * 2 + 1;
+			mychild->getCanvas()->process = "Euclidian";
+			// cambios
 		}
-		else 
+		else
 		{
 			wxMessageBox(wxT("Por favor, ingrese un número válido."), wxT("Error"), wxOK | wxICON_ERROR);
 		}
@@ -168,8 +170,8 @@ void cMain::InMenuOpenNew(wxCommandEvent& event) // event to create a new window
 		wxMessageBox("Error loading the image", "Image Wizard", wxOK | wxICON_INFORMATION);
 	}
 
-		
-	
+
+
 }
 void cMain::InMenuSave(wxCommandEvent& event)
 {
@@ -191,7 +193,7 @@ void cMain::InMenuSave(wxCommandEvent& event)
 	{
 		mychild->getCanvas()->saveImage(filename);
 	}
-	
+
 
 }
 void cMain::InMenuExit(wxCommandEvent& event)
