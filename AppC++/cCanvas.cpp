@@ -2,6 +2,8 @@
 #include <string>
 #include <fstream>
 #include "Histogram.h"
+#include <Eigen/Dense>
+
 wxBEGIN_EVENT_TABLE(cCanvas, wxHVScrolledWindow)
 EVT_PAINT(cCanvas::OnPaint)
 wxEND_EVENT_TABLE()
@@ -78,30 +80,53 @@ void cCanvas::OnPaint(wxPaintEvent& event) // pre painting, the paint handle eve
 }
 
 void cCanvas::OnDraw(wxDC& dc) // Arregla esta problematica para dibujar la imagen 
-{ 	
-		
+{
+
 	dc.Clear();
 	wxBrush brush = dc.GetBrush();
 	wxPen pen = dc.GetPen();
 
-	
+
 	dc.SetBrush(brush);
 	wxImage* tempImage;
-	
+
 	if (this->hist == nullptr)
 	{
 		tempImage = new wxImage(m_imageWidth, m_imageHeight, m_myImage, true); // lend my image buffer...
 		m_imageBitmap = wxBitmap(*tempImage, -1); // ...to get the corresponding bitmap
 		delete(tempImage);		// buffer not needed any more
 		dc.DrawBitmap(this->m_imageBitmap, 0, 0);
-		//dc.DrawRectangle(10, 10, 150, 100);
+		for (int i = 0; i < this->rectangles.size(); i += 2)
+		{
+			if (i + 1 < this->rectangles.size())
+			{
+				// Calcula el ancho y la altura
+				int width = this->rectangles[i + 1].x - this->rectangles[i].x;
+				int height = this->rectangles[i + 1].y - this->rectangles[i].y;
+
+				// Si width o height son negativos, ajusta el punto de origen
+				int x = width < 0 ? this->rectangles[i + 1].x : this->rectangles[i].x;
+				int y = height < 0 ? this->rectangles[i + 1].y : this->rectangles[i].y;
+
+				//  width y height sean positivos para DrawRectangle
+				width = abs(width);
+				height = abs(height);
+	
+				// Establecer el color y el grosor del borde del rectángulo
+				dc.SetPen(wxPen(wxColour(0, 0, 0), 2)); // Negro y 2 píxeles de grosor
+
+				// Establecer el pincel como transparente para no rellenar el rectángulo
+				dc.SetBrush(*wxTRANSPARENT_BRUSH);
+				dc.DrawRectangle(x, y, width, height);
+			}
+		}
 	}
 	else
 	{
 		dc.DrawRectangle(10, 10, 100, 50);
 		wxMessageBox(wxT("Entramos al hist"));
 	}
-		
+
 }
 unsigned char* cCanvas::ToGray()  // ----- FINISHED
 {
@@ -280,19 +305,77 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 {
 	// primero deberia agregar el punto al vector de puntos, luego decremento de la variable
 	if (this->points_left == -1) return;
-	if(this->points_left % 2 == 1)
+	if (this->points_left == -2)
 	{
-		wxMessageBox(wxT("Se dibujo el rectangulo"));
-		// Agregar los puntos al vector de posiciones	
+		this->points_left = -1;
+		wxString message;
+		message.Printf(wxT("vector en (%d, %d)"), event.GetPosition().x, event.GetPosition().y);
+		wxMessageBox(message);
+		int minWidth = INT_MAX; // Inicializa minWidth a un valor muy grande
+		int minHeight = INT_MAX; // Inicializa minHeight a un valor muy grande
+
+		for (int i = 0; i < this->rectangles.size(); i += 2)
+		{
+			int width = this->rectangles[i + 1].x - this->rectangles[i].x;
+			int height = this->rectangles[i + 1].y - this->rectangles[i].y;
+
+			// Asegúrate de que width y height sean positivos
+			width = abs(width);
+			height = abs(height);
+
+			if (width < minWidth) {
+				minWidth = width; // Actualiza minWidth si se encuentra un width más pequeño
+			}
+			if (height < minHeight) {
+				minHeight = height; // Actualiza minHeight si se encuentra un height más pequeño
+			}
+		}
+
+		// Ahora minWidth y minHeight contienen los valores más pequeños encontrados
+		wxString mess;
+		mess.Printf(wxT("Width más pequeño: %d, Height más pequeño: %d"), minWidth, minHeight);
+		wxMessageBox(mess);
+		for (int i = 0; i < this->rectangles.size(); i += 2) {
+			// Determina la esquina superior izquierda
+			int startX = std::min(this->rectangles[i].x, this->rectangles[i + 1].x);
+			int startY = std::min(this->rectangles[i].y, this->rectangles[i + 1].y);
+
+			// Itera desde la esquina superior izquierda hasta startX + minWidth y startY + minHeight
+			for (int x = startX; x < startX + minWidth; ++x) {
+				for (int y = startY; y < startY + minHeight; ++y) 
+				{
+				 // llamar a la funcion y agregar a la funcion 
+				}
+			}
+		}
+
+		// cadena de ifs para comprobar el proceso
+		if (this->process.CmpNoCase("Euclidian") == 0)
+		{
+			wxMessageBox("Se hara el proceso para distancia euclidiana");
+		}
+		this->rectangles.clear();
+		Refresh();
+		return;
+
+	}
+	this->rectangles.push_back(event.GetPosition());
+	if ((this->points_left-1) % 2 == 1)
+	{
+		//wxMessageBox(wxT("Se dibujo el rectangulo"));
+		Refresh();
 	}
 	this->points_left = this->points_left - 1;
-	if(this->points_left == 0)	
+	if (this->points_left == 1)
 	{
 		wxMessageBox(wxT("se han acabdo las clases a graficar"));
-		this->points_left = -1;
+		this->points_left = -2;
+		this->numClasses = 0;
+		Refresh();
 		return;
 	}
-	wxMessageBox(wxT("Dibujando una clase"));
+	//wxMessageBox(wxT("Dibujando una clase"));
 }
+
 
 	
