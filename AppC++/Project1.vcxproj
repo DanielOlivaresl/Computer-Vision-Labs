@@ -141,7 +141,6 @@
     <ClCompile Include="cMain.cpp" />
     <ClCompile Include="computations.cpp" />
     <ClCompile Include="Histogram.cpp" />
-    <ClCompile Include="computations.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
