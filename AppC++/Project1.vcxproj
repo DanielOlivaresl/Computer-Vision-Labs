@@ -131,6 +131,7 @@
     <ClInclude Include="cCanvas.h" />
     <ClInclude Include="cEditorFrame.h" />
     <ClInclude Include="cMain.h" />
+    <ClInclude Include="computations.h" />
     <ClInclude Include="Histogram.h" />
   </ItemGroup>
   <ItemGroup>
@@ -140,6 +141,7 @@
     <ClCompile Include="cMain.cpp" />
     <ClCompile Include="computations.cpp" />
     <ClCompile Include="Histogram.cpp" />
+    <ClCompile Include="computations.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
