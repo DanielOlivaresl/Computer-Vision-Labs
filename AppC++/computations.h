@@ -4,6 +4,7 @@
 #include<Eigen/Dense>
 #include<iostream>
 #include<cmath>	
+#include<algorithm>
 
 std::vector<double> euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);
 Eigen::MatrixXd  calculateCovMatrix(Eigen::MatrixXd data);
