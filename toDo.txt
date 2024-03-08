@@ -6,8 +6,7 @@ Things to do
 - modulo para graficar funciones.
 - implementar la funcion para cambiar los valores de una imagen (rgb -> rgb)
 - implementar filtros y que el usuario pueda hacer sus propios elementos de estructura
--Arreglar el .h de computations 
--Arreglar la impresion de maxima probabilidad
+Arreglar la impresion de maxima probabilidad
 
 
 Para la practica (urgente)
