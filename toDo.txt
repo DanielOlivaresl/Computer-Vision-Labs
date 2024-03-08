@@ -11,4 +11,4 @@ Arreglar la impresion de maxima probabilidad
 
 Para la practica (urgente)
   -Implementar functionalidad para que no se tengan que volver a seleccionar clases
-  -Implementar algoritmo KNN como otro criterio de clasificacion, y agregarlo a la UI como opcion  (lifshitz: implementar algoritmo)
+  -Implementar algoritmo KNN como otro criterio de clasificacion, y agregarlo a la UI como opcion  (lifshitz: implementar algoritmo) ~~~DONE
