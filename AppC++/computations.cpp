@@ -4,7 +4,20 @@
 #include"computations.h"
 //Distance functions
 
-//Euclidean
+/**
+ * @brief Function that calculates the euclidean distance between two points.
+ * @param Eigen::Vector3d p1: First Point
+ * @param Eigen::Vector3d p2: Second Point
+ * @returns double: eucledian distance between two points
+ * 
+ */
+double euclideanDistance(Eigen::Vector3d p1, Eigen::Vector3d p2) {
+	return sqrt(
+		pow(p1.x() - p2.x(), 2) +
+		pow(p1.y() - p2.y(), 2) +
+		pow(p1.z() - p2.z(), 2)
+	);
+}
 
 
 /**
@@ -199,3 +212,79 @@ std::vector<double>  max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 
 
 
 }
+
+
+int kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point,int k) {
+	//Vector that stores a set of vectors that have the distance to the point, this is because each index in the vector represents a class,
+	//This means that each element in the vector is another vector that stores the distances to the point from the ith class
+	std::vector<std::vector<double>> distances;
+
+	//We iterate the classes and fill the vectors
+	for (int i = 0; i < classes.size(); i++) {
+		std::vector<double> currClass;
+		//We first iterate the current class and convert each matrix element into a point
+		for (int j = 0; j < classes.at(i).rows(); j++) {
+			Eigen::Vector3d currPoint = classes.at(i).row(j); //We assign the point
+			
+			currClass.push_back(euclideanDistance(point, currPoint));
+
+
+
+		}
+		//we sort the points before adding them
+		std::sort(currClass.begin(), currClass.end());
+		//we add the class to the vector
+		distances.push_back(currClass);
+	}
+
+
+	//Now that are points are stored and sorted we will begin to check which are the k nearest neighbours, to do this we will first, from each class we will
+	//only keep the k first elements because in the worst case the k nearest neighbours are from only one class
+
+	for (int i = 0; i < distances.size(); i++) {
+		if (distances.at(i).size() > k) {
+			distances.at(i).erase(distances.at(i).begin() + k, distances.at(i).end());
+		}
+	}
+	//Now that each class has their k nearest neighbours we will see which ones are the k closest in general, to do this we will iterate each class for their first
+	//element and when we find the one that is the smallest, we will add it to our solution vector and remove that element from the class vector, and repeat this
+	//process until the solution vector is of size k
+
+	std::vector<int> solution;
+
+	while (solution.size() < k) {
+		//We iterate the classes
+		int mindist = 0; //We assume that the first class is the smallest distance and iterate from there
+		for(int i=1; i<distances.size(); i++){
+			if (distances.at(i).at(0) < distances.at(mindist).at(0)) {
+				mindist = i;
+			}
+			
+		}
+
+		//Now we will add that class to the solution and remove that element
+		solution.push_back(mindist);
+		distances.at(mindist).erase(distances.at(mindist).begin());
+
+	}
+
+	//Now we have the classes of the k nearest neighbours, we will now see what class dominates and make a prediction
+
+	//We will first iterate the classes and check the ocurrence the one with the most occurence will be our final result
+
+	//We will also first assume that the class 0 is the initial prediction and adjust from there
+	int res = 0;
+	int count = std::count(solution.begin(), solution.end(), res);
+	for (int i = 1; i < classes.size(); i++) {
+		int currCount = std::count(solution.begin(), solution.end(), i);
+		if (currCount > count) {
+			res = i;
+			count = currCount;
+		}
+	}
+
+	return res;
+
+}
+
+
