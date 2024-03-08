@@ -46,6 +46,7 @@ public:
 	int numClasses = 0;
 	wxString process = "";
 	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> matrixClasses;
+	std::vector<std::array<uint8_t, 3>> pixelData;
 	int* getRGBPixel(int x, int y);
 
 	//--------Image functions--------------------------------------------------------------------------------------------

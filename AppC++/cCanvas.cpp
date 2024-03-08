@@ -3,6 +3,197 @@
 #include <fstream>
 #include "Histogram.h"
 #include <Eigen/Dense>
+#include "computations.h"
+
+//Euclidean
+
+
+/**
+* @brief Function that calculates the euclidean distance between two points
+ * @param Eigen::Vector2d vector that represents the first (intiial) point
+ * @param Eigen::Vector2d vector that represents the second (destiny) point
+ * @return eucleidan distance between the two points
+ *
+ *
+ */
+
+std::vector<double> static euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
+
+	std::vector<Eigen::Vector3d> centroids;
+
+
+	for (int i = 0; i < classes.size(); i++) {
+		//We add the mean of every class
+		centroids.push_back(
+			Eigen::Vector3d(
+				classes.at(i).row(0).mean(),
+				classes.at(i).row(1).mean(),
+				classes.at(i).row(2).mean()
+			));
+
+
+
+	}
+	std::vector<double> distances;
+
+	//We now will calculate the distances for every class
+
+	for (int i = 0; i < classes.size(); i++) {
+
+		distances.push_back(
+			sqrt(
+				pow(point.x() - centroids.at(i).x(), 2) +
+				pow(point.y() - centroids.at(i).y(), 2) +
+				pow(point.z() - centroids.at(i).z(), 2)
+
+			));
+
+	}
+
+	return distances;
+
+
+}
+
+
+//Helper function to calculate the covariance matrix
+Eigen::MatrixXd static calculateCovMatrix(Eigen::MatrixXd data) {
+
+	// Calculate the mean of each column
+	Eigen::VectorXd mean = data.colwise().mean();
+
+	// Center the data by subtracting the column means
+	Eigen::MatrixXd centered = data.rowwise() - mean.transpose();
+
+	// Calculate the covariance matrix, ensuring division by n-1
+	Eigen::MatrixXd cov = (centered.transpose() * centered) / (data.rows() - 1);
+
+	return cov;
+}
+
+//Helper function to determine what class is the closest
+int static getClosest(std::vector<double> distances) {
+	int min = 0;
+	for (int i = 1; i < distances.size(); i++) {
+		if (distances.at(i) < distances.at(min)) {
+			min = i;
+		}
+	}
+	return min;
+}
+//Helper function to determine what the maximum probability 
+int getMaxProb(std::vector<double> probabilities) {
+	int max = 0;
+	for (int i = 1; i < probabilities.size(); i++) {
+		if (probabilities.at(i) > probabilities.at(max)) {
+			max = i;
+		}
+	}
+	return max;
+}
+
+
+std::vector<double> static manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
+
+	std::vector<Eigen::Vector3d> centroids;
+
+
+	for (int i = 0; i < classes.size(); i++) {
+		//We add the mean of every class
+		centroids.push_back(
+			Eigen::Vector3d(
+				classes.at(i).col(0).mean(),
+				classes.at(i).col(1).mean(),
+				classes.at(i).col(2).mean()
+			));
+	}
+
+	std::vector<double> distances;
+
+
+	for (int i = 0; i < classes.size(); i++) {
+		//We	first transpose the matrix
+
+
+		Eigen::MatrixXd cov = calculateCovMatrix(classes.at(i));
+
+		//The point minus the centroid of the current class
+		Eigen::Vector3d x_minus_mu = point - centroids.at(i);
+
+		Eigen::MatrixXd inv_cov = cov.inverse();
+
+
+
+		Eigen::MatrixXd left_term = x_minus_mu.transpose() * inv_cov;
+		Eigen::MatrixXd res = left_term * x_minus_mu;
+
+
+
+		distances.push_back(res(0, 0));
+
+	}
+
+	return distances;
+
+}
+
+std::vector<double> static max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
+
+	std::vector<double> manhalanobis_distance = manhalanobis(classes, point);
+
+	std::vector<double> probabilites;
+
+	for (int i = 0; i < classes.size(); i++) {
+		Eigen::MatrixXd cov = calculateCovMatrix(classes.at(i));
+		double det_cov = cov.determinant();
+
+		double pi_term = pow(2 * EIGEN_PI, (3 / 2));
+
+		double manh_dist = manhalanobis_distance.at(i);
+
+		probabilites.push_back((1 / (
+			pi_term * sqrt(det_cov)
+			)) *
+			exp(-0.5 * manh_dist));
+	}
+
+	double sum = 0;
+	for (int i = 0; i < probabilites.size(); i++) {
+		sum += probabilites.at(i);
+	}
+
+	for (int i = 0; i < probabilites.size(); i++) {
+		probabilites.at(i) = probabilites.at(i) / sum;
+	}
+
+
+
+	return probabilites;
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 wxBEGIN_EVENT_TABLE(cCanvas, wxHVScrolledWindow)
 EVT_PAINT(cCanvas::OnPaint)
@@ -113,8 +304,11 @@ void cCanvas::OnDraw(wxDC& dc) // Arregla esta problematica para dibujar la imag
 	
 				// Establecer el color y el grosor del borde del rectángulo
 				dc.SetPen(wxPen(wxColour(0, 0, 0), 2)); // Negro y 2 píxeles de grosor
-
+				int numClass = i / 2;
 				// Establecer el pincel como transparente para no rellenar el rectángulo
+				wxString text = wxString::Format(wxT("clase : %d"), numClass);
+				dc.SetTextForeground(*wxGREEN);
+				dc.DrawText(text, x, y - 20);
 				dc.SetBrush(*wxTRANSPARENT_BRUSH);
 				dc.DrawRectangle(x, y, width, height);
 			}
@@ -227,6 +421,8 @@ void cCanvas::LoadImage()  // ----- FINISHED
 	// agregar aqui para probar un filtro en la imagen para probar como se obtienen los valores 
 
 	this->SetSize(m_imageHeight, m_imageWidth);
+	
+		
 	Refresh(false);
 }
 wxCoord cCanvas::OnGetRowHeight(size_t row) const  // ----- FINISHED
@@ -372,9 +568,17 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 		if (this->process.CmpNoCase("Euclidian") == 0)
 		{
 			wxMessageBox("Se hara el proceso para distancia euclidiana");
+
 			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
 			this->matrixClasses;// vector of each  matrix given a class
 			vec; /// vec to compare
+
+			std::vector<double> distances=euclidean(matrixClasses, vec);
+			int closest_class = getClosest(distances);
+			wxString eucledian_message;
+			eucledian_message.Printf(wxT("La clase mas cercana por distancia euclidiana es %d"),closest_class);
+			wxMessageBox(eucledian_message);
+
 		}
 		if (this->process.CmpNoCase("mahalanobis") == 0)
 		{
@@ -382,6 +586,13 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
 			this->matrixClasses;// vector of each  matrix given a class
 			vec; /// vec to compare
+			
+			std::vector<double> distances = manhalanobis(matrixClasses, vec);
+			int closest_class = getClosest(distances);
+			wxString manhalanobis_message;
+			manhalanobis_message.Printf(wxT("La clase mas cercana por distancia mahalanobis es %d"), closest_class);
+			wxMessageBox(manhalanobis_message);
+
 		}
 		if (this->process.CmpNoCase("MinProb") == 0)
 		{
@@ -389,6 +600,16 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
 			this->matrixClasses;// vector of each  matrix given a class
 			vec; /// vec to compare
+			
+			std::vector<double> probabilities= max_prob(matrixClasses, vec);
+			int closest_class = getMaxProb(probabilities);
+			wxString maxprob_message;
+			maxprob_message.Printf(wxT("La clase mas cercana por criterio de maxima probabilidad, %d"), closest_class);
+			wxMessageBox(maxprob_message);
+
+
+
+
 		}
 		this->rectangles.clear();
 		this->matrixClasses.clear();
@@ -430,7 +651,7 @@ int* cCanvas::getRGBPixel(int x, int y) {
 		WidthMatrix = 3
 		Vecto[3*2+2-8]=9
 	*/
-
+		
 	int* channels = new int[3];
 	channels[0] = static_cast<int>(redC);
 	channels[1] = static_cast<int>(greenC);
