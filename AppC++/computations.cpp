@@ -13,9 +13,7 @@
  * @param Eigen::Vector2d vector that represents the second (destiny) point
  * @return eucleidan distance between the two points
  *
- *
  */
-
 std::vector<double>  euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
 
 	std::vector<Eigen::Vector3d> centroids;
@@ -57,10 +55,15 @@ std::vector<double>  euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic,
 }
 
 
-//Helper function to calculate the covariance matrix
+/**
+ * 
+ * @brief Helper function that calculates the covariance matrix from a set of data
+ * @param Eigen::MatrixXd matrix of n rows and m columns, where the m is the number of features in the set of data, and n is the number of instances of that data 
+ * @returns Eigen::MatrixXd returns the covariance matrix of dimensions mxm, of the data passed. 
+ */
 Eigen::MatrixXd  calculateCovMatrix(Eigen::MatrixXd data) {
-	Eigen::MatrixXd transposed = data.transpose();
 
+	Eigen::MatrixXd transposed = data.transpose();
 	// Center the data: subtract the mean of each column from all elements in the column
 	Eigen::MatrixXd centered = transposed.rowwise() - transposed.colwise().mean();
 	// Calculate the covariance matrix
@@ -69,7 +72,11 @@ Eigen::MatrixXd  calculateCovMatrix(Eigen::MatrixXd data) {
 	return cov;
 }
 
-//Helper function to determine what class is the closest
+/**
+ * @brief Helper function that calculates the closest distance from a vector of distances
+ * @param std::vector<double> distances: vector of distances
+ * @return int returns the index of the closest point in the vector
+ */
 int  getClosest(std::vector<double> distances) {
 	int min = 0;
 	for (int i = 1; i < distances.size(); i++) {
@@ -79,7 +86,11 @@ int  getClosest(std::vector<double> distances) {
 	}
 	return min;
 }
-//Helper function to determine what the maximum probability 
+/**
+ * @brief Helper function that calculates the maximum probability from a given vector of probabilities.
+ * @param std::vector<double> probabilities: vector of probabilities, should sum up to 1
+ * @return int returns the index of the vector which has the maximum probability
+ */
 int getMaxProb(std::vector<double> probabilities) {
 	int max = 0;
 	for (int i = 1; i < probabilities.size(); i++) {
@@ -90,11 +101,18 @@ int getMaxProb(std::vector<double> probabilities) {
 	return max;
 }
 
-
+/**
+ * @brief function that calculates the manhalanobis distance from a point and a set of points.
+ * 
+ * @param std::vector<Eigen::Matrix<double,Eigen::Dynamic,3>> classes: vector of matrices of size nx3 where each matrix represents a class which we want to know the distance to
+ * @param Eigen::Vector3d point: point from which we will calculate the distance to each class
+ * @return std::vector<double> vector that stores the distance calculated from the point to each class
+ * 
+ * 
+ */
 std::vector<double>  manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
 
 	std::vector<Eigen::Vector3d> centroids;
-
 
 	for (int i = 0; i < classes.size(); i++) {
 		//We add the mean of every class
@@ -137,7 +155,12 @@ std::vector<double>  manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynam
 	return distances;
 
 }
-
+/**
+ * @brief function that calculates the probabilities of a point belonging to a set of classes
+ * @param std::vector<Eigen::Matrix<double, Eigen::Dynamic,3>> classes: vector of matrices of size nx3 where each matrix represents a class
+ * @param Eigen::Vector3d point point that will be used to calculate the probabilities that it belogns to each of the classes passed
+ * @returns std::vector<double> vector of probabilites, that the point belongs to each of the classes
+ */
 std::vector<double>  max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
 
 	std::vector<double> manhalanobis_distance = manhalanobis(classes, point);
