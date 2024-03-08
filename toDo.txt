@@ -7,8 +7,9 @@ Things to do
 - implementar la funcion para cambiar los valores de una imagen (rgb -> rgb)
 - implementar filtros y que el usuario pueda hacer sus propios elementos de estructura
 -Arreglar el .h de computations 
+-Arreglar la impresion de maxima probabilidad
 
 
 Para la practica (urgente)
   -Implementar functionalidad para que no se tengan que volver a seleccionar clases
-  -Implementar algoritmo KNN como otro criterio de clasificacion
+  -Implementar algoritmo KNN como otro criterio de clasificacion, y agregarlo a la UI como opcion  (lifshitz: implementar algoritmo)
