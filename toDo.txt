@@ -7,3 +7,5 @@ Things to do
 - implementar la funcion para cambiar los valores de una imagen (rgb -> rgb)
 - implementar filtros y que el usuario pueda hacer sus propios elementos de estructura
 -Implementar algoritmo KNN como otro criterio de clasificacion
+-Arreglar el .h de computations 
+-Implementar functionalidad para que no se tengan que volver a seleccionar clases
