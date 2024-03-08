@@ -1,9 +1,6 @@
 //File for extra computations needed in the labs
 
-#include<vector>
-#include<Eigen/Dense>
-#include<iostream>
-#include<cmath>	
+
 #include"computations.h"
 //Distance functions
 
@@ -18,8 +15,8 @@
  *
  *
  */
-/*
-std::vector<double> static euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
+
+std::vector<double>  euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
 
 	std::vector<Eigen::Vector3d> centroids;
 
@@ -61,7 +58,7 @@ std::vector<double> static euclidean(std::vector<Eigen::Matrix<double, Eigen::Dy
 
 
 //Helper function to calculate the covariance matrix
-Eigen::MatrixXd static calculateCovMatrix(Eigen::MatrixXd data) {
+Eigen::MatrixXd  calculateCovMatrix(Eigen::MatrixXd data) {
 	Eigen::MatrixXd transposed = data.transpose();
 
 	// Center the data: subtract the mean of each column from all elements in the column
@@ -73,7 +70,7 @@ Eigen::MatrixXd static calculateCovMatrix(Eigen::MatrixXd data) {
 }
 
 //Helper function to determine what class is the closest
-int static getClosest(std::vector<double> distances) {
+int  getClosest(std::vector<double> distances) {
 	int min = 0;
 	for (int i = 1; i < distances.size(); i++) {
 		if (distances.at(i) < distances.at(min)) {
@@ -94,7 +91,7 @@ int getMaxProb(std::vector<double> probabilities) {
 }
 
 
-std::vector<double> static manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
+std::vector<double>  manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
 
 	std::vector<Eigen::Vector3d> centroids;
 
@@ -141,7 +138,7 @@ std::vector<double> static manhalanobis(std::vector<Eigen::Matrix<double, Eigen:
 
 }
 
-std::vector<double> static max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
+std::vector<double>  max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
 
 	std::vector<double> manhalanobis_distance = manhalanobis(classes, point);
 
@@ -179,6 +176,3 @@ std::vector<double> static max_prob(std::vector<Eigen::Matrix<double, Eigen::Dyn
 
 
 }
-
-
-*/
