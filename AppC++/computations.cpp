@@ -4,7 +4,7 @@
 #include<Eigen/Dense>
 #include<iostream>
 #include<cmath>	
-
+#include"computations.h"
 //Distance functions
 
 //Euclidean
@@ -18,6 +18,7 @@
  *
  *
  */
+/*
 std::vector<double> static euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
 
 	std::vector<Eigen::Vector3d> centroids;
@@ -69,6 +70,27 @@ Eigen::MatrixXd static calculateCovMatrix(Eigen::MatrixXd data) {
 	Eigen::MatrixXd cov = (centered.adjoint() * centered) / double(centered.rows() - 1);
 
 	return cov;
+}
+
+//Helper function to determine what class is the closest
+int static getClosest(std::vector<double> distances) {
+	int min = 0;
+	for (int i = 1; i < distances.size(); i++) {
+		if (distances.at(i) < distances.at(min)) {
+			min = i;
+		}
+	}
+	return min;
+}
+//Helper function to determine what the maximum probability 
+int getMaxProb(std::vector<double> probabilities) {
+	int max = 0;
+	for (int i = 1; i < probabilities.size(); i++) {
+		if (probabilities.at(i) < probabilities.at(max)) {
+			max= i;
+		}
+	}
+	return max;
 }
 
 
@@ -139,6 +161,16 @@ std::vector<double> static max_prob(std::vector<Eigen::Matrix<double, Eigen::Dyn
 			exp(-0.5 * manh_dist));
 	}
 
+	double sum = 0;
+	for (int i = 0; i < probabilites.size(); i++) {
+		sum += probabilites.at(i);
+	}
+
+	for (int i = 0; i < probabilites.size(); i++) {
+		probabilites.at(i) = probabilites.at(i) / sum;
+	}
+
+
 
 	return probabilites;
 
@@ -149,3 +181,4 @@ std::vector<double> static max_prob(std::vector<Eigen::Matrix<double, Eigen::Dyn
 }
 
 
+*/

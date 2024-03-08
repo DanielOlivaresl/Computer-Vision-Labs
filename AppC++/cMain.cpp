@@ -205,7 +205,7 @@ void cMain::getMinProb(wxCommandEvent& event)
 			//Number of classes
 			int intValue = static_cast<int>(numberValue);
 			mychild->getCanvas()->points_left = intValue * 2 + 1;
-			mychild->getCanvas()->process = "MaxProb";
+			mychild->getCanvas()->process = "MinProb";
 			// cambios
 		}
 		else
@@ -231,9 +231,6 @@ void cMain::InMenuOpenNew(wxCommandEvent& event) // event to create a new window
 	{
 		wxMessageBox("Error loading the image", "Image Wizard", wxOK | wxICON_INFORMATION);
 	}
-
-
-
 }
 void cMain::InMenuSave(wxCommandEvent& event)
 {

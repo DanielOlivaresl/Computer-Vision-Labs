@@ -12,10 +12,8 @@ wxEND_EVENT_TABLE()
 		n_canvas->LoadImage(); // AAdding the image to the canvas
 		n_StatusBar = this->CreateStatusBar(2, wxSTB_DEFAULT_STYLE, wxID_ANY);
 		zoomSlider = new wxSlider(n_StatusBar, 20001, 8, 1, 32);
-		this->SetSize(n_canvas->getWidth(), n_canvas->getHeight());
-		
+		this->SetSize(n_canvas->getWidth(), n_canvas->getHeight());	
 	}
-
 
 // constructor given a process
 cEditorFrame::cEditorFrame(wxMDIParentFrame* parent, unsigned char* data, wxString prevFile,int w, int h) : wxMDIChildFrame(parent, wxID_ANY, prevFile+"Gray", wxDefaultPosition, wxSize(w, h))
