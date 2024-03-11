@@ -19,6 +19,7 @@ cCanvas::cCanvas(wxWindow* parent, wxString filename) : wxHVScrolledWindow(paren
 {
 	Bind(wxEVT_MOTION, &cCanvas::OnMouseMove, this);
 	Bind(wxEVT_RIGHT_UP, &cCanvas::OnMouseClick, this);
+	Bind(wxEVT_LEFT_UP, &cCanvas::OnMouseClickKill, this);
 	SetRowColumnCount(40, 40); // see the changes if change that values
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	this->fileName = filename;
@@ -29,6 +30,7 @@ cCanvas::cCanvas(wxWindow* parent, unsigned char* data, int w, int h) : wxHVScro
 {
 	Bind(wxEVT_MOTION, &cCanvas::OnMouseMove, this);
 	Bind(wxEVT_RIGHT_UP, &cCanvas::OnMouseClick, this);
+	Bind(wxEVT_LEFT_UP, &cCanvas::OnMouseClickKill, this);
 	SetRowColumnCount(40, 40); // see the changes if change that values
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	this->m_myImage = data;
@@ -42,6 +44,7 @@ cCanvas::cCanvas(wxWindow* parent, Histogram* h) // constructor to create a hist
 {
 	Bind(wxEVT_MOTION, &cCanvas::OnMouseMove, this);
 	Bind(wxEVT_RIGHT_UP, &cCanvas::OnMouseClick, this);
+	Bind(wxEVT_LEFT_UP, &cCanvas::OnMouseClickKill, this);
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	this->hist = h;
 	this->m_imageRGB = nullptr;
@@ -65,6 +68,11 @@ int cCanvas::getHeight()  // ----- FINISHED
 cCanvas::~cCanvas()  // ----- FINISHED
 {
 	delete this->hist;
+	this->matrixClasses.clear();
+	delete this->m_imageRGB;
+	this->m_imageRGB = nullptr;
+	free(this->m_myImage);
+	this->m_myImage = nullptr;
 }
 
 void cCanvas::setPixelSize(int p)  // ----- FINISHED
@@ -115,7 +123,7 @@ void cCanvas::OnDraw(wxDC& dc) // Arregla esta problematica para dibujar la imag
 				//  width y height sean positivos para DrawRectangle
 				width = abs(width);
 				height = abs(height);
-	
+
 				// Establecer el color y el grosor del borde del rectángulo
 				dc.SetPen(wxPen(wxColour(0, 0, 0), 2)); // Negro y 2 píxeles de grosor
 				int numClass = i / 2;
@@ -233,10 +241,20 @@ void cCanvas::LoadImage()  // ----- FINISHED
 	// update display
 	//this->getformat();
 	// agregar aqui para probar un filtro en la imagen para probar como se obtienen los valores 
+	for (int x = 0; x < m_imageWidth; ++x) {
+		for (int y = 0; y < m_imageHeight; ++y) {
+			// Cast explícito de unsigned char a int
+			int r = static_cast<double>(m_myImage[(y * m_imageWidth + x) * 3 + 0]);
+			int g = static_cast<double>(m_myImage[(y * m_imageWidth + x) * 3 + 1]);
+			int b = static_cast<double>(m_myImage[(y * m_imageWidth + x) * 3 + 2]);
 
+			// Guarda los valores RGB en el diccionario con la clave siendo las coordenadas (x, y)
+			this->pixelColors[std::make_pair(x, y)] = std::make_tuple(r, g, b);
+		}
+	}
 	this->SetSize(m_imageHeight, m_imageWidth);
-	
-		
+
+
 	Refresh(false);
 }
 wxCoord cCanvas::OnGetRowHeight(size_t row) const  // ----- FINISHED
@@ -316,14 +334,14 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 	if (this->points_left == -1) return;
 	if (this->points_left == -2)
 	{
-		this->points_left = -1;
+		//this->points_left = -1;
 		int* rgbU = this->getRGBPixel(event.GetPosition().x, event.GetPosition().y);
 		Eigen::Vector3d vec;
 		vec(0) = static_cast<double>(rgbU[0]); // declare the r value
 		vec(1) = static_cast<double>(rgbU[1]); // declare the g value
 		vec(2) = static_cast<double>(rgbU[2]); // declare the b value
 
-		int minWidth = INT_MAX; 
+		int minWidth = INT_MAX;
 		int minHeight = INT_MAX;
 
 		for (int i = 0; i < this->rectangles.size(); i += 2)
@@ -334,11 +352,11 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 			width = abs(width);
 			height = abs(height);
 
-			if (width < minWidth) 
+			if (width < minWidth)
 			{
 				minWidth = width; // getting the min value
 			}
-			if (height < minHeight) 
+			if (height < minHeight)
 			{
 				minHeight = height; // min value
 			}
@@ -352,19 +370,17 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 			int startX = std::min(this->rectangles[i].x, this->rectangles[i + 1].x);
 			int startY = std::min(this->rectangles[i].y, this->rectangles[i + 1].y);
 			Eigen::Matrix<double, Eigen::Dynamic, 3> matrix;
-			for (int x = startX; x < startX + minWidth; ++x) 
+			for (int x = startX; x < startX + minWidth; ++x)
 			{
-				for (int y = startY; y < startY + minHeight; ++y) 
+				for (int y = startY; y < startY + minHeight; ++y)
 				{
 					matrix.conservativeResize(matrix.rows() + 1, Eigen::NoChange);
 
-					int* rgb = this->getRGBPixel(x, y); 
+					auto rgb = pixelColors[std::make_pair(x, y)];
 
-					matrix.row(matrix.rows() - 1) << static_cast<double>(rgb[0]),
-													static_cast<double>(rgb[1]),
-													static_cast<double>(rgb[2]);
-					
-					delete[] rgb;
+					matrix.row(matrix.rows() - 1) << std::get<0>(rgb),
+						std::get<1>(rgb),
+						std::get<2>(rgb);
 				}
 			}
 
@@ -382,26 +398,26 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 		// take the correct procedure
 		if (this->process.CmpNoCase("Euclidian") == 0)
 		{
-			wxMessageBox("Se hara el proceso para distancia euclidiana");
+			//wxMessageBox("Se hara el proceso para distancia euclidiana");
 
 			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
 			this->matrixClasses;// vector of each  matrix given a class
 			vec; /// vec to compare
 
-			std::vector<double> distances=euclidean(matrixClasses, vec);
+			std::vector<double> distances = euclidean(matrixClasses, vec);
 			int closest_class = getClosest(distances);
 			wxString eucledian_message;
-			eucledian_message.Printf(wxT("La clase mas cercana por distancia euclidiana es %d"),closest_class);
+			eucledian_message.Printf(wxT("La clase mas cercana por distancia euclidiana es %d"), closest_class);
 			wxMessageBox(eucledian_message);
 
 		}
 		if (this->process.CmpNoCase("mahalanobis") == 0)
 		{
-			wxMessageBox("Se hara el proceso para distancia mahalanobis");
+			//wxMessageBox("Se hara el proceso para distancia mahalanobis");
 			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
 			this->matrixClasses;// vector of each  matrix given a class
 			vec; /// vec to compare
-			
+
 			std::vector<double> distances = manhalanobis(matrixClasses, vec);
 			int closest_class = getClosest(distances);
 			wxString manhalanobis_message;
@@ -411,12 +427,12 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 		}
 		if (this->process.CmpNoCase("MinProb") == 0)
 		{
-			wxMessageBox("Se hara el proceso para distancia MaxProb");
+			//wxMessageBox("Se hara el proceso para distancia MaxProb");
 			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
 			this->matrixClasses;// vector of each  matrix given a class
 			vec; /// vec to compare
-			
-			std::vector<double> probabilities= max_prob(matrixClasses, vec);
+
+			std::vector<double> probabilities = max_prob(matrixClasses, vec);
 			int closest_class = getMaxProb(probabilities);
 			wxString maxprob_message;
 			maxprob_message.Printf(wxT("La clase mas cercana por criterio de maxima probabilidad, %d"), closest_class);
@@ -429,7 +445,7 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 
 
 		if (this->process.CmpNoCase("KNN") == 0) {
-			wxMessageBox("Se hara el proceso para el criterio KNN");
+			//wxMessageBox("Se hara el proceso para el criterio KNN");
 			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
 			this->matrixClasses;// vector of each  matrix given a class
 			vec; /// vec to compare
@@ -438,23 +454,24 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 			//int closest_class = getMaxProb(probabilities);
 			int result = kNearestNeighbours(matrixClasses, vec, matrixClasses.size() * 2 + 1);
 			wxString knn_message;
-			knn_message.Printf(wxT("La clase mas cercana por el criterio de KNN es %d"),result);
+			knn_message.Printf(wxT("La clase mas cercana por el criterio de KNN es %d"), result);
 			wxMessageBox(knn_message);
 
 
 		}
 
 
-		this->rectangles.clear();
+		//this->rectangles.clear();
 		this->matrixClasses.clear();
 		delete[] rgbU;
-		this->process = "";
+		//this->process = "";
+		wxMessageBox(wxT("Click Izquierdo : Probar otro pixel \n CLick derecho : Borrar clases "));
 		Refresh();
 		return;
 
 	}
 	this->rectangles.push_back(event.GetPosition());
-	if ((this->points_left-1) % 2 == 1) // When one rectangle its done
+	if ((this->points_left - 1) % 2 == 1) // When one rectangle its done
 	{
 		Refresh();
 	}
@@ -469,8 +486,23 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 	}
 	//wxMessageBox(wxT("Dibujando una clase"));
 }
+void cCanvas::OnMouseClickKill(wxMouseEvent& event)
+{
+	if (this->points_left == -1)
+	{
+		wxMessageBox(wxT("No hay mas clases que eliminar  "));
+		return;
+	}
+	wxMessageBox(wxT("Se han eliminado las clases "));
+	this->points_left =  - 1;
+	this->rectangles.clear();
+	this->matrixClasses.clear();
+	//delete[] rgbU;
+	this->process = "";
+	Refresh();
+}
 int* cCanvas::getRGBPixel(int x, int y) {
-	unsigned char redC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3 ];
+	unsigned char redC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3];
 	unsigned char greenC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3 + 1];
 	unsigned char blueC = this->m_myImage[(this->getWidth() * (y - 1) + x) * 3 + 2];
 
@@ -485,7 +517,7 @@ int* cCanvas::getRGBPixel(int x, int y) {
 		WidthMatrix = 3
 		Vecto[3*2+2-8]=9
 	*/
-		
+
 	int* channels = new int[3];
 	channels[0] = static_cast<int>(redC);
 	channels[1] = static_cast<int>(greenC);
@@ -493,4 +525,3 @@ int* cCanvas::getRGBPixel(int x, int y) {
 
 	return channels;
 }
-
