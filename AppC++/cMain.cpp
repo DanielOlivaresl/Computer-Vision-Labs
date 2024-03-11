@@ -18,6 +18,7 @@ EVT_MENU(2004, cMain::ToHSL)
 EVT_MENU(3001, cMain::getEuclidian)
 EVT_MENU(3002, cMain::getMahalanobis)
 EVT_MENU(3003, cMain::getMinProb)
+EVT_MENU(3004, cMain::getKnn)
 wxEND_EVENT_TABLE()
 
 // The parent of all the components is wxMDIParentFrame
@@ -45,6 +46,7 @@ cMain::cMain() : wxMDIParentFrame(nullptr, wxID_ANY, "Image Wizard", wxPoint(30,
 	menuDis->Append(3001, "Euclidian");
 	menuDis->Append(3002, "Mahalanobis");
 	menuDis->Append(3003, "Min Prob");
+	menuDis->Append(3004, "KNN");
 	menuBar->Append(menuDis, " Distances ");
 
 }
@@ -215,6 +217,64 @@ void cMain::getMinProb(wxCommandEvent& event)
 	}
 	event.Skip();
 }
+
+
+
+
+
+
+void cMain::getKnn(wxCommandEvent& event)
+{
+	wxMDIChildFrame* child = this->GetActiveChild();
+	if (child == nullptr)
+	{
+		wxMessageBox(wxT("You must open an image to get a Distance"));
+		event.Skip();
+		return;
+	}
+	cEditorFrame* mychild = wxDynamicCast(child, cEditorFrame);
+	mychild->getCanvas()->points_left = 0;
+	wxMessageBox(wxT("Proceso para el criterio de KNN"));
+	// Crea un diálogo simple para la entrada numérica
+	wxDialog dialog(this, wxID_ANY, wxT("Ingresa Numero de clases"), wxDefaultPosition, wxSize(250, 100));
+	wxTextCtrl* numberEntry = new wxTextCtrl(&dialog, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC));
+	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(numberEntry, 1, wxEXPAND | wxALL, 10);
+
+	sizer->Add(dialog.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, 5);
+
+	dialog.SetSizer(sizer);
+	dialog.SetAutoLayout(true);
+	sizer->Fit(&dialog);
+
+	if (dialog.ShowModal() == wxID_OK)
+	{
+		wxString numberStr = numberEntry->GetValue();
+		long numberValue;
+		if (numberStr.ToLong(&numberValue))
+		{
+			//Number of classes
+			int intValue = static_cast<int>(numberValue);
+			mychild->getCanvas()->points_left = intValue * 2 + 1;
+			mychild->getCanvas()->process = "KNN";
+			// cambios
+		}
+		else
+		{
+			wxMessageBox(wxT("Por favor, ingrese un número válido."), wxT("Error"), wxOK | wxICON_ERROR);
+		}
+	}
+	event.Skip();
+}
+
+
+
+
+
+
+
+
+
 void cMain::InMenuOpenNew(wxCommandEvent& event) // event to create a new window (wxMDIChildFrame)
 {
 	// Deberia crear una v

@@ -5,10 +5,6 @@
 #include <Eigen/Dense>
 #include "computations.h"
 
-//Euclidean
-
-
-
 
 
 
@@ -371,6 +367,7 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 					delete[] rgb;
 				}
 			}
+
 			this->matrixClasses.push_back(matrix);
 		}
 		wxString messi;
@@ -429,6 +426,25 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 
 
 		}
+
+
+		if (this->process.CmpNoCase("KNN") == 0) {
+			wxMessageBox("Se hara el proceso para el criterio KNN");
+			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
+			this->matrixClasses;// vector of each  matrix given a class
+			vec; /// vec to compare
+
+			//std::vector<double> probabilities = max_prob(matrixClasses, vec);
+			//int closest_class = getMaxProb(probabilities);
+			int result = kNearestNeighbours(matrixClasses, vec, matrixClasses.size() * 2 + 1);
+			wxString knn_message;
+			knn_message.Printf(wxT("La clase mas cercana por el criterio de KNN es %d"),result);
+			wxMessageBox(knn_message);
+
+
+		}
+
+
 		this->rectangles.clear();
 		this->matrixClasses.clear();
 		delete[] rgbU;

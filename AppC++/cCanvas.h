@@ -7,6 +7,7 @@
 #include "Histogram.h"
 #include <Eigen/Dense>
 #include <vector>
+#include <string>
 // add a general function for convert that can iterate in the image an given a parameter (the format), apply that format
 // conver(RGB,HSL,HSV,GRAY)
 
