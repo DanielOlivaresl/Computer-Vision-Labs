@@ -8,6 +8,9 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <string>
+#include <map>
+#include <tuple>
+
 // add a general function for convert that can iterate in the image an given a parameter (the format), apply that format
 // conver(RGB,HSL,HSV,GRAY)
 
@@ -47,7 +50,7 @@ public:
 	int numClasses = 0;
 	wxString process = "";
 	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> matrixClasses;
-	std::vector<std::array<uint8_t, 3>> pixelData;
+	std::map<std::pair<int, int>, std::tuple<double, double, double>> pixelColors;
 	int* getRGBPixel(int x, int y);
 
 	//--------Image functions--------------------------------------------------------------------------------------------
@@ -69,6 +72,7 @@ private:
 	virtual wxCoord OnGetColumnWidth(size_t col)const; // for the slider
 	void OnMouseMove(wxMouseEvent& event); // function to get the user position in the canvas
 	void OnMouseClick(wxMouseEvent& event); // function to draw rectangles
+	void OnMouseClickKill(wxMouseEvent& event);
 	wxDECLARE_EVENT_TABLE();
 
 };
