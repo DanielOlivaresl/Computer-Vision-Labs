@@ -465,7 +465,7 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 		this->matrixClasses.clear();
 		delete[] rgbU;
 		//this->process = "";
-		wxMessageBox(wxT("Click Izquierdo : Probar otro pixel \n CLick derecho : Borrar clases "));
+		wxMessageBox(wxT("Click Derecho : Probar otro pixel \n CLick Izquierdo : Borrar clases "));
 		Refresh();
 		return;
 
