@@ -53,6 +53,8 @@ public:
 	std::map<std::pair<int, int>, std::tuple<double, double, double>> pixelColors;
 	int* getRGBPixel(int x, int y);
 
+	int k; // Variable for the KNN function
+
 	//--------Image functions--------------------------------------------------------------------------------------------
 
 	void LoadImage(); // for load the image and set m_imageHeight , m_imageWidth, m_imageBitmap, m_imageRGB, m_myImage //

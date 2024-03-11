@@ -452,7 +452,8 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 
 			//std::vector<double> probabilities = max_prob(matrixClasses, vec);
 			//int closest_class = getMaxProb(probabilities);
-			int result = kNearestNeighbours(matrixClasses, vec, matrixClasses.size() * 2 + 1);
+			
+			int result = kNearestNeighbours(matrixClasses, vec, k);
 			wxString knn_message;
 			knn_message.Printf(wxT("La clase mas cercana por el criterio de KNN es %d"), result);
 			wxMessageBox(knn_message);
