@@ -232,6 +232,7 @@ void cMain::getKnn(wxCommandEvent& event)
 		event.Skip();
 		return;
 	}
+
 	cEditorFrame* mychild = wxDynamicCast(child, cEditorFrame);
 	mychild->getCanvas()->points_left = 0;
 	wxMessageBox(wxT("Proceso para el criterio de KNN"));
@@ -258,12 +259,56 @@ void cMain::getKnn(wxCommandEvent& event)
 			mychild->getCanvas()->points_left = intValue * 2 + 1;
 			mychild->getCanvas()->process = "KNN";
 			// cambios
+
 		}
 		else
 		{
 			wxMessageBox(wxT("Por favor, ingrese un número válido."), wxT("Error"), wxOK | wxICON_ERROR);
 		}
 	}
+	event.Skip();
+
+
+	cEditorFrame* mychild_k = wxDynamicCast(child, cEditorFrame);
+	// Crea un diálogo simple para la entrada numérica
+	wxDialog dialog_k(this, wxID_ANY, wxT("Ingresa el valor de k"), wxDefaultPosition, wxSize(250, 100));
+	wxTextCtrl* numberEntry_k = new wxTextCtrl(&dialog_k, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC));
+	wxBoxSizer* sizer_k = new wxBoxSizer(wxVERTICAL);
+	sizer_k->Add(numberEntry_k, 1, wxEXPAND | wxALL, 10);
+
+	sizer_k->Add(dialog_k.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, 5);
+
+	dialog_k.SetSizer(sizer_k);
+	dialog_k.SetAutoLayout(true);
+	sizer_k->Fit(&dialog_k);
+
+	if (dialog_k.ShowModal() == wxID_OK)
+	{
+		wxString numberStr = numberEntry_k->GetValue();
+		long numberValue;
+		if (numberStr.ToLong(&numberValue))
+		{
+			//Number of classes
+			int intValue = static_cast<int>(numberValue);
+			mychild_k->getCanvas()->k = intValue;
+			mychild_k->getCanvas()->process = "KNN";
+			// cambios
+
+			//Value of k
+
+		}
+		else
+		{
+			wxMessageBox(wxT("Por favor, ingrese un número válido."), wxT("Error"), wxOK | wxICON_ERROR);
+		}
+	}
+
+
+
+
+
+
+
 	event.Skip();
 }
 
