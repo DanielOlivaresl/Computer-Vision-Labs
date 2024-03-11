@@ -282,9 +282,8 @@ int kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> cla
 			count = currCount;
 		}
 	}
-
+	//The result is the classification prediction
 	return res;
 
 }
-
 

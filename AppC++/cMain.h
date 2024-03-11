@@ -31,6 +31,7 @@ private:
 	void getEuclidian(wxCommandEvent& event);
 	void getMahalanobis(wxCommandEvent& event);
 	void getMinProb(wxCommandEvent& event);
+	void getKnn(wxCommandEvent& event);
 
 	// APP HANDLERS-----------------
 	void InMenuOpenNew(wxCommandEvent& event);// Implemented
