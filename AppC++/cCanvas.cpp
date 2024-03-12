@@ -389,12 +389,13 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 		wxString messi;
 		messi.Printf(wxT("%d, %d,% d  pixel a clasificar "), (int)vec(0), (int)vec(1), (int)vec(2));
 		wxMessageBox(messi);
-		for (auto a : this->matrixClasses) // the shape of all the matrix must be the same
+		/*for (auto a : this->matrixClasses) // the shape of all the matrix must be the same
 		{
 			wxString mess;
 			mess.Printf(wxT("clases dimensiones %d, %d"), a.rows(), a.cols());
 			wxMessageBox(mess);
 		}
+		*/
 		// take the correct procedure
 		if (this->process.CmpNoCase("Euclidian") == 0)
 		{
