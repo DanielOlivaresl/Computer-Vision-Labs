@@ -332,9 +332,83 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 {
 	// primero deberia agregar el punto al vector de puntos, luego decremento de la variable
 	if (this->points_left == -1) return;
+	if (this->points_left == -3)
+	{
+		int* rgbU = this->getRGBPixel(event.GetPosition().x, event.GetPosition().y);
+		Eigen::Vector3d vec;
+		vec(0) = static_cast<double>(rgbU[0]); // declare the r value
+		vec(1) = static_cast<double>(rgbU[1]); // declare the g value
+		vec(2) = static_cast<double>(rgbU[2]); // declare the b value
+		if (this->process.CmpNoCase("Euclidian") == 0)
+		{
+			//wxMessageBox("Se hara el proceso para distancia euclidiana");
+
+			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
+			this->matrixClasses;// vector of each  matrix given a class
+			vec; /// vec to compare
+
+			std::vector<double> distances = euclidean(matrixClasses, vec);
+			int closest_class = getClosest(distances);
+			wxString eucledian_message;
+			eucledian_message.Printf(wxT("La clase mas cercana por distancia euclidiana es %d"), closest_class);
+			wxMessageBox(eucledian_message);
+
+		}
+		if (this->process.CmpNoCase("mahalanobis") == 0)
+		{
+			//wxMessageBox("Se hara el proceso para distancia mahalanobis");
+			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
+			this->matrixClasses;// vector of each  matrix given a class
+			vec; /// vec to compare
+
+			std::vector<double> distances = manhalanobis(matrixClasses, vec);
+			int closest_class = getClosest(distances);
+			wxString manhalanobis_message;
+			manhalanobis_message.Printf(wxT("La clase mas cercana por distancia mahalanobis es %d"), closest_class);
+			wxMessageBox(manhalanobis_message);
+
+		}
+		if (this->process.CmpNoCase("MinProb") == 0)
+		{
+			//wxMessageBox("Se hara el proceso para distancia MaxProb");
+			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
+			this->matrixClasses;// vector of each  matrix given a class
+			vec; /// vec to compare
+
+			std::vector<double> probabilities = max_prob(matrixClasses, vec);
+			int closest_class = getMaxProb(probabilities);
+			wxString maxprob_message;
+			maxprob_message.Printf(wxT("La clase mas cercana por criterio de maxima probabilidad, %d"), closest_class);
+			wxMessageBox(maxprob_message);
+
+
+
+
+		}
+
+
+		if (this->process.CmpNoCase("KNN") == 0) {
+			//wxMessageBox("Se hara el proceso para el criterio KNN");
+			// ------------CALL THE FUNCTION WITH THOSE VARIABLES AND SHOW THE INFO
+			this->matrixClasses;// vector of each  matrix given a class
+			vec; /// vec to compare
+
+			//std::vector<double> probabilities = max_prob(matrixClasses, vec);
+			//int closest_class = getMaxProb(probabilities);
+
+			int result = kNearestNeighbours(matrixClasses, vec, this->k);
+			wxString knn_message;
+			knn_message.Printf(wxT("La clase mas cercana por el criterio de KNN es %d"), result);
+			wxMessageBox(knn_message);
+
+
+		}
+		delete[] rgbU;
+		return;
+	}
 	if (this->points_left == -2)
 	{
-		//this->points_left = -1;
+		this->points_left = -3;
 		int* rgbU = this->getRGBPixel(event.GetPosition().x, event.GetPosition().y);
 		Eigen::Vector3d vec;
 		vec(0) = static_cast<double>(rgbU[0]); // declare the r value
@@ -453,7 +527,7 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 
 			//std::vector<double> probabilities = max_prob(matrixClasses, vec);
 			//int closest_class = getMaxProb(probabilities);
-			
+
 			int result = kNearestNeighbours(matrixClasses, vec, k);
 			wxString knn_message;
 			knn_message.Printf(wxT("La clase mas cercana por el criterio de KNN es %d"), result);
@@ -464,7 +538,7 @@ void cCanvas::OnMouseClick(wxMouseEvent& event) // Esto aun no queda
 
 
 		//this->rectangles.clear();
-		this->matrixClasses.clear();
+		//this->matrixClasses.clear();
 		delete[] rgbU;
 		//this->process = "";
 		wxMessageBox(wxT("Click Derecho : Probar otro pixel \n CLick Izquierdo : Borrar clases "));
@@ -496,7 +570,7 @@ void cCanvas::OnMouseClickKill(wxMouseEvent& event)
 		return;
 	}
 	wxMessageBox(wxT("Se han eliminado las clases "));
-	this->points_left =  - 1;
+	this->points_left = -1;
 	this->rectangles.clear();
 	this->matrixClasses.clear();
 	//delete[] rgbU;
