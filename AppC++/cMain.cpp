@@ -96,6 +96,14 @@ void cMain::getEuclidian(wxCommandEvent& event) // falta que manejes los eventos
 		return;
 	}
 	cEditorFrame* mychild = wxDynamicCast(child, cEditorFrame);
+	if (mychild->getCanvas()->points_left == -2 || mychild->getCanvas()->points_left == -3)
+	{
+		wxMessageBox(wxT("Ingresa el pixel a clasificar con un click "));
+		mychild->getCanvas()->points_left = -3;
+		mychild->getCanvas()->process = "Euclidian";
+		event.Skip();
+		return;
+	}
 	mychild->getCanvas()->points_left = 0;
 	wxMessageBox(wxT("Proceso para la distancia euclidiana"));
 	// Crea un diálogo simple para la entrada numérica
@@ -140,6 +148,14 @@ void cMain::getMahalanobis(wxCommandEvent& event)
 		return;
 	}
 	cEditorFrame* mychild = wxDynamicCast(child, cEditorFrame);
+	if (mychild->getCanvas()->points_left == -2 || mychild->getCanvas()->points_left == -3)
+	{
+		wxMessageBox(wxT("Ingresa el pixel a clasificar con un click "));
+		mychild->getCanvas()->points_left = -3;
+		mychild->getCanvas()->process = "Mahalanobis";
+		event.Skip();
+		return;
+	}
 	mychild->getCanvas()->points_left = 0;
 	wxMessageBox(wxT("Proceso para la distancia mahalanobis"));
 	// Crea un diálogo simple para la entrada numérica
@@ -184,6 +200,14 @@ void cMain::getMinProb(wxCommandEvent& event)
 		return;
 	}
 	cEditorFrame* mychild = wxDynamicCast(child, cEditorFrame);
+	if (mychild->getCanvas()->points_left == -2 || mychild->getCanvas()->points_left == -3)
+	{
+		wxMessageBox(wxT("Ingresa el pixel a clasificar con un click "));
+		mychild->getCanvas()->points_left = -3;
+		mychild->getCanvas()->process = "MinProb";
+		event.Skip();
+		return;
+	}
 	mychild->getCanvas()->points_left = 0;
 	wxMessageBox(wxT("Proceso para la maxima Probabilidad"));
 	// Crea un diálogo simple para la entrada numérica
@@ -234,6 +258,44 @@ void cMain::getKnn(wxCommandEvent& event)
 	}
 
 	cEditorFrame* mychild = wxDynamicCast(child, cEditorFrame);
+	if (mychild->getCanvas()->points_left == -2 || mychild->getCanvas()->points_left == -3)
+	{
+		wxMessageBox(wxT("Ingresa el pixel a clasificar con un click "));
+		wxDialog dialog_k(this, wxID_ANY, wxT("Ingresa el valor de k"), wxDefaultPosition, wxSize(250, 100));
+		wxTextCtrl* numberEntry_k = new wxTextCtrl(&dialog_k, wxID_ANY, wxT(""), wxDefaultPosition, wxDefaultSize, 0, wxTextValidator(wxFILTER_NUMERIC));
+		wxBoxSizer* sizer_k = new wxBoxSizer(wxVERTICAL);
+		sizer_k->Add(numberEntry_k, 1, wxEXPAND | wxALL, 10);
+
+		sizer_k->Add(dialog_k.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, 5);
+
+		dialog_k.SetSizer(sizer_k);
+		dialog_k.SetAutoLayout(true);
+		sizer_k->Fit(&dialog_k);
+
+		if (dialog_k.ShowModal() == wxID_OK)
+		{
+			wxString numberStr = numberEntry_k->GetValue();
+			long numberValue;
+			if (numberStr.ToLong(&numberValue))
+			{
+				//Number of classes
+				int intValue = static_cast<int>(numberValue);
+				mychild->getCanvas()->k = intValue;
+				mychild->getCanvas()->points_left = -3;
+				mychild->getCanvas()->process = "KNN";
+				// cambios
+
+				//Value of k
+
+			}
+			else
+			{
+				wxMessageBox(wxT("Por favor, ingrese un número válido."), wxT("Error"), wxOK | wxICON_ERROR);
+			}
+		}
+		event.Skip();
+		return;
+	}
 	mychild->getCanvas()->points_left = 0;
 	wxMessageBox(wxT("Proceso para el criterio de KNN"));
 	// Crea un diálogo simple para la entrada numérica
