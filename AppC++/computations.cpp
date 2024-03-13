@@ -75,12 +75,25 @@ std::vector<double>  euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic,
  * @returns Eigen::MatrixXd returns the covariance matrix of dimensions mxm, of the data passed. 
  */
 Eigen::MatrixXd  calculateCovMatrix(Eigen::MatrixXd data) {
-
+	/*
 	Eigen::MatrixXd transposed = data.transpose();
 	// Center the data: subtract the mean of each column from all elements in the column
 	Eigen::MatrixXd centered = transposed.rowwise() - transposed.colwise().mean();
 	// Calculate the covariance matrix
 	Eigen::MatrixXd cov = (centered.adjoint() * centered) / double(centered.rows() - 1);
+	*/
+	int numSamples = data.rows();
+	int numDimensions = data.cols();
+
+	// Calculate the mean vector
+	Eigen::VectorXd mean = data.colwise().mean();
+
+	// Subtract the mean from each data point
+	Eigen::MatrixXd centered = data.rowwise() - mean.transpose();
+
+	// Calculate the covariance matrix
+	Eigen::MatrixXd cov= (centered.transpose() * centered) / double(numSamples - 1);
+	
 
 	return cov;
 }
@@ -107,7 +120,7 @@ int  getClosest(std::vector<double> distances) {
 int getMaxProb(std::vector<double> probabilities) {
 	int max = 0;
 	for (int i = 1; i < probabilities.size(); i++) {
-		if (probabilities.at(i) < probabilities.at(max)) {
+		if (probabilities.at(i) > probabilities.at(max)) {
 			max= i;
 		}
 	}
