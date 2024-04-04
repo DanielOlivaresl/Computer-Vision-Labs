@@ -5,14 +5,22 @@
 #include <QLineEdit>
 #include <QInputDialog>
 #include <QLabel>
-
 #include<Eigen/Dense>
+#include<QPainter>
+#include <QtCharts/QChart>
+#include <QtCharts/QScatterSeries>
+#include <QtCharts/QChartView>
+#include <QtWidgets/QVBoxLayout>
+
 #include "ui_ComputerVisionApplication.h"
+
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ComputerVisionApplication; }
 QT_END_NAMESPACE
 
+QT_USE_NAMESPACE
 
 
 class ComputerVisionApplication : public QMainWindow
@@ -43,6 +51,9 @@ private slots: // listeners to buttons
     void on_actionMaxProbability_triggered();
     void on_actionKNN_triggered();
 
+
+    //Cross validation Procedures
+    void on_actionVisualize_Plots_triggered();
 
 private:
     Ui::ComputerVisionApplication* ui; //UI

@@ -68,9 +68,16 @@
     <addaction name="actionMax_Probabiltiy"/>
     <addaction name="actionKNN"/>
    </widget>
+   <widget class="QMenu" name="menuCross_Validation">
+    <property name="title">
+     <string>Cross Validation</string>
+    </property>
+    <addaction name="actionVisualize_Plots"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menuConvert"/>
    <addaction name="menuDistances"/>
+   <addaction name="menuCross_Validation"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -139,6 +146,11 @@
   <action name="actionKNN">
    <property name="text">
     <string>KNN</string>
+   </property>
+  </action>
+  <action name="actionVisualize_Plots">
+   <property name="text">
+    <string>Visualize Plots</string>
    </property>
   </action>
  </widget>
