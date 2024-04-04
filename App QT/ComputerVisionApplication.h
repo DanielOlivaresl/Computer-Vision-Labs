@@ -50,7 +50,7 @@ private slots: // listeners to buttons
     void on_actionManhalanobis_triggered();
     void on_actionMaxProbability_triggered();
     void on_actionKNN_triggered();
-
+    void on_actionConfusion_Matrix_triggered();
 
     //Cross validation Procedures
     void on_actionVisualize_Plots_triggered();
