@@ -67,6 +67,8 @@
     <addaction name="actionManhalanobis"/>
     <addaction name="actionMax_Probabiltiy"/>
     <addaction name="actionKNN"/>
+    <addaction name="separator"/>
+    <addaction name="actionConfusion_Matrix"/>
    </widget>
    <widget class="QMenu" name="menuCross_Validation">
     <property name="title">
