@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ComputerVisionApplication</class>
+ <widget class="QMainWindow" name="ComputerVisionApplication">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1069</width>
+    <height>557</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ComputerVisionApplication</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QLabel" name="imageLabel">
+    <property name="geometry">
+     <rect>
+      <x>14</x>
+      <y>15</y>
+      <width>1051</width>
+      <height>491</height>
+     </rect>
+    </property>
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1069</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionSelect_Image"/>
+    <addaction name="actionSave_Image"/>
+    <addaction name="actionInfo_Image"/>
+    <addaction name="actionExit"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuConvert">
+    <property name="title">
+     <string>Convert</string>
+    </property>
+    <addaction name="actionToGray"/>
+    <addaction name="actionToRGB"/>
+    <addaction name="actionToHSV"/>
+    <addaction name="actionToHSL"/>
+   </widget>
+   <widget class="QMenu" name="menuDistances">
+    <property name="title">
+     <string>Distances</string>
+    </property>
+    <addaction name="actionEuclidean"/>
+    <addaction name="actionManhalanobis"/>
+    <addaction name="actionMax_Probabiltiy"/>
+    <addaction name="actionKNN"/>
+    <addaction name="separator"/>
+    <addaction name="actionConfusion_Matrix"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menuConvert"/>
+   <addaction name="menuDistances"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionSelect_Image">
+   <property name="text">
+    <string>Open New</string>
+   </property>
+  </action>
+  <action name="actionSave_Image">
+   <property name="text">
+    <string>Save Image</string>
+   </property>
+  </action>
+  <action name="actionInfo_Image">
+   <property name="text">
+    <string>Info Image</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionToGray">
+   <property name="text">
+    <string>ToGray</string>
+   </property>
+  </action>
+  <action name="actionToRGB">
+   <property name="text">
+    <string>ToRGB</string>
+   </property>
+  </action>
+  <action name="actionToHSV">
+   <property name="text">
+    <string>ToHSV</string>
+   </property>
+  </action>
+  <action name="actionToHSL">
+   <property name="text">
+    <string>ToHSL</string>
+   </property>
+  </action>
+  <action name="actionEuclidean">
+   <property name="text">
+    <string>Euclidean</string>
+   </property>
+  </action>
+  <action name="actionManhalanobis">
+   <property name="text">
+    <string>Manhalanobis</string>
+   </property>
+  </action>
+  <action name="actionMax_Probabiltiy">
+   <property name="text">
+    <string>Max Prob</string>
+   </property>
+  </action>
+  <action name="actionKNN">
+   <property name="text">
+    <string>KNN</string>
+   </property>
+  </action>
+  <action name="actionConfusion_Matrix">
+   <property name="text">
+    <string>Confusion Matrix</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
