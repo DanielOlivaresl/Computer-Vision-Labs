@@ -76,10 +76,16 @@
     </property>
     <addaction name="actionVisualize_Plots"/>
    </widget>
+   <widget class="QMenu" name="menuPrueba_Chevy">
+    <property name="title">
+     <string>Prueba Chevy</string>
+    </property>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menuConvert"/>
    <addaction name="menuDistances"/>
    <addaction name="menuCross_Validation"/>
+   <addaction name="menuPrueba_Chevy"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
