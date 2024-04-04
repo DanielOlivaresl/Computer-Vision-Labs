@@ -355,7 +355,7 @@ std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidati
 	std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> result = { testSplit,trainingSplit };
 
 
-
+	return result;
 
 }
 

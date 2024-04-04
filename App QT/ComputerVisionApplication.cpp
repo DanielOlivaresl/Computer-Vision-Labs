@@ -1,11 +1,12 @@
 #include "ComputerVisionApplication.h"
 #include "imageTransformations.h"
 #include "computations.h"
+#include "plots.h"
 
 #include<QPixmap>
 #include <QFileDialog>
 #include<Eigen/Dense>
-#include<QPainter>
+
 //Constructor
 ComputerVisionApplication::ComputerVisionApplication(QWidget* parent) :
     QMainWindow(parent), ui(new Ui::ComputerVisionApplication)
@@ -90,8 +91,6 @@ void ComputerVisionApplication::on_actionEuclidean_triggered() {
     currProcess = "Euclidean";
     //We first ask for the number of classes if it's not defined
     if (numClasses == 0) {
-        //QInputDialog inputDialog;
-        //inputDialog.exec(); // Execute the dialog window modally
         bool ok;
         //Variables to make the code more understandable
         int defaultValue = 2;
@@ -391,6 +390,26 @@ void ComputerVisionApplication::paintEvent(QPaintEvent* event){
         painter.drawRect(rectangles.at(rectangles.size() - 2).x(), rectangles.at(rectangles.size() - 2).y(), width, height);
     }
 }
+
+
+void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
+   
+    //We load the data
+    std::vector<double> data1;
+    for (int i = 0; i < 5; i++) {
+        data1.push_back(i * 1.1);
+    }
+    std::vector<double> data2;
+    for (int i = 0; i < 5; i++) {
+        data2.push_back(i * 1.3);
+    }
+    std::vector<std::vector<double>> data = { data1,data2};
+
+    //We display the data
+    Plots::scatterPlot(data);
+
+}
+
 
 
 void ComputerVisionApplication::mouseClickAction() {
