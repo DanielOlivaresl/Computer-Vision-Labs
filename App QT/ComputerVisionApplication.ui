@@ -155,6 +155,11 @@
     <string>Visualize Plots</string>
    </property>
   </action>
+  <action name="actionConfusion_Matrix">
+   <property name="text">
+    <string>Confusion Matrix</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
