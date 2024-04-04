@@ -223,6 +223,85 @@ void ComputerVisionApplication::on_actionKNN_triggered() {
     ui->imageLabel->installEventFilter(this);
 }
 
+
+void ComputerVisionApplication::on_actionConfusion_Matrix_triggered()
+{
+    //std::vector<std::vector<std::vector<double>>> matrices; // stores all the matrices 
+    if (numClasses == 0) {
+        QMessageBox::warning(this, tr("Confusion Matrix"), tr("Tienes que ingresar clases para poder calcularla."));
+        return; 
+    }
+    if (knn == 0) // ifs there's no knn yet...
+    {
+        bool ok;
+        int defaultValue = numClasses * 2 + 1;
+        int minVal = 1;
+        int maxVal = 100000;
+        int step = 1;
+        knn = QInputDialog::getInt(this, tr("KNN"), tr("Type the number of k: "), defaultValue, minVal, maxVal, step, &ok);
+    }
+    std::vector<std::vector<double>> matEuc(numClasses, std::vector < double>(numClasses, 0)); // instance of a confusion matrix
+    std::vector<std::vector<double>> matMan(numClasses, std::vector < double>(numClasses, 0)); // instance of a confusion matrix
+    std::vector<std::vector<double>> matMax(numClasses, std::vector < double>(numClasses, 0)); // instance of a confusion matrix
+    std::vector<std::vector<double>> matKnn(numClasses, std::vector < double>(numClasses, 0)); // instance of a confusion matrix
+    for (size_t i = 0; i < matrixClasses.size(); ++i) {
+        for (int j = 0; j < matrixClasses[i].rows(); ++j) {
+            
+            double r = matrixClasses[i](j, 0); 
+            double g = matrixClasses[i](j, 1); 
+            double b = matrixClasses[i](j, 2); 
+
+            Eigen::Vector3d vec2class(r, g, b);
+
+            std::vector<double> distances1 = euclidean(matrixClasses, vec2class);
+            int closestClass1 = getClosest(distances1);
+            matEuc[i][closestClass1] += 1;
+
+            std::vector<double> distances2 = manhalanobis(matrixClasses, vec2class);
+            int closestClass2 = getClosest(distances2);
+            matMan[i][closestClass2] += 1;
+
+            std::vector<double> distances3 = max_prob(matrixClasses, vec2class);
+            int closestClass3 = getMaxProb(distances3);
+            matMax[i][closestClass3] += 1;
+
+            int result = kNearestNeighbours(matrixClasses, vec2class, knn);
+            matKnn[i][result] += 1;
+
+        }
+    }
+    QString message;
+
+    
+    auto addMatrixToMessage = [&message](const QString& title, const std::vector<std::vector<double>>& matrix) {
+        message += title + "\n   "; 
+        for (int i = 0; i < matrix.size(); ++i) {
+            message += "C" + QString::number(i) + " ";
+        }
+        message += "\n";
+
+        for (int i = 0; i < matrix.size(); ++i) {
+            message += "C" + QString::number(i) + " "; 
+            for (double val : matrix[i]) {
+                message += QString::number(val) + " ";
+            }
+            message += "\n"; 
+        }
+    };
+
+    addMatrixToMessage("Confusion Matrix for Euclidian:", matEuc);
+    message += "\n";
+    addMatrixToMessage("Confusion Matrix for Manhalanobis:", matMan);
+    message += "\n";
+    addMatrixToMessage("Confusion Matrix for MaxProb:", matMax);
+    message += "\n";
+    addMatrixToMessage("Confusion Matrix for KNN:", matKnn);
+
+    QMessageBox::information(nullptr, "Confusion Matrices", message);
+    
+
+}
+
 void ComputerVisionApplication::InMenuSave() {}
 void ComputerVisionApplication::InMenuExit() {}
 void ComputerVisionApplication::InInfo() {}
