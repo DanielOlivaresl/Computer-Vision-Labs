@@ -392,3 +392,14 @@ std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidati
 	
 }
 
+std::vector<std::vector<double>> get_matrixConfusion(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> mat, std::vector<std::vector<int>> vectorOfPredictions) {
+	
+
+	std::vector<std::vector<double>> matConf(mat.size(), std::vector<double>(mat.size(), 0));
+	for (int i = 0; i < mat.size(); i++) {
+		for (auto v : vectorOfPredictions[i]) {
+			matConf[i][v] += 1;
+		}
+	}
+	return matConf;
+}
