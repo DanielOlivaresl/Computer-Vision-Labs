@@ -36,7 +36,7 @@ void Plots::scatterPlot(std::vector<std::vector<double>> data) {
 
         // Create line series
         QtCharts::QLineSeries* line = new QtCharts::QLineSeries(chart);
-        line->setName("Line " + QString::fromStdString("Line " + names[i])); // Unique name for each line series
+        line->setName("Line " + QString::fromStdString(names[i])); // Unique name for each line series
         for (size_t j = 0; j < data[i].size(); ++j) {
             line->append(j, data[i][j]);
         }
