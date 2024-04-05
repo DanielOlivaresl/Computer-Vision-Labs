@@ -226,10 +226,10 @@ void ComputerVisionApplication::on_actionKNN_triggered() {
 
 void ComputerVisionApplication::on_actionConfusion_Matrix_triggered()
 {
-    //std::vector<std::vector<std::vector<double>>> matrices; // stores all the matrices 
+    std::vector<std::vector<std::vector<double>>> matrices; // stores all the matrices 
     if (numClasses == 0) {
         QMessageBox::warning(this, tr("Confusion Matrix"), tr("Tienes que ingresar clases para poder calcularla."));
-        return; 
+        return;
     }
     if (knn == 0) // ifs there's no knn yet...
     {
@@ -246,10 +246,10 @@ void ComputerVisionApplication::on_actionConfusion_Matrix_triggered()
     std::vector<std::vector<double>> matKnn(numClasses, std::vector < double>(numClasses, 0)); // instance of a confusion matrix
     for (size_t i = 0; i < matrixClasses.size(); ++i) {
         for (int j = 0; j < matrixClasses[i].rows(); ++j) {
-            
-            double r = matrixClasses[i](j, 0); 
-            double g = matrixClasses[i](j, 1); 
-            double b = matrixClasses[i](j, 2); 
+
+            double r = matrixClasses[i](j, 0);
+            double g = matrixClasses[i](j, 1);
+            double b = matrixClasses[i](j, 2);
 
             Eigen::Vector3d vec2class(r, g, b);
 
@@ -270,37 +270,44 @@ void ComputerVisionApplication::on_actionConfusion_Matrix_triggered()
 
         }
     }
+    std::vector<std::string> names = { "Euclidiana", "Manhalanobis", "Maxima Probabilidad", "Knn" };
+    matrices.push_back(matEuc);
+    matrices.push_back(matMan);
+    matrices.push_back(matMax);
+    matrices.push_back(matKnn);
+    Plots::ConfusionMatrix(matrices, names);
     QString message;
 
-    
+
     auto addMatrixToMessage = [&message](const QString& title, const std::vector<std::vector<double>>& matrix) {
-        message += title + "\n   "; 
+        message += title + "\n   ";
         for (int i = 0; i < matrix.size(); ++i) {
             message += "C" + QString::number(i) + " ";
         }
         message += "\n";
 
         for (int i = 0; i < matrix.size(); ++i) {
-            message += "C" + QString::number(i) + " "; 
+            message += "C" + QString::number(i) + " ";
             for (double val : matrix[i]) {
                 message += QString::number(val) + " ";
             }
-            message += "\n"; 
+            message += "\n";
         }
     };
 
-    addMatrixToMessage("Confusion Matrix for Euclidian:", matEuc);
-    message += "\n";
-    addMatrixToMessage("Confusion Matrix for Manhalanobis:", matMan);
-    message += "\n";
-    addMatrixToMessage("Confusion Matrix for MaxProb:", matMax);
-    message += "\n";
-    addMatrixToMessage("Confusion Matrix for KNN:", matKnn);
+   addMatrixToMessage("Confusion Matrix for Euclidian:", matEuc);
+   message += "\n";
+   addMatrixToMessage("Confusion Matrix for Manhalanobis:", matMan);
+   message += "\n";
+   addMatrixToMessage("Confusion Matrix for MaxProb:", matMax);
+   message += "\n";
+   addMatrixToMessage("Confusion Matrix for KNN:", matKnn);
 
-    QMessageBox::information(nullptr, "Confusion Matrices", message);
-    
+   QMessageBox::information(this, "Confusion Matrices", message);
+
 
 }
+
 
 void ComputerVisionApplication::InMenuSave() {}
 void ComputerVisionApplication::InMenuExit() {}
