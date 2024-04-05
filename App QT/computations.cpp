@@ -321,11 +321,11 @@ std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidati
 		//we will randomly select indexes to add to the test set, until we have enough
 		std::vector<int> indexes;
 
-		while (indexes.size() < matrix.rows()/2) {
+		while (indexes.size() < (matrix.rows() / 2)) {
 			int index = std::rand() % matrix.rows();	
 			
 			//we check that the index isn't in the list 
-			while (!std::count(indexes.begin(), indexes.end(), index)) {
+			while (std::count(indexes.begin(), indexes.end(), index)) {
 				index = std::rand() % matrix.rows();
 			}
 
@@ -362,18 +362,30 @@ std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidati
 // n-1/1 split
 //In the test set only one class will have data at one time thats the element we left out
 std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidation::leaveOneOut(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, int clas, int el) {
-	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> testSplit(classes.size());
-	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> trainingSplit = classes;
+	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> testSplit;
+	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> trainingSplit;
 
-	testSplit.at(clas) = (classes.at(clas).row(el));
+	for (int i = 0; i < classes.size(); i++) {
+		Eigen::Matrix<double, Eigen::Dynamic, 3> trainMatrix;
 
-	Eigen::Matrix<double, Eigen::Dynamic, 3> tempTop = classes.at(clas).topRows(el);
-	Eigen::Matrix<double, Eigen::Dynamic, 3> tempBottom = classes.at(clas).bottomRows(classes.at(clas).rows()-el+1);
 
-	trainingSplit.at(clas).resize(classes.at(clas).rows() - 1, Eigen::NoChange);
-	
-	trainingSplit.at(clas) << tempTop, tempBottom;
-	
+		for (int j = 0; j < classes.at(i).rows(); j++) {
+
+			if ((i == clas && j == el)) {
+				testSplit.push_back(Eigen::Matrix<double, Eigen::Dynamic, 3>(classes.at(i).row(el)));
+
+			}
+			else {
+				trainMatrix.conservativeResize(trainMatrix.rows() + 1, Eigen::NoChange);
+				trainMatrix.row(trainMatrix.rows() - 1)== classes.at(i).row(j);
+
+			}
+
+		}
+
+		trainingSplit.push_back(trainMatrix);
+
+	}
 	
 	std::vector<std::vector< Eigen::Matrix<double, Eigen::Dynamic, 3> > > result = { testSplit,trainingSplit };
 
@@ -391,6 +403,50 @@ std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidati
 
 	
 }
+
+
+std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> train, std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> test,int knn) {
+
+	//we will create a 3D vector where one dimension is the Method (euclidean,manhalanobis, etc.. .) another dimension is the classes and the last dimension is the actual prediction
+
+	std::vector<std::vector<std::vector<int>>> predictions(4,std::vector<std::vector<int>>(test.size(), std::vector<int>(test.at(0).rows())));
+
+	//now we begin to fill our vector
+
+	int classNumber = 0;
+	for (Eigen::Matrix<double, Eigen::Dynamic, 3> clas : test) {
+		for (int i = 0; i < clas.rows(); i++) {
+			//we begin to fill our vector
+			
+			//Euclidean
+			std::vector<double> distances1 = euclidean(train, clas.row(i));
+			int res = getClosest(distances1);
+			predictions.at(0).at(classNumber).at(i) = res;
+
+			//Manhalanobis
+			std::vector<double> distances2 = manhalanobis(train, clas.row(i));
+			res = getClosest(distances2);
+			predictions.at(1).at(classNumber).at(i) = res;
+
+			//MaxProb
+			std::vector<double> distances3 = max_prob(train, clas.row(i));
+			res = getMaxProb(distances3);
+			predictions.at(2).at(classNumber).at(i) = res;
+			//KNN
+			res = kNearestNeighbours(train, clas.row(i), knn);
+			predictions.at(3).at(classNumber).at(i) = res;
+
+
+
+
+		}
+		classNumber++;
+	}
+
+	return predictions;
+
+}
+
 
 std::vector<std::vector<double>> get_matrixConfusion(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> mat, std::vector<std::vector<int>> vectorOfPredictions) {
 	
