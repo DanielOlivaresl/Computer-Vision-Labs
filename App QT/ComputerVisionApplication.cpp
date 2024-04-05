@@ -354,6 +354,49 @@ bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
                 ui->imageLabel->setPixmap(originalPixmap);
             }
 
+
+            if (rectangles.size() == numClasses * 2) {
+                int minWidth = INT_MAX;
+                int minHeight = INT_MAX;
+
+
+                for (int i = 0; i < rectangles.size(); i += 2) {
+                    int width = abs(rectangles.at(i).x() - rectangles.at(i + 1).x()) + 1;
+                    int height = abs(rectangles.at(i).y() - rectangles.at(i + 1).y()) + 1;
+
+                    if (width < minWidth) {
+                        minWidth = width;
+                    }
+                    if (height < minHeight) {
+                        minHeight = height;
+                    }
+                }
+
+                //We now fill the matrices
+
+                for (int i = 0; i < rectangles.size(); i += 2) {
+                    int startX = std::min(rectangles.at(i).x(), rectangles.at(i + 1).x());
+                    int startY = std::min(rectangles.at(i).y(), rectangles.at(i + 1).y());
+
+                    //we now fill the pixels
+                    Eigen::Matrix<double, Eigen::Dynamic, 3> matrix;
+                    for (int x = startX; x < startX + minWidth; ++x) {
+                        for (int y = startY; y < startY + minHeight; ++y) {
+                            matrix.conservativeResize(matrix.rows() + 1, Eigen::NoChange);
+                            QRgb pixelValue = image.pixel(x, y);
+
+
+
+
+                            matrix.row(matrix.rows() - 1) << qRed(pixelValue), qGreen(pixelValue), qBlue(pixelValue);
+
+                        }
+                    }
+                    //We add the matrix to the classes
+                    matrixClasses.push_back(matrix);
+                }
+            }
+
         }
         else if(matrixClasses.size()==0){ //If this is false we have already filled the classes  
             //Rectangles have finished drawing we now add the pixel to determine and we also determine the smallest dimensions and fill the matrices
@@ -473,19 +516,153 @@ void ComputerVisionApplication::paintEvent(QPaintEvent* event){
 
 void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
    
-    //We load the data
-    std::vector<double> data1;
-    for (int i = 0; i < 5; i++) {
-        data1.push_back(i * 1.1);
-    }
-    std::vector<double> data2;
-    for (int i = 0; i < 5; i++) {
-        data2.push_back(i * 1.3);
-    }
-    std::vector<std::vector<double>> data = { data1,data2};
 
-    //We display the data
-    Plots::scatterPlot(data);
+    if (numClasses == 0) {
+        QMessageBox::warning(this, tr("Confusion Matrix"), tr("Tienes que ingresar clases para poder calcularla."));
+        return;
+    }
+
+    if (knn == 0) // ifs there's no knn yet...
+    {
+        bool ok;
+        int defaultValue = numClasses * 2 + 1;
+        int minVal = 1;
+        int maxVal = 100000;
+        int step = 1;
+        knn = QInputDialog::getInt(this, tr("KNN"), tr("Type the number of k: "), defaultValue, minVal, maxVal, step, &ok);
+    }
+
+
+    //we now fill a prediction vector
+
+    //we will first separate our data with cross validation
+
+    std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> cvSet = CrossValidation::crossValidation(matrixClasses);
+    std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> resSet =CrossValidation::Restitucion(matrixClasses);
+
+
+    //we will now create the data for each of the predictions
+
+    std::vector<std::vector<std::vector<int>>> resPred = generatePredictions(resSet.at(0), resSet.at(1), knn);
+    std::vector<std::vector<std::vector<int>>> cvPred = generatePredictions(cvSet.at(0), cvSet.at(1), knn);
+    std::vector<std::vector<std::vector<int>>> looPredictions(4, std::vector<std::vector<int>>(matrixClasses.size(), std::vector<int>(matrixClasses.at(0).rows())));
+    //finally for leave one out it's necesarry to iterate the whole set and apply the method n times
+
+    
+
+    int currClass = 0;
+    for (auto clas : matrixClasses) {
+        for (int i = 0; i < clas.rows(); i++) {
+            std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> currSplit = CrossValidation::leaveOneOut(matrixClasses, currClass, i);
+
+            //Euclidean
+            std::vector<double> distances1 = euclidean(currSplit.at(1), clas.row(i));
+            int res = getClosest(distances1);
+            looPredictions.at(0).at(currClass).at(i) = res;
+
+            //Manhalanobis
+            std::vector<double> distances2 = manhalanobis(currSplit.at(1), clas.row(i));
+            res = getClosest(distances2);
+            looPredictions.at(1).at(currClass).at(i) = res;
+
+            //MaxProb
+            std::vector<double> distances3 = max_prob(currSplit.at(1), clas.row(i));
+            res = getMaxProb(distances3);
+            looPredictions.at(2).at(currClass).at(i) = res;
+            ////KNN
+            res = kNearestNeighbours(currSplit.at(1), clas.row(i), knn);
+            looPredictions.at(3).at(currClass).at(i) = res;
+
+
+        }
+        currClass++;
+    }
+
+
+
+    
+
+    
+
+    
+    //we get the data for the euclidena plot
+
+    //We load the data
+    std::vector<std::vector<std::vector<double>>> allData; // Accumulate data from each iteration
+
+    
+
+
+    for (int it = 0; it < 4; it++) {
+        std::vector<std::vector<double>> data;
+        std::vector<std::vector<double>> confMat1 = get_matrixConfusion(resSet.at(0), resPred.at(it));
+        std::vector<std::vector<double>> confMat2 = get_matrixConfusion(matrixClasses, looPredictions.at(it));
+        std::vector<std::vector<double>> confMat3 = get_matrixConfusion(cvSet.at(0), cvPred.at(it));
+
+        std::vector<std::vector<std::vector<double>>> matrices = { confMat1,confMat2,confMat3 };
+
+
+
+
+
+
+
+
+        for (int i = 0; i < matrices.size(); i++) {
+            std::vector<double> currentPoints;
+            for (int j = 0; j < matrices.at(i).size(); j++) { // Iterate rows
+                double rowSum = 0.0;
+                for (int k = 0; k < matrices.at(i).at(j).size(); k++) { // Iterate cols
+
+                    rowSum += matrices.at(i).at(j).at(k);
+                }
+                // Calculate accuracy (normalized diagonal element)
+                double diagonalElement = matrices.at(i).at(j).at(j);
+                double accuracy = diagonalElement / rowSum;
+                currentPoints.push_back(accuracy);
+            }
+            data.push_back(currentPoints);
+        }
+
+
+        allData.push_back(data);
+
+
+        //We display the data
+
+    }
+
+    
+    
+
+    for (const auto& data : allData) {
+        Plots::scatterPlot(data);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
 
