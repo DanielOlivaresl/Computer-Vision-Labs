@@ -1,6 +1,8 @@
 #include "plots.h"	
 #include <memory>
 #include<QtCharts/QValueAxis>
+#include <QLabel>
+using namespace QtCharts;
 void Plots::scatterPlot(std::vector<std::vector<double>> data) {
     // Check to avoid out of range errors
     std::vector<std::string> names = { "Restitucion", "Leave one Out", "Cross Validation" };
@@ -36,7 +38,7 @@ void Plots::scatterPlot(std::vector<std::vector<double>> data) {
 
         // Create line series
         QLineSeries* line = new QLineSeries(chart);
-        line->setName("Line " + QString::fromStdString(names[i])); // Unique name for each line series
+        //line->setName("Line " + QString::fromStdString(names[i])); // Unique name for each line series
         for (size_t j = 0; j < data[i].size(); ++j) {
             line->append(j, data[i][j]);
         }
@@ -47,7 +49,7 @@ void Plots::scatterPlot(std::vector<std::vector<double>> data) {
 
     // Create a chart view, set the chart, and display the chart view
     QChartView* chartView = new QChartView(chart);
-    chartView->setRenderHint(Antialiasing);
+    chartView->setRenderHint(QPainter::RenderHint::Antialiasing);
     chartView->resize(400, 300);
     chartView->show();
 }

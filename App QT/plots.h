@@ -6,8 +6,10 @@
 #include<Eigen/Dense>
 #include <QWidget>
 #include <QGridLayout>
-#include <QtCharts/QChart>
-#include <QtCharts/QChartView>
+#include<Qchart>
+#include <QchartView>
+#include <QString>
+#include <QDebug>
 class Plots {
 
 

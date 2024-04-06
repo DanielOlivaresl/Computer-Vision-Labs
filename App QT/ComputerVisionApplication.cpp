@@ -606,9 +606,14 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
         std::vector<std::vector<double>> confMat2 = get_matrixConfusion(matrixClasses, looPredictions.at(it));
         std::vector<std::vector<double>> confMat3 = get_matrixConfusion(cvSet.at(0), cvPred.at(it));
 
-        std::vector<std::vector<std::vector<double>>> matrices = { confMat1,confMat2,confMat3 };
+        std::vector<std::vector<std::vector<double>>> matrices = { 
+            confMat1,
+            confMat2
+            ,confMat3 
+        };
 
 
+        
 
 
 
@@ -626,7 +631,10 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
                 // Calculate accuracy (normalized diagonal element)
                 double diagonalElement = matrices.at(i).at(j).at(j);
                 double accuracy = diagonalElement / rowSum;
+        
                 currentPoints.push_back(accuracy);
+            
+            
             }
             data.push_back(currentPoints);
         }
@@ -644,6 +652,8 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
 
     for (const auto& data : allData) {
         Plots::scatterPlot(data);
+
+
     }
 
 

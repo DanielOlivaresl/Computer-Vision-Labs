@@ -371,13 +371,13 @@ std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidati
 
 		for (int j = 0; j < classes.at(i).rows(); j++) {
 
-			if ((i == clas && j == el)) {
-				testSplit.push_back(Eigen::Matrix<double, Eigen::Dynamic, 3>(classes.at(i).row(el)));
+			if (i == clas && j == el) {
+				testSplit.push_back((classes.at(i).row(el)));
 
 			}
 			else {
 				trainMatrix.conservativeResize(trainMatrix.rows() + 1, Eigen::NoChange);
-				trainMatrix.row(trainMatrix.rows() - 1)== classes.at(i).row(j);
+				trainMatrix.row(trainMatrix.rows() - 1)= classes.at(i).row(j);
 
 			}
 
