@@ -1,11 +1,12 @@
 #include "plots.h"	
 #include <memory>
-#include<QtCharts/QValueAxis>
 #include <QLabel>
+#include<QValueAxis>
+#include "imageTransformations.h"
 using namespace QtCharts;
 void Plots::scatterPlot(std::vector<std::vector<double>> data) {
     // Check to avoid out of range errors
-    std::vector<std::string> names = { "Restitucion", "Leave one Out", "Cross Validation" };
+    std::vector<std::string> names = { "Restitucion", "Leave one Out", "Cross Validation"};
     if (data.size() > names.size()) {
         // Handle error: The data vector has more elements than there are names
         return;
@@ -158,4 +159,38 @@ void Plots::ConfusionMatrix(std::vector<std::vector<std::vector<double>>> matric
     container->setLayout(layout);
     container->resize(800, 600);
     container->show();
+}
+
+void Plots::histogram(std::vector<int> histogram){
+
+    QChart* chart = new QChart();
+    chart->setTitle("Image histogram");
+
+    QBarSeries* barSeries = new QBarSeries();
+    barSeries->setName("Bar series");
+
+    QBarSet* barset = new QBarSet("");
+
+
+    for (int i = 0; i < 256; i++) {
+        *barset << histogram[i];
+    }
+
+    barSeries->append(barset);
+    chart->addSeries(barSeries);
+
+
+
+
+
+    chart->legend()->setVisible(false);
+    chart->createDefaultAxes();
+    chart->axisX()->setRange(0, 255);
+
+    // Create chart view
+    QChartView* chartView = new QChartView(chart);
+    chartView->setRenderHint(QPainter::Antialiasing);
+    chartView->resize(600, 400);
+    chartView->show();
+
 }
