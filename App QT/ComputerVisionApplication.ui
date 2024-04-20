@@ -6,28 +6,34 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1069</width>
-    <height>557</height>
+    <width>1014</width>
+    <height>566</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>ComputerVisionApplication</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QLabel" name="imageLabel">
-    <property name="geometry">
-     <rect>
-      <x>14</x>
-      <y>15</y>
-      <width>1051</width>
-      <height>491</height>
-     </rect>
-    </property>
-    <property name="mouseTracking">
+   <widget class="QTabWidget" name="Tabs">
+    <property name="enabled">
      <bool>true</bool>
     </property>
-    <property name="text">
-     <string/>
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>10</y>
+      <width>10000</width>
+      <height>10000</height>
+     </rect>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>10000</width>
+      <height>16777215</height>
+     </size>
+    </property>
+    <property name="currentIndex">
+     <number>-1</number>
     </property>
    </widget>
   </widget>
@@ -36,7 +42,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1069</width>
+     <width>1014</width>
      <height>26</height>
     </rect>
    </property>
@@ -78,8 +84,9 @@
    </widget>
    <widget class="QMenu" name="menuPrueba_Chevy">
     <property name="title">
-     <string>Prueba Chevy</string>
+     <string>Image Processing</string>
     </property>
+    <addaction name="actionimageProcessingFunction1"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menuConvert"/>
@@ -164,6 +171,11 @@
   <action name="actionConfusion_Matrix">
    <property name="text">
     <string>Confusion Matrix</string>
+   </property>
+  </action>
+  <action name="actionimageProcessingFunction1">
+   <property name="text">
+    <string>imageProcessingFunction1</string>
    </property>
   </action>
  </widget>
