@@ -284,6 +284,7 @@ void ComputerVisionApplication::on_actionConfusion_Matrix_triggered()
         for (int i = 0; i < matrix.size(); ++i) {
             message += "C" + QString::number(i) + " ";
         }
+
         message += "\n";
 
         for (int i = 0; i < matrix.size(); ++i) {
