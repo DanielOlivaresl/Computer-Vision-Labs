@@ -41,14 +41,14 @@ ComputerVisionApplication::ComputerVisionApplication(QWidget* parent) :
 
     QTabBar* tabBar = ui->Tabs->tabBar();
 
-    connect(tabBar, &QTabBar::tabBarDoubleClicked, [tabBar,this](int index) {
+    connect(tabBar, &QTabBar::tabBarDoubleClicked, [tabBar, this](int index) {
         /*QMessageBox::warning(this, tr("Confusion Matrix"), QString::number(index));*/
         convertTabToDock(ui->Tabs, index);
         });
 
 
     ui->Tabs->setDocumentMode(true);
-    
+
 }
 //Destructor
 ComputerVisionApplication::~ComputerVisionApplication()
@@ -71,18 +71,18 @@ void ComputerVisionApplication::on_actionSelect_Image_triggered()
 
     QString initialDir = lastDirectory.isEmpty() ? QDir::homePath() : lastDirectory;
 
-    QString filePath = QFileDialog::getOpenFileName(this, tr("Select Image"), initialDir+"/peppers.jpg", tr("Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"));
-    
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Select Image"), initialDir + "/peppers.jpg", tr("Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"));
+     
 
     if (!filePath.isEmpty()) {
         // Update lastDirectory with the new directory
         lastDirectory = QFileInfo(filePath).absolutePath();
-
         Image* tempImg = new Image();
 
         if (tempImg->image.load(filePath)) {
             tempImg->image = tempImg->image.convertToFormat(QImage::Format_RGB888);
             if (!tempImg->image.isNull()) {
+                
                 QWidget* firsttab = new QWidget();
                 QVBoxLayout* layout = new QVBoxLayout();
                 QLabel* imageLabel = new QLabel("Image Label");
@@ -98,14 +98,14 @@ void ComputerVisionApplication::on_actionSelect_Image_triggered()
                 layout->addWidget(imageLabel);
                 firsttab->setLayout(layout);
                 firsttab->setProperty("Image", QVariant::fromValue(tempImg));
-                ui->Tabs->addTab(firsttab,"Tab " + QString::number(ui->Tabs->count()+1));
+                ui->Tabs->addTab(firsttab, "Tab " + QString::number(ui->Tabs->count() + 1));
                 setCentralWidget(ui->Tabs);
-                ui->Tabs->setCurrentIndex(ui->Tabs->count()-1);
-            
-            
+                ui->Tabs->setCurrentIndex(ui->Tabs->count() - 1);
 
-                
-            
+
+
+
+
             }
             else {
                 QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image."));
@@ -122,7 +122,7 @@ void ComputerVisionApplication::on_actionToGray_triggered() {
     Image* image = getImage();
     if (image == NULL) {
         return;
-    }    
+    }
 
 
     if ((image->image.isNull())) {
@@ -175,7 +175,7 @@ void ComputerVisionApplication::on_actionEuclidean_triggered() {
         QMessageBox::information(this, "Number of classes", "Image is null?");
 
         return;
-    }   
+    }
 
     image->currProcess = "Euclidean";
     //We first ask for the number of classes if it's not defined
@@ -404,7 +404,7 @@ void ComputerVisionApplication::on_actionConfusion_Matrix_triggered()
             }
             message += "\n";
         }
-        };
+    };
 
     addMatrixToMessage("Confusion Matrix for Euclidian:", matEuc);
     message += "\n";
@@ -421,20 +421,76 @@ void ComputerVisionApplication::on_actionConfusion_Matrix_triggered()
 
 
 void ComputerVisionApplication::InMenuSave() {}
-void ComputerVisionApplication::InMenuExit() {} 
+void ComputerVisionApplication::InMenuExit() {}
 void ComputerVisionApplication::InInfo() {}
 
 
+void ComputerVisionApplication::on_actionLoadDataSet_triggered()
+{
+    QMessageBox::information(this, "Dataset loader", "Loading dataset");
+    QString directoryPath = QFileDialog::getExistingDirectory(nullptr, "Select Directory", "");
+    if (!directoryPath.isEmpty()) {
+        QDir directory(directoryPath);
+        QStringList images = directory.entryList(QStringList() << "*.bmp", QDir::Files);
+        std::vector<QImage> vectorImages; // vector that stores the images 
+        foreach(QString filename, images) {
+            qDebug() << "Archivo encontrado:" << filename;
+            QString filePath = directory.absoluteFilePath(filename); // getting the absolute path of each image 
+            Image* tempImg = new Image(); // init the image 
+            if (tempImg->image.load(filePath)) {
+                // if the image loaded succesfull, we keep the process .
+                QWidget* firsttab = new QWidget();
+                QVBoxLayout* layout = new QVBoxLayout();
+                QLabel* imageLabel = new QLabel("Image Dataset ");
+                imageLabel->setPixmap(QPixmap::fromImage(tempImg->image));
+                imageLabel->setFixedSize(QPixmap::fromImage(tempImg->image).size());
+                //We start tracking the position of the mouse so we can see what pixel is being clicked
+                imageLabel->setMouseTracking(true);
+                //Install the event filter
+                imageLabel->installEventFilter(this);
+
+
+
+                vectorImages.push_back(tempImg->image); // storing the image 
+
+
+                layout->addWidget(imageLabel);
+                firsttab->setLayout(layout);
+                firsttab->setProperty("Image", QVariant::fromValue(tempImg));
+                ui->Tabs->addTab(firsttab, "Tab " + QString::number(ui->Tabs->count() + 1));
+                setCentralWidget(ui->Tabs);
+                ui->Tabs->setCurrentIndex(ui->Tabs->count() - 1);
+            }
+            else {
+                // error hanlder is the image has an error.
+                qDebug() << "Error loading image";
+            }
+        }
+        qDebug() << "Size of the vector of images " << vectorImages.size();
+        qDebug() << "size of one image " << vectorImages[0].size();
+
+
+        // llamando a la funcion que obtiene las caracteristicas de las imagenes 
+        // here goes that function ------------
+        //
+        //-----------------------------------------------------------------------
+
+    }
+    else {
+        qDebug() << "No directory selected.";
+    }
+}
+
 bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
-        
+
     //we check if the object which triggered the event is the menuBar
-    
+
 
     if (watched->objectName() == "menuBar" && event->type() == QEvent::Enter) {
 
         //We now check if the current tab has an image loaded
         Image* image = getImage();
-        if(image != NULL){
+        if (image != NULL) {
 
 
             ui->menuConvert->setDisabled(false);
@@ -462,12 +518,12 @@ bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
             disconnect(singleClickTimer, &QTimer::timeout, this, nullptr);
 
             singleClickTimer->start();
-            connect(singleClickTimer, &QTimer::timeout, this, [this, button,mousePos](){
-                singleClickFunctionality(button,mousePos);
-            }, Qt::UniqueConnection);
+            connect(singleClickTimer, &QTimer::timeout, this, [this, button, mousePos]() {
+                singleClickFunctionality(button, mousePos);
+                }, Qt::UniqueConnection);
         }
 
-        
+
     }
     QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 
@@ -478,18 +534,18 @@ bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
         doubleClickFunctionality(button);
     }
 
-    
+
 
     //We start tracking the position of the mouse so we can see what pixel is being clicked
 
-        
-        
+
+
     return false; // Continue default processing
 }
 
 void ComputerVisionApplication::on_actionimageProcessingFunction1_triggered() {
 
-    Image *img = getImage();
+    Image* img = getImage();
 
     //img->image =ImageTransformations::negativeImage(img->image);
     //img->image = ImageTransformations::logTransform(img->image,20);
@@ -501,19 +557,19 @@ void ComputerVisionApplication::on_actionimageProcessingFunction1_triggered() {
 
     //we now transform that images histogram to the range 255
 
-    std::vector<int> transHist = ImageTransformations::equalizationHistogram(histogram,64);
-    
+    std::vector<int> transHist = ImageTransformations::equalizationHistogram(histogram, 64);
+
     Plots::histogram(transHist);
 
     img->image = ImageTransformations::histogramToImage(transHist, img->image);
-    
+
     updateImage(img->image);
 
 
 
-    
 
-    
+
+
 }
 void ComputerVisionApplication::paintEvent(QPaintEvent* event) {
 
@@ -561,7 +617,7 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
     //we will first separate our data with cross validation
 
     std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> cvSet = CrossValidation::crossValidation(image->matrixClasses);
-    std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> resSet =CrossValidation::Restitucion(image->matrixClasses);
+    std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> resSet = CrossValidation::Restitucion(image->matrixClasses);
 
 
     //we will now create the data for each of the predictions
@@ -571,7 +627,7 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
     std::vector<std::vector<std::vector<int>>> looPredictions(4, std::vector<std::vector<int>>(image->matrixClasses.size(), std::vector<int>(image->matrixClasses.at(0).rows())));
     //finally for leave one out it's necesarry to iterate the whole set and apply the method n times
 
-    
+
 
     int currClass = 0;
     for (auto clas : image->matrixClasses) {
@@ -605,38 +661,38 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
     //We create the sets of data and predictions
 
 
-    
+
     std::vector<std::vector<std::vector<std::vector<int>>>> predSets = { resPred,cvPred,looPredictions };
-    std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> testSets = { resSet.at(0),cvSet.at(0),image->matrixClasses};
+    std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> testSets = { resSet.at(0),cvSet.at(0),image->matrixClasses };
 
 
-    
+
     //we get the data for the euclidena plot
 
     //We load the data
 
-        
+
     QString message;
-//std:; <std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>>>
+    //std:; <std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>>>
 
     std::vector<std::string> names = { "Restitucion", "Leave One Out", "Cross Validation" };
     std::vector<std::string> methodNames = { "Euclidiana", "Manhalanobis", "Max Prob", "KNN" };
-    std::vector<std::vector<std::vector<double>>> allData ; // Accumulate data from each iteration
-    
+    std::vector<std::vector<std::vector<double>>> allData; // Accumulate data from each iteration
+
     //we initialize the vector
     for (int i = 0; i < methodNames.size(); i++) {
         std::vector<std::vector<double>> el;
-        
+
         for (int j = 0; j < names.size(); j++) {
             el.push_back(std::vector<double>());
         }
         allData.push_back(el);
     }
 
-    
-    
+
+
     for (int it = 0; it < 3; it++) {
-       std::vector<std::vector<double>> data;
+        std::vector<std::vector<double>> data;
 
         std::vector<std::vector<double>> eucliMat = get_matrixConfusion(testSets.at(it), predSets.at(it).at(0));
         std::vector<std::vector<double>> manhMat = get_matrixConfusion(testSets.at(it), predSets.at(it).at(1));
@@ -651,7 +707,7 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
             knnMat
         };
 
-            auto addMatrixToMessage = [&message](const QString& title, const std::vector<std::vector<double>>& matrix) {
+        auto addMatrixToMessage = [&message](const QString& title, const std::vector<std::vector<double>>& matrix) {
             message += title + "\n   ";
             double prom = 0;
             for (int i = 0; i < matrix.size(); ++i) {
@@ -659,25 +715,25 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
                 for (double val : matrix[i]) {
                     sum += val;
                 }
-                prom += matrix[i][i]/sum;
-                
-                
+                prom += matrix[i][i] / sum;
+
+
             }
-                message += QString::number(((prom / matrix[0].size()))) + "\n";
+            message += QString::number(((prom / matrix[0].size()))) + "\n";
 
-            };
+        };
 
-            std::string mess = "Confusion Matrix for " + names[it];
-            for (int i = 0; i < matrices.size(); i++) {
-                addMatrixToMessage(QString::fromStdString(mess), matrices.at(i));
-            }
-            message += "\n";
+        std::string mess = "Confusion Matrix for " + names[it];
+        for (int i = 0; i < matrices.size(); i++) {
+            addMatrixToMessage(QString::fromStdString(mess), matrices.at(i));
+        }
+        message += "\n";
 
-            Plots::ConfusionMatrix(matrices, methodNames);
+        Plots::ConfusionMatrix(matrices, methodNames);
 
 
 
-                for (int i = 0; i < matrices.size(); i++) {
+        for (int i = 0; i < matrices.size(); i++) {
             std::vector<double> currentPoints;
             for (int j = 0; j < matrices.at(i).size(); j++) { // Iterate rows
                 double rowSum = 0.0;
@@ -688,26 +744,26 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
                 // Calculate accuracy (normalized diagonal element)
                 double diagonalElement = matrices.at(i).at(j).at(j);
                 double accuracy = diagonalElement / rowSum;
-        
+
                 //currentPoints.push_back(accuracy);
 
                 allData.at(i).at(it).push_back(accuracy);
-                
-            
+
+
             }
             /*data.push_back(currentPoints);*/
-}
+        }
 
 
-            //allData.push_back(data);
-            //Plots::scatterPlot(allData.at(0));
+        //allData.push_back(data);
+        //Plots::scatterPlot(allData.at(0));
 
 
-    //    //We display the data
+//    //We display the data
 
     }
 
-        QMessageBox::information(this, "Matrices", message);
+    QMessageBox::information(this, "Matrices", message);
 
 
 
@@ -720,7 +776,7 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
     }
 
 
-    }
+}
 
 
 
@@ -763,14 +819,14 @@ QLabel* ComputerVisionApplication::getImageLabel() {
     }
 
     QLabel* imageLabel = dynamic_cast<QLabel*>(widget);
-    
+
     return imageLabel;
 
 }
 Image* ComputerVisionApplication::getImage() {
 
     QWidget* currentTab = ui->Tabs->currentWidget();
-    
+
     //We check if the current tab is valid
     if (currentTab == NULL) {
 
@@ -783,7 +839,7 @@ Image* ComputerVisionApplication::getImage() {
         QMessageBox::warning(this, "Error", "Not an image");
         return NULL;
     }
-    
+
 
     //Now that we know that the property is valid we may retrieve it
     Image* image = (Image*)property.value<Image*>();
@@ -793,25 +849,25 @@ Image* ComputerVisionApplication::getImage() {
 
 void ComputerVisionApplication::doubleClickFunctionality(Qt::MouseButton button) {
 
-        Image* image = getImage();
-        if (image == NULL) {
+    Image* image = getImage();
+    if (image == NULL) {
 
-            return ;
-        }
+        return;
+    }
 
 
 
-        if (button == Qt::LeftButton) {
+    if (button == Qt::LeftButton) {
 
-            image->numClasses += 1;
-            return ;
-        }
+        image->numClasses += 1;
+        return;
+    }
 
-        if (button == Qt::RightButton) {
+    if (button == Qt::RightButton) {
 
-            image->numClasses -= 1;
-            return ;
-        }
+        image->numClasses -= 1;
+        return;
+    }
 
 
 }
@@ -819,115 +875,67 @@ void ComputerVisionApplication::doubleClickFunctionality(Qt::MouseButton button)
 void ComputerVisionApplication::singleClickFunctionality(Qt::MouseButton button, const QPoint& mousePos) {
 
 
-        Image* image = getImage();
-        if (image == NULL) {
+    Image* image = getImage();
+    if (image == NULL) {
 
-            return ;
-        }
-
-
-
-        //we check what click it was (left click add points, right click reset classes)
-
-        
-        if (button == Qt::RightButton) {
+        return;
+    }
 
 
-            image->rectangles.clear();
-            //image->numClasses = 2;
-            image->matrixClasses.clear();
-            QLabel* imageLabel = getImageLabel();
-            imageLabel->setPixmap(QPixmap::fromImage(image->image));
 
-            return ;
-        }
+    //we check what click it was (left click add points, right click reset classes)
 
 
-        if (button == Qt::LeftButton) {
-            //We check if the classes have been selected
-            if (image->rectangles.size() < image->numClasses * 2) {
-                image->rectangles.push_back(mousePos);
-                //We now draw the border
-
-                if (image->rectangles.size() % 2 == 0) { //We have set the dimensions for the rectangle
+    if (button == Qt::RightButton) {
 
 
-                    int x = image->rectangles.at(image->rectangles.size() - 1).x();
-                    int y = image->rectangles.at(image->rectangles.size() - 1).y();
+        image->rectangles.clear();
+        //image->numClasses = 2;
+        image->matrixClasses.clear();
+        QLabel* imageLabel = getImageLabel();
+        imageLabel->setPixmap(QPixmap::fromImage(image->image));
 
-                    int width = (image->rectangles.at(image->rectangles.size() - 1).x() - image->rectangles.at(image->rectangles.size() - 2).x());
-                    int height = (image->rectangles.at(image->rectangles.size() - 1).y() - image->rectangles.at(image->rectangles.size() - 2).y());
+        return;
+    }
 
 
-                    QLabel* imageLabel = getImageLabel();
+    if (button == Qt::LeftButton) {
+        //We check if the classes have been selected
+        if (image->rectangles.size() < image->numClasses * 2) {
+            image->rectangles.push_back(mousePos);
+            //We now draw the border
 
-                    QPixmap originalPixmap = *(imageLabel)->pixmap();
-                    QPainter painter(&originalPixmap);
-                    painter.setPen(Qt::green);
+            if (image->rectangles.size() % 2 == 0) { //We have set the dimensions for the rectangle
 
-                    if (width < 0 || height < 0) {
-                        x = image->rectangles.at(image->rectangles.size() - 2).x();
-                        y = image->rectangles.at(image->rectangles.size() - 2).y();
-                    }
 
-                    width = abs(width);
-                    height = abs(height);
+                int x = image->rectangles.at(image->rectangles.size() - 1).x();
+                int y = image->rectangles.at(image->rectangles.size() - 1).y();
 
-                    painter.drawRect(abs(x - width), abs(y - height), width, height);
-                    painter.drawText(x - width, y + 12, QString::fromStdString("Clase: " + std::to_string(image->rectangles.size() / 2 - 1)));
-                    imageLabel->setPixmap(originalPixmap);
+                int width = (image->rectangles.at(image->rectangles.size() - 1).x() - image->rectangles.at(image->rectangles.size() - 2).x());
+                int height = (image->rectangles.at(image->rectangles.size() - 1).y() - image->rectangles.at(image->rectangles.size() - 2).y());
+
+
+                QLabel* imageLabel = getImageLabel();
+
+                QPixmap originalPixmap = (imageLabel)->pixmap();
+                QPainter painter(&originalPixmap);
+                painter.setPen(Qt::green);
+
+                if (width < 0 || height < 0) {
+                    x = image->rectangles.at(image->rectangles.size() - 2).x();
+                    y = image->rectangles.at(image->rectangles.size() - 2).y();
                 }
 
+                width = abs(width);
+                height = abs(height);
 
-                if (image->rectangles.size() == image->numClasses * 2) {
-                    int minWidth = INT_MAX;
-                    int minHeight = INT_MAX;
-
-
-                    for (int i = 0; i < image->rectangles.size(); i += 2) {
-                        int width = abs(image->rectangles.at(i).x() - image->rectangles.at(i + 1).x()) + 1;
-                        int height = abs(image->rectangles.at(i).y() - image->rectangles.at(i + 1).y()) + 1;
-
-                        if (width < minWidth) {
-                            minWidth = width;
-                        }
-                        if (height < minHeight) {
-                            minHeight = height;
-                        }
-                    }
-
-                    //We now fill the matrices
-
-                    for (int i = 0; i < image->rectangles.size(); i += 2) {
-                        int startX = std::min(image->rectangles.at(i).x(), image->rectangles.at(i + 1).x());
-                        int startY = std::min(image->rectangles.at(i).y(), image->rectangles.at(i + 1).y());
-
-                        //we now fill the pixels
-                        Eigen::Matrix<double, Eigen::Dynamic, 3> matrix;
-                        for (int x = startX; x < startX + minWidth; ++x) {
-                            for (int y = startY; y < startY + minHeight; ++y) {
-                                matrix.conservativeResize(matrix.rows() + 1, Eigen::NoChange);
-                                QRgb pixelValue = image->image.pixel(x, y);
-
-
-
-
-                                matrix.row(matrix.rows() - 1) << qRed(pixelValue), qGreen(pixelValue), qBlue(pixelValue);
-
-                            }
-                        }
-                        //We add the matrix to the classes
-                        image->matrixClasses.push_back(matrix);
-                    }
-                }
-
+                painter.drawRect(abs(x - width), abs(y - height), width, height);
+                painter.drawText(x - width, y + 12, QString::fromStdString("Clase: " + std::to_string(image->rectangles.size() / 2 - 1)));
+                imageLabel->setPixmap(originalPixmap);
             }
-            else if (image->matrixClasses.size() == 0) { //If this is false we have already filled the classes  
-                //Rectangles have finished drawing we now add the pixel to determine and we also determine the smallest dimensions and fill the matrices
-
-                //First we retrieve the pixel to classify
 
 
+            if (image->rectangles.size() == image->numClasses * 2) {
                 int minWidth = INT_MAX;
                 int minHeight = INT_MAX;
 
@@ -967,60 +975,108 @@ void ComputerVisionApplication::singleClickFunctionality(Qt::MouseButton button,
                     //We add the matrix to the classes
                     image->matrixClasses.push_back(matrix);
                 }
-
-
-            }
-            else { //We will now only classify pixels
-
-                QRgb classifyPixel = image->image.pixel(mousePos);
-                Eigen::Vector3d vec(qRed(classifyPixel), qGreen(classifyPixel), qBlue(classifyPixel));
-
-
-                if (image->currProcess == "Euclidean") {
-                    std::vector<double> distances = euclidean(image->matrixClasses, vec);
-                    int closestClass = getClosest(distances);
-
-                    QString qstr = QString::fromStdString("La clase mas cercana por distance euclidana es: " + std::to_string(closestClass));
-                    QMessageBox::information(this, "Euclidean Distance Metric", qstr);
-
-                }
-
-                if (image->currProcess == "Manhalanobis") {
-                    std::vector<double> distances = manhalanobis(image->matrixClasses, vec);
-                    int closestClass = getClosest(distances);
-
-                    QString qstr = QString::fromStdString("La clase mas cercana por distance manhalanobis es: " + std::to_string(closestClass));
-                    QMessageBox::information(this, "Manhalanobis Distance Metric", qstr);
-
-                }
-
-                if (image->currProcess == "MaxProb") {
-                    std::vector<double> probabilites = max_prob(image->matrixClasses, vec);
-                    int closestClass = getMaxProb(probabilites);
-
-                    QString qstr = QString::fromStdString("La clase mas cercana por criterio de maxima probabilidad es: " + std::to_string(closestClass));
-                    QMessageBox::information(this, "Maximum Probability Metric", qstr);
-
-                }
-
-                if (image->currProcess == "KNN") {
-                    int result = kNearestNeighbours(image->matrixClasses, vec, knn);
-                    QString qstr = QString::fromStdString("La clase mas cercana por criterio de KNN es: " + std::to_string(result));
-                    QMessageBox::information(this, "KNN Metric", qstr);
-
-                }
-
             }
 
-
-
-
-
-
-
-
-            return ; // Event handled
         }
+        else if (image->matrixClasses.size() == 0) { //If this is false we have already filled the classes  
+            //Rectangles have finished drawing we now add the pixel to determine and we also determine the smallest dimensions and fill the matrices
+
+            //First we retrieve the pixel to classify
+
+
+            int minWidth = INT_MAX;
+            int minHeight = INT_MAX;
+
+
+            for (int i = 0; i < image->rectangles.size(); i += 2) {
+                int width = abs(image->rectangles.at(i).x() - image->rectangles.at(i + 1).x()) + 1;
+                int height = abs(image->rectangles.at(i).y() - image->rectangles.at(i + 1).y()) + 1;
+
+                if (width < minWidth) {
+                    minWidth = width;
+                }
+                if (height < minHeight) {
+                    minHeight = height;
+                }
+            }
+
+            //We now fill the matrices
+
+            for (int i = 0; i < image->rectangles.size(); i += 2) {
+                int startX = std::min(image->rectangles.at(i).x(), image->rectangles.at(i + 1).x());
+                int startY = std::min(image->rectangles.at(i).y(), image->rectangles.at(i + 1).y());
+
+                //we now fill the pixels
+                Eigen::Matrix<double, Eigen::Dynamic, 3> matrix;
+                for (int x = startX; x < startX + minWidth; ++x) {
+                    for (int y = startY; y < startY + minHeight; ++y) {
+                        matrix.conservativeResize(matrix.rows() + 1, Eigen::NoChange);
+                        QRgb pixelValue = image->image.pixel(x, y);
+
+
+
+
+                        matrix.row(matrix.rows() - 1) << qRed(pixelValue), qGreen(pixelValue), qBlue(pixelValue);
+
+                    }
+                }
+                //We add the matrix to the classes
+                image->matrixClasses.push_back(matrix);
+            }
+
+
+        }
+        else { //We will now only classify pixels
+
+            QRgb classifyPixel = image->image.pixel(mousePos);
+            Eigen::Vector3d vec(qRed(classifyPixel), qGreen(classifyPixel), qBlue(classifyPixel));
+
+
+            if (image->currProcess == "Euclidean") {
+                std::vector<double> distances = euclidean(image->matrixClasses, vec);
+                int closestClass = getClosest(distances);
+
+                QString qstr = QString::fromStdString("La clase mas cercana por distance euclidana es: " + std::to_string(closestClass));
+                QMessageBox::information(this, "Euclidean Distance Metric", qstr);
+
+            }
+
+            if (image->currProcess == "Manhalanobis") {
+                std::vector<double> distances = manhalanobis(image->matrixClasses, vec);
+                int closestClass = getClosest(distances);
+
+                QString qstr = QString::fromStdString("La clase mas cercana por distance manhalanobis es: " + std::to_string(closestClass));
+                QMessageBox::information(this, "Manhalanobis Distance Metric", qstr);
+
+            }
+
+            if (image->currProcess == "MaxProb") {
+                std::vector<double> probabilites = max_prob(image->matrixClasses, vec);
+                int closestClass = getMaxProb(probabilites);
+
+                QString qstr = QString::fromStdString("La clase mas cercana por criterio de maxima probabilidad es: " + std::to_string(closestClass));
+                QMessageBox::information(this, "Maximum Probability Metric", qstr);
+
+            }
+
+            if (image->currProcess == "KNN") {
+                int result = kNearestNeighbours(image->matrixClasses, vec, knn);
+                QString qstr = QString::fromStdString("La clase mas cercana por criterio de KNN es: " + std::to_string(result));
+                QMessageBox::information(this, "KNN Metric", qstr);
+
+            }
+
+        }
+
+
+
+
+
+
+
+
+        return; // Event handled
+    }
 }
 
 
@@ -1046,28 +1102,28 @@ void ComputerVisionApplication::convertTabToDock(QTabWidget* tabWidget, int tabI
     }
 
 
-    
 
-    
 
-   // Create a new dock widget and set it up
+
+
+    // Create a new dock widget and set it up
 
     sideDock->setWidget(dockTabs);
     addDockWidget(Qt::RightDockWidgetArea, sideDock);
 
 
     QDockWidget* dockWidget = new QDockWidget(title, this); //Dock that will be the content of each tab
-    
+
     //connect(dockWidget,&QDockWidget::dockLocationChanged,this,&QMainWindow::)
-    
+
     dockWidget->setWidget(widget); //Content of tab that was deleted
     dockWidget->setAllowedAreas(Qt::RightDockWidgetArea | Qt::LeftDockWidgetArea);
 
     //dockWidget->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetClosable);
 
-    dockTabs->addTab(dockWidget,"Dock 1"); //we add the dock to the tabs
-    
-    
+    dockTabs->addTab(dockWidget, "Dock 1"); //we add the dock to the tabs
+
+
 }
 
 void ComputerVisionApplication::handleDockLocationChanged(Qt::DockWidgetArea area) {
@@ -1081,7 +1137,7 @@ void ComputerVisionApplication::handleTopLevelChanged(bool topLevel) {
     if (topLevel) {
         qDebug() << "Dock is now a top-level window";
     }
-    
+
 }
 
 
