@@ -40,6 +40,7 @@ private slots: // listeners to buttons
     void InInfo();
     //Image conversion
     void on_actionToGray_triggered();
+    void on_actionThreshold_triggered();
     void toRGB();
     void toHSV();
     void toHSL();
@@ -54,6 +55,11 @@ private slots: // listeners to buttons
 
     //Cross validation Procedures
     void on_actionVisualize_Plots_triggered();
+
+
+
+    //Segmentation
+    void on_actionConected_N4_triggered();
 
 private:
     Ui::ComputerVisionApplication* ui; //UI

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1069</width>
-    <height>557</height>
+    <width>1073</width>
+    <height>565</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,8 +36,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1069</width>
-     <height>26</height>
+     <width>1073</width>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -58,6 +58,7 @@
     <addaction name="actionToRGB"/>
     <addaction name="actionToHSV"/>
     <addaction name="actionToHSL"/>
+    <addaction name="actionThreshold"/>
    </widget>
    <widget class="QMenu" name="menuDistances">
     <property name="title">
@@ -81,11 +82,18 @@
      <string>Prueba Chevy</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuObj_Segment">
+    <property name="title">
+     <string>Obj Segment</string>
+    </property>
+    <addaction name="actionConected_N4"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menuConvert"/>
    <addaction name="menuDistances"/>
    <addaction name="menuCross_Validation"/>
    <addaction name="menuPrueba_Chevy"/>
+   <addaction name="menuObj_Segment"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -164,6 +172,16 @@
   <action name="actionConfusion_Matrix">
    <property name="text">
     <string>Confusion Matrix</string>
+   </property>
+  </action>
+  <action name="actionThreshold">
+   <property name="text">
+    <string>toThreshold</string>
+   </property>
+  </action>
+  <action name="actionConected_N4">
+   <property name="text">
+    <string>Conected N4</string>
    </property>
   </action>
  </widget>

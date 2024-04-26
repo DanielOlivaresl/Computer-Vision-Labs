@@ -1,13 +1,12 @@
 // 
-#include <QScatterSeries>
-#include <QChartView>
-#include <QLineSeries>
+#include<QtCharts/qscatterseries.h>
+#include <QtCharts/QchartView.h>
+#include <QtCharts/qlineseries.h>
 #include<QMainWindow>
 #include<Eigen/Dense>
 #include <QWidget>
 #include <QGridLayout>
-#include<Qchart>
-#include <QchartView>
+#include<QtCharts/qchart.h>
 #include <QString>
 #include <QDebug>
 class Plots {
