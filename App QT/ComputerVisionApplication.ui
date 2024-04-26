@@ -43,7 +43,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -88,11 +88,18 @@
     </property>
     <addaction name="actionimageProcessingFunction1"/>
    </widget>
+   <widget class="QMenu" name="menuLoadDataSet">
+    <property name="title">
+     <string>DataSet</string>
+    </property>
+    <addaction name="actionLoadDataSet"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menuConvert"/>
    <addaction name="menuDistances"/>
    <addaction name="menuCross_Validation"/>
    <addaction name="menuPrueba_Chevy"/>
+   <addaction name="menuLoadDataSet"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -176,6 +183,11 @@
   <action name="actionimageProcessingFunction1">
    <property name="text">
     <string>imageProcessingFunction1</string>
+   </property>
+  </action>
+  <action name="actionLoadDataSet">
+   <property name="text">
+    <string>LoadDataSet</string>
    </property>
   </action>
  </widget>
