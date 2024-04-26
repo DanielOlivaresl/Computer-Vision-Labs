@@ -2,7 +2,7 @@
 #include <memory>
 #include<QtCharts/QValueAxis>
 #include <QLabel>
-using namespace QtCharts;
+//using namespace QtCharts;
 void Plots::scatterPlot(std::vector<std::vector<double>> data) {
     // Check to avoid out of range errors
     std::vector<std::string> names = { "Restitucion", "Leave one Out", "Cross Validation" };

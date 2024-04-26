@@ -4,6 +4,7 @@
 #include "plots.h"
 
 #include<QPixmap>
+#include<QPixmap>
 #include <QFileDialog>
 #include<Eigen/Dense>
 
@@ -74,6 +75,43 @@ void ComputerVisionApplication::on_actionToGray_triggered() {
     }
 
 
+
+
+}
+
+
+void ComputerVisionApplication::on_actionThreshold_triggered() {
+    if (image.isNull()) {
+        QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image"));
+        return;
+    }
+    
+
+    currFormat = "Thresholded";
+    //Variables to make the code more understandable
+    //We obtain the thereshold number
+    bool ok;
+    int defaultValue = 0;
+    int minVal = 0;
+    int maxVal = 255;
+    int step = 1;
+    int therseholdNumber = 0;
+    therseholdNumber = QInputDialog::getInt(this, tr("Thersehold"), tr("Thersehold number: "), defaultValue, minVal, maxVal, step, &ok);
+
+    ImageTransformations::thereshold(image, therseholdNumber);
+
+    //We now update the UI
+
+    if (!image.isNull()) {
+        ui->imageLabel->setPixmap(QPixmap::fromImage(image));
+        ui->imageLabel->setFixedSize(QPixmap::fromImage(image).size());
+
+        this->resize(QPixmap::fromImage(image).size());
+    }
+    else {
+        QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image."));
+
+    }
 
 
 }
@@ -345,7 +383,7 @@ bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
 
                 
 
-                QPixmap originalPixmap = *(ui->imageLabel)->pixmap();
+                QPixmap originalPixmap = (ui->imageLabel)->pixmap();
                 QPainter painter(&originalPixmap);
                 painter.setPen(Qt::green);
 
@@ -689,3 +727,59 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
 void ComputerVisionApplication::mouseClickAction() {
 
 }
+
+void ComputerVisionApplication::on_actionConected_N4_triggered() {
+    if (image.isNull()) {
+        QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image"));
+        return;
+    }
+   
+   
+    QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image);
+    for (int i = 0; i < objects.size(); i++) {
+        QVector<QPoint> points = objects[i];
+        int minX = points[0].x();
+        int minY = points[0].y();
+        int maxX = points[0].x();
+        int maxY = points[0].y();
+
+        for (const QPoint& point : points) {
+            if (point.x() < minX) {
+                minX = point.x();
+            }
+            if (point.x() > maxX) {
+                maxX = point.x();
+            }
+            if (point.y() < minY) {
+                minY = point.y();
+            }
+            if (point.y() > maxY) {
+                maxY = point.y();
+            }
+        }
+        
+        QPainter painter(&image);
+
+
+        painter.setPen(QPen(Qt::blue, 2));  // Color azul y un grosor de 5
+
+        painter.drawRect(minY-3, minX-3, maxY-minY+3,  maxX - minX + 3);  // Rectángulo en la posición (50,50) con ancho 300 y alto 200
+
+
+    }
+    
+    if (!image.isNull()) {
+        ui->imageLabel->setPixmap(QPixmap::fromImage(image));
+        ui->imageLabel->setFixedSize(QPixmap::fromImage(image).size());
+
+        this->resize(QPixmap::fromImage(image).size());
+    }
+    else {
+        QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image."));
+
+    }
+   
+
+
+}
+
