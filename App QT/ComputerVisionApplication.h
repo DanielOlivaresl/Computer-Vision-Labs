@@ -16,12 +16,13 @@
 #include <QTabBar>
 #include<Eigen/Dense>
 #include <QMdiArea>
-
+#include <QDir>
+#include <QStringList>
 #include "ui_ComputerVisionApplication.h"
 #include "image.h"
 #include <string>
 #include "imageTransformations.h"
-
+#include<vector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ComputerVisionApplication; }
@@ -68,6 +69,10 @@ private slots: // listeners to buttons
     void on_actionimageProcessingFunction1_triggered();
 
 
+    // DataSet Procedures
+
+    void on_actionLoadDataSet_triggered();
+
     //Dock actions
 
     void handleDockLocationChanged(Qt::DockWidgetArea area);
@@ -76,11 +81,11 @@ private slots: // listeners to buttons
 private:
     Ui::ComputerVisionApplication* ui; //UI
     //Dock tabs element
-    QDockWidget* sideDock= NULL;
+    QDockWidget* sideDock = NULL;
     QTabWidget* dockTabs = NULL;
-    QSettings *settings;
+    QSettings* settings;
     QString lastDirectory;
-    
+
     std::vector<Image> images;
     std::string currFormat = "RGB";
 
@@ -106,5 +111,3 @@ protected:
     void updateImage(QImage newImage);
 
 };
-
-
