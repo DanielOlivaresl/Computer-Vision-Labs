@@ -112,6 +112,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="image.cpp" />
+    <QtMoc Include="image.h" />
     <ClCompile Include="plots.cpp" />
     <ClInclude Include="plots.h" />
     <QtRcc Include="ComputerVisionApplication.qrc" />

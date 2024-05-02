@@ -5,16 +5,24 @@
 #include <QLineEdit>
 #include <QInputDialog>
 #include <QLabel>
-#include<Eigen/Dense>
 #include<QPainter>
 #include <QtCharts/QChart>
 #include <QtCharts/QScatterSeries>
 #include <QtCharts/QChartView>
 #include <QtWidgets/QVBoxLayout>
-
+#include <QSettings>
+#include <QTimer>
+#include <QDockWidget>
+#include <QTabBar>
+#include<Eigen/Dense>
+#include <QMdiArea>
+#include <QDir>
+#include <QStringList>
 #include "ui_ComputerVisionApplication.h"
-
-
+#include "image.h"
+#include <string>
+#include "imageTransformations.h"
+#include<vector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ComputerVisionApplication; }
@@ -57,28 +65,55 @@ private slots: // listeners to buttons
     void on_actionVisualize_Plots_triggered();
 
 
+    //Image processing Procedures
+
+    void on_actionimageProcessingFunction1_triggered();
+
+
+    // DataSet Procedures
+
+    void on_actionLoadDataSet_triggered();
+
+    //Dock actions
+
+    void handleDockLocationChanged(Qt::DockWidgetArea area);
+    void handleTopLevelChanged(bool state);
+
+
 
     //Segmentation
     void on_actionConected_N4_triggered();
 
 private:
     Ui::ComputerVisionApplication* ui; //UI
-    QImage image;
-    std::string currFormat = "RGB";
-    int numClasses = 0;
-    std::vector<QPointF> rectangles;
-    std::string currProcess;
+    //Dock tabs element
+    QDockWidget* sideDock = NULL;
+    QTabWidget* dockTabs = NULL;
+    QSettings* settings;
+    QString lastDirectory;
 
-    std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> matrixClasses;
+    std::vector<Image> images;
+    std::string currFormat = "RGB";
+
     bool classify = false;
 
     int knn = 0;
+
+    QTimer* singleClickTimer;
+
+
+    //Helper functions
+    QLabel* getImageLabel();
+    Image* getImage();
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
     void paintEvent(QPaintEvent* event) override;
     void mouseClickAction();
+    void convertTabToDock(QTabWidget* tabWidget, int tabIndex);
+    void doubleClickFunctionality(Qt::MouseButton button);
+    void singleClickFunctionality(Qt::MouseButton button, const QPoint& mousePos);
+
+    void updateImage(QImage newImage);
 
 };
-
-
