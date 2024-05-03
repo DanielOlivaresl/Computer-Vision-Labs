@@ -7,7 +7,6 @@
 #include<algorithm>
 #include <QString>
 #include<QImage>
-
 std::vector<double> euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);
 Eigen::MatrixXd  calculateCovMatrix(Eigen::MatrixXd data);
 std::vector<double> manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);

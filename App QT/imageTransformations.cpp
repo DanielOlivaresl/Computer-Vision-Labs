@@ -1,6 +1,6 @@
 #include "imageTransformations.h"
 
- QImage ImageTransformations::convertToGray(QImage &image) {
+QImage ImageTransformations::convertToGray(QImage& image) {
 	if (image.isNull()) {
 		return image;
 	}
@@ -25,7 +25,8 @@
 
 	image = createImage(matrix);
 	return image;
-	
+
+}
 
 void ImageTransformations::thereshold(QImage& image, int threshold) {
 	if (image.isNull()) {
@@ -323,6 +324,7 @@ void ImageTransformations::thereshold(QImage& image, int threshold) {
 	 for (int i = 0; i < 256; i++) {
 
 	 }
+	 return eqHist;
 
 
  }

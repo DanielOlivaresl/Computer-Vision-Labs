@@ -9,8 +9,8 @@
 #include<QtCharts/qchart.h>
 #include <QString>
 #include <QDebug>
-#include <QBarSeries>
-#include <QBarSet>
+#include <QtCharts/QBarSeries>
+#include <QtCharts/QBarSet>
 
 #include "computations.h"
 class Plots {
