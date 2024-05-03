@@ -162,7 +162,8 @@ void ComputerVisionApplication::on_actionToGray_triggered() {
 
 
 void ComputerVisionApplication::on_actionThreshold_triggered() {
-    if (image.isNull()) {
+    Image* image = getImage();
+    if (image->image.isNull()) {
         QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image"));
         return;
     }
@@ -179,15 +180,17 @@ void ComputerVisionApplication::on_actionThreshold_triggered() {
     int therseholdNumber = 0;
     therseholdNumber = QInputDialog::getInt(this, tr("Thersehold"), tr("Thersehold number: "), defaultValue, minVal, maxVal, step, &ok);
 
-    ImageTransformations::thereshold(image, therseholdNumber);
+    ImageTransformations::thereshold(image->image, therseholdNumber);
 
     //We now update the UI
+    if (!(image->image.isNull())) {
 
-    if (!image.isNull()) {
-        ui->imageLabel->setPixmap(QPixmap::fromImage(image));
-        ui->imageLabel->setFixedSize(QPixmap::fromImage(image).size());
+        QLabel* imageLabel = getImageLabel();
 
-        this->resize(QPixmap::fromImage(image).size());
+        imageLabel->setPixmap(QPixmap::fromImage(image->image));
+        imageLabel->setFixedSize(QPixmap::fromImage(image->image).size());
+
+        this->resize(QPixmap::fromImage(image->image).size());
     }
     else {
         QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image."));
@@ -1187,14 +1190,21 @@ void ComputerVisionApplication::updateImage(QImage newImage) {
 
 }
 
-void ComputerVisionApplication::on_actionConected_N4_triggered() {
-    if (image.isNull()) {
-        QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image"));
-        return;
+Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
+    Image* image = getImage();
+    Image tmp = *image;
+    if (image == NULL) {
+        
+        return Eigen::MatrixXd(0, 0);
     }
+    if (image->image.isNull()) {
+        QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image"));
+        return Eigen::MatrixXd(0, 0);
+    }
+
+    
    
-   
-    QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image);
+    QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4( image->image);
     for (int i = 0; i < objects.size(); i++) {
         QVector<QPoint> points = objects[i];
         int minX = points[0].x();
@@ -1217,27 +1227,115 @@ void ComputerVisionApplication::on_actionConected_N4_triggered() {
             }
         }
         
-        QPainter painter(&image);
+        QPainter painter(&image->image);
 
 
         painter.setPen(QPen(Qt::blue, 2));  // Color azul y un grosor de 5
 
-        painter.drawRect(minY-3, minX-3, maxY-minY+3,  maxX - minX + 3);  // Rectángulo en la posición (50,50) con ancho 300 y alto 200
+        painter.drawRect(minY-5, minX-5, maxY-minY+10,  maxX - minX + 10);  // Rectángulo en la posición (50,50) con ancho 300 y alto 200
 
 
     }
-    
-    if (!image.isNull()) {
-        ui->imageLabel->setPixmap(QPixmap::fromImage(image));
-        ui->imageLabel->setFixedSize(QPixmap::fromImage(image).size());
 
-        this->resize(QPixmap::fromImage(image).size());
+
+    
+    Eigen::MatrixXd descritorsReturn(objects.size(),2);
+    std::ofstream outFile("FilesOut/objects.csv", std::ios::app);
+    if (!outFile.is_open()) {
+        std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
+        return Eigen::MatrixXd(0, 0);
+    }
+    
+    for (int i = 0; i < objects.size(); i++) {
+        //we get the perimeter
+        descritorsReturn(i, 0) = objects[i].size();
+        
+       //we get the area
+        //let's  suppose we have an image whit an objects outline 
+        /*
+            -------------------------
+            |00000000000000000000000|
+            |00000011111111110000000| 
+            |00000010000000010000000|
+            |00000010000000010000000|
+            |00000010000000010000000|
+            |00000010000000010000000|
+            |00000010011110010000000|
+            |00000010010010010000000|
+            |00000010010010010000000|
+            |00000011110011110000000|
+            |00000000000000000000000|
+            -------------------------
+        
+        */
+        //The perimeter is the size of objects outline
+        //First, we sort the tuples of poinst
+        QVector<QPoint> points = objects[i];
+        std::sort(points.begin(), points.end(), [](const QPoint& a, const QPoint& b) {
+            return a.y() < b.y();
+        });
+
+        //we obtain the marginals of each pixel
+        std::map<int, QVector<QPoint>> clusters;
+        for (const auto& points : points) {
+            clusters[points.y()].push_back(points);
+        }
+
+        //We get the area
+        int area = 0;
+        for (const auto& cluster : clusters) {
+        
+            for (int j = 0; j < cluster.second.size() -1 ; j++) {
+                if (cluster.second[j].y() - cluster.second[j + 1].y() == 0) {
+                    area++;
+                }
+                else {
+                    area += cluster.second[j].y() - cluster.second[j + 1].y()+2;
+                }
+            }
+        }
+        //we add the area
+        descritorsReturn(i, 1) = area;
+        QString message = "Area: "+QString::number(descritorsReturn(i, 1)) + "Perimetro: " + QString::number(descritorsReturn(i, 0));
+        outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << i  << std::endl;
+        
+        
+        
+        QMessageBox::warning(this, tr("Load Image"),  message);
+
+
+
+
+
+
+
+
+
+        
+    }
+
+
+    
+
+   
+
+    outFile.close();
+    
+    if (!(image->image.isNull())) {
+
+        QLabel* imageLabel = getImageLabel();
+
+        imageLabel->setPixmap(QPixmap::fromImage(image->image));
+        imageLabel->setFixedSize(QPixmap::fromImage(image->image).size());
+
+        this->resize(QPixmap::fromImage(image->image).size());
     }
     else {
         QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image."));
 
     }
-   
+
+    return descritorsReturn;
 
 
 }

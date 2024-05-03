@@ -23,6 +23,10 @@
 #include <string>
 #include "imageTransformations.h"
 #include<vector>
+#include <fstream>
+#include <cstdlib>  
+#include <ctime>    
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ComputerVisionApplication; }
@@ -82,7 +86,7 @@ private slots: // listeners to buttons
 
 
     //Segmentation
-    void on_actionConected_N4_triggered();
+    Eigen::MatrixXd on_actionConected_N4_triggered();
 
 private:
     Ui::ComputerVisionApplication* ui; //UI

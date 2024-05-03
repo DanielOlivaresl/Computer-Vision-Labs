@@ -60,13 +60,15 @@
     <ClInclude Include="plots.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="image.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="ComputerVisionApplication.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="image.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

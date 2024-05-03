@@ -1,7 +1,8 @@
 #include "plots.h"	
 #include <memory>
 #include <QLabel>
-#include<QValueAxis>
+#include <QtCharts/QValueAxis>
+
 #include "imageTransformations.h"
 //using namespace QtCharts;
 void Plots::scatterPlot(std::vector<std::vector<double>> data) {
