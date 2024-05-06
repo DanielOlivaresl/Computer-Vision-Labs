@@ -26,7 +26,7 @@
 #include <fstream>
 #include <cstdlib>  
 #include <ctime>    
-
+#include "reader.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class ComputerVisionApplication; }
@@ -76,8 +76,9 @@ private slots: // listeners to buttons
 
     // DataSet Procedures
 
-    void on_actionLoadDataSet_triggered();
-
+    void on_actionLoadDataSet_triggered(); // used to load images dataset from a folder
+    void on_actionReadCSV_triggered(); // used to read an csv onto a 
+    
     //Dock actions
 
     void handleDockLocationChanged(Qt::DockWidgetArea area);
@@ -109,6 +110,7 @@ private:
     //Helper functions
     QLabel* getImageLabel();
     Image* getImage();
+    QString getFilePath(std::string extension); // pass in a string the extension, example : .csv , .txt, ... 
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
