@@ -55,7 +55,7 @@ Eigen::MatrixXd read_csv(QString filePath) {
 
     qDebug() << "size rows " << matrix.rows();
     qDebug() << "size cols " << matrix.cols();
-    // Cerrar el archivo
+    // closing
     file.close();
     return matrix;
 }
