@@ -302,8 +302,8 @@ int kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> cla
 
 
 // 50/50 split
-std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidation::crossValidation(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes){
-		
+std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidation::crossValidation(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes) {
+
 	//We will create a test and train split vector's of matrices 
 
 	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> testSplit;
@@ -316,14 +316,14 @@ std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidati
 	for (Eigen::Matrix<double, Eigen::Dynamic, 3> matrix : classes) {
 		Eigen::Matrix<double, Eigen::Dynamic, 3> test;
 		Eigen::Matrix<double, Eigen::Dynamic, 3> train;
-		
+
 
 		//we will randomly select indexes to add to the test set, until we have enough
 		std::vector<int> indexes;
 
 		while (indexes.size() < (matrix.rows() / 2)) {
-			int index = std::rand() % matrix.rows();	
-			
+			int index = std::rand() % matrix.rows();
+
 			//we check that the index isn't in the list 
 			while (std::count(indexes.begin(), indexes.end(), index)) {
 				index = std::rand() % matrix.rows();
@@ -377,7 +377,7 @@ std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidati
 			}
 			else {
 				trainMatrix.conservativeResize(trainMatrix.rows() + 1, Eigen::NoChange);
-				trainMatrix.row(trainMatrix.rows() - 1)= classes.at(i).row(j);
+				trainMatrix.row(trainMatrix.rows() - 1) = classes.at(i).row(j);
 
 			}
 
@@ -386,7 +386,7 @@ std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidati
 		trainingSplit.push_back(trainMatrix);
 
 	}
-	
+
 	std::vector<std::vector< Eigen::Matrix<double, Eigen::Dynamic, 3> > > result = { testSplit,trainingSplit };
 
 	return result;
@@ -401,15 +401,15 @@ std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidati
 	return result;
 
 
-	
+
 }
 
 
-std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> train, std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> test,int knn) {
+std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> train, std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> test, int knn) {
 
 	//we will create a 3D vector where one dimension is the Method (euclidean,manhalanobis, etc.. .) another dimension is the classes and the last dimension is the actual prediction
 
-	std::vector<std::vector<std::vector<int>>> predictions(4,std::vector<std::vector<int>>(test.size(), std::vector<int>(test.at(0).rows())));
+	std::vector<std::vector<std::vector<int>>> predictions(4, std::vector<std::vector<int>>(test.size(), std::vector<int>(test.at(0).rows())));
 
 	//now we begin to fill our vector
 
@@ -417,7 +417,7 @@ std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen
 	for (Eigen::Matrix<double, Eigen::Dynamic, 3> clas : test) {
 		for (int i = 0; i < clas.rows(); i++) {
 			//we begin to fill our vector
-			
+
 			//Euclidean
 			std::vector<double> distances1 = euclidean(train, clas.row(i));
 			int res = getClosest(distances1);
@@ -449,7 +449,7 @@ std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen
 
 
 std::vector<std::vector<double>> get_matrixConfusion(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> mat, std::vector<std::vector<int>> vectorOfPredictions) {
-	
+
 
 	std::vector<std::vector<double>> matConf(mat.size(), std::vector<double>(mat.size(), 0));
 	for (int i = 0; i < mat.size(); i++) {
