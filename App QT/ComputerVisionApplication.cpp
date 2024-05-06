@@ -520,9 +520,11 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
         qDebug() << "Size of the vector of images " << vectorImages.size();
         qDebug() << "size of one image " << vectorImages[0].size();
 
-        for (int i = 1; i < vectorImages.size() ; i++)
+        for (int i = 1; i < vectorImages.size(); i++)
         {
-            if (i == 6 || i == 17 || i == 25 || i == 30 || i == 34 || i == 83 || i == 87 || i == 95) continue;
+            //if (i == 6 || i == 17 || i == 25 || i == 30 || i == 34 || i == 83 || i == 87 || i == 95) continue;
+
+            if (i == 7|| i == 20 ||i == 30|| i == 36|| i==40 || i==99 ||i==104 || i==114) continue;
             ImageTransformations::imageObjectsToCsv(vectorImages[i],imageNames[i], i);
         }
         // llamando a la funcion que obtiene las caracteristicas de las imagenes 
@@ -1240,7 +1242,7 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
 
 
 
-    QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image->image);
+    QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image->image); //Each element of this list represents a object in the image
     for (int i = 0; i < objects.size(); i++) {
         QVector<QPoint> points = objects[i];
         int minX = points[0].x();
@@ -1269,13 +1271,12 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
         painter.setPen(QPen(Qt::blue, 2));  // Color azul y un grosor de 5
 
         painter.drawRect(minY - 5, minX - 5, maxY - minY + 10, maxX - minX + 10);  // Rectángulo en la posición (50,50) con ancho 300 y alto 200
-
-
+        
     }
 
 
 
-    Eigen::MatrixXd descritorsReturn(objects.size(), 2);
+    Eigen::MatrixXd descritorsReturn(objects.size(), 3);
     std::ofstream outFile("FilesOut/objects.csv", std::ios::app);
     if (!outFile.is_open()) {
         std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
@@ -1283,6 +1284,7 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
     }
 
     for (int i = 0; i < objects.size(); i++) {
+
         //we get the perimeter
         descritorsReturn(i, 0) = objects[i].size();
 
@@ -1332,8 +1334,38 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
         }
         //we add the area
         descritorsReturn(i, 1) = area;
-        QString message = "Area: " + QString::number(descritorsReturn(i, 1)) + "Perimetro: " + QString::number(descritorsReturn(i, 0));
-        outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << " object " + std::to_string(i+1) << std::endl;
+
+        //We calculate the center of gravity
+        int moment0 = 0;
+        int moment10 = 0;
+        int moment01 = 0;
+
+        for (int j = 0; j < objects[i].size(); j++) { //We will iterate the points of the current object
+            moment0 += 1;
+            moment10 += objects[i][j].x(); //x spatial distribution
+            moment01 += objects[i][j].y(); //y spatial distribution
+
+        }
+
+        int cx = static_cast<int>(moment10 / moment0);
+        int cy = static_cast<int>(moment01 / moment0);
+
+        //we now add the metric to the descriptors
+        descritorsReturn(i, 2) =cx + cy* image->image.size().width();
+        descritorsReturn(i, 3) =cy ;
+        QString message = "Area: " + QString::number(descritorsReturn(i, 1)) +
+            "Perimetro: " + QString::number(descritorsReturn(i, 0)) +
+            "Centro de Gravedad: " + "(" + QString::number(descritorsReturn(i, 2)) + "," + QString::number(descritorsReturn(i, 3)) + ")";
+        
+        
+        QPainter painter(&image->image);
+        painter.setPen(QPen(Qt::green, 2));
+
+        painter.drawEllipse(cy-10,cx-10,20,20);
+
+
+
+        outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," <<descritorsReturn(i,2) << "," << descritorsReturn(i, 3) << " object " + std::to_string(i+1) << std::endl;
 
 
 
@@ -1356,6 +1388,9 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
         QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image."));
 
     }
+
+
+
 
     return descritorsReturn;
 
