@@ -73,7 +73,7 @@ void ComputerVisionApplication::on_actionSelect_Image_triggered()
     QString initialDir = lastDirectory.isEmpty() ? QDir::homePath() : lastDirectory;
 
     QString filePath = QFileDialog::getOpenFileName(this, tr("Select Image"), initialDir + "/peppers.jpg", tr("Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"));
-     
+
 
     if (!filePath.isEmpty()) {
         // Update lastDirectory with the new directory
@@ -83,7 +83,7 @@ void ComputerVisionApplication::on_actionSelect_Image_triggered()
         if (tempImg->image.load(filePath)) {
             tempImg->image = tempImg->image.convertToFormat(QImage::Format_RGB888);
             if (!tempImg->image.isNull()) {
-                
+
                 QWidget* firsttab = new QWidget();
                 QVBoxLayout* layout = new QVBoxLayout();
                 QLabel* imageLabel = new QLabel("Image Label");
@@ -167,7 +167,7 @@ void ComputerVisionApplication::on_actionThreshold_triggered() {
         QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image"));
         return;
     }
-    
+
 
     currFormat = "Thresholded";
     //Variables to make the code more understandable
@@ -474,7 +474,11 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
     if (!directoryPath.isEmpty()) {
         QDir directory(directoryPath);
         QStringList images = directory.entryList(QStringList() << "*.bmp", QDir::Files);
+
+
         std::vector<QImage> vectorImages; // vector that stores the images 
+        std::vector<QString> imageNames;
+
         foreach(QString filename, images) {
             qDebug() << "Archivo encontrado:" << filename;
             QString filePath = directory.absoluteFilePath(filename); // getting the absolute path of each image 
@@ -493,7 +497,12 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
 
 
 
-                vectorImages.push_back(tempImg->image); // storing the image 
+                vectorImages.push_back(tempImg->image); // storing the image if its necessary... 
+                imageNames.push_back(filename); // storing each imageName in the vector
+
+
+                // here we call the function that retrieves the objects in the image for each image into a csv 
+                //ImageTransformations::imageObjectsToCsv(tempImg->image);
 
 
                 layout->addWidget(imageLabel);
@@ -511,7 +520,11 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
         qDebug() << "Size of the vector of images " << vectorImages.size();
         qDebug() << "size of one image " << vectorImages[0].size();
 
-
+        for (int i = 1; i < vectorImages.size() ; i++)
+        {
+            if (i == 6 || i == 17 || i == 25 || i == 30 || i == 34 || i == 83 || i == 87 || i == 95) continue;
+            ImageTransformations::imageObjectsToCsv(vectorImages[i],imageNames[i], i);
+        }
         // llamando a la funcion que obtiene las caracteristicas de las imagenes 
         // here goes that function ------------
         //
@@ -521,6 +534,13 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
     else {
         qDebug() << "No directory selected.";
     }
+}
+
+void ComputerVisionApplication::on_actionReadCSV_triggered()
+{
+    QString filePath = getFilePath("csv");
+    Eigen::MatrixXd data = read_csv(filePath);
+    Plots::matrixPlot2D(data, "Perimeter", "Area");
 }
 
 bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
@@ -1189,12 +1209,28 @@ void ComputerVisionApplication::updateImage(QImage newImage) {
     imagelabel->setFixedSize(QPixmap::fromImage(newImage).size());
 
 }
+QString ComputerVisionApplication::getFilePath(std::string extension)
+{
+    // filter of files
+    QString filter = QString("Archivos de texto (*.%1)").arg(QString::fromStdString(extension));
+
+    QString filePath = QFileDialog::getOpenFileName(nullptr, "Seleccionar archivo", "", filter);
+
+    if (!filePath.isEmpty()) {
+        qDebug() << "Archivo seleccionado:" << filePath;
+        return filePath;
+    }
+    else {
+        qDebug() << "Ning√∫n archivo seleccionado.";
+    }
+    return QString("");
+}
 
 Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
     Image* image = getImage();
     Image tmp = *image;
     if (image == NULL) {
-        
+
         return Eigen::MatrixXd(0, 0);
     }
     if (image->image.isNull()) {
@@ -1202,9 +1238,9 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
         return Eigen::MatrixXd(0, 0);
     }
 
-    
-   
-    QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4( image->image);
+
+
+    QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image->image);
     for (int i = 0; i < objects.size(); i++) {
         QVector<QPoint> points = objects[i];
         int minX = points[0].x();
@@ -1226,54 +1262,54 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
                 maxY = point.y();
             }
         }
-        
+
         QPainter painter(&image->image);
 
 
         painter.setPen(QPen(Qt::blue, 2));  // Color azul y un grosor de 5
 
-        painter.drawRect(minY-5, minX-5, maxY-minY+10,  maxX - minX + 10);  // Rect·ngulo en la posiciÛn (50,50) con ancho 300 y alto 200
+        painter.drawRect(minY - 5, minX - 5, maxY - minY + 10, maxX - minX + 10);  // Rect√°ngulo en la posici√≥n (50,50) con ancho 300 y alto 200
 
 
     }
 
 
-    
-    Eigen::MatrixXd descritorsReturn(objects.size(),2);
+
+    Eigen::MatrixXd descritorsReturn(objects.size(), 2);
     std::ofstream outFile("FilesOut/objects.csv", std::ios::app);
     if (!outFile.is_open()) {
         std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
         return Eigen::MatrixXd(0, 0);
     }
-    
+
     for (int i = 0; i < objects.size(); i++) {
         //we get the perimeter
         descritorsReturn(i, 0) = objects[i].size();
-        
-       //we get the area
-        //let's  suppose we have an image whit an objects outline 
-        /*
-            -------------------------
-            |00000000000000000000000|
-            |00000011111111110000000| 
-            |00000010000000010000000|
-            |00000010000000010000000|
-            |00000010000000010000000|
-            |00000010000000010000000|
-            |00000010011110010000000|
-            |00000010010010010000000|
-            |00000010010010010000000|
-            |00000011110011110000000|
-            |00000000000000000000000|
-            -------------------------
-        
-        */
-        //The perimeter is the size of objects outline
-        //First, we sort the tuples of poinst
+
+        //we get the area
+         //let's  suppose we have an image whit an objects outline 
+         /*
+             -------------------------
+             |00000000000000000000000|
+             |00000011111111110000000|
+             |00000010000000010000000|
+             |00000010000000010000000|
+             |00000010000000010000000|
+             |00000010000000010000000|
+             |00000010011110010000000|
+             |00000010010010010000000|
+             |00000010010010010000000|
+             |00000011110011110000000|
+             |00000000000000000000000|
+             -------------------------
+
+         */
+         //The perimeter is the size of objects outline
+         //First, we sort the tuples of poinst
         QVector<QPoint> points = objects[i];
         std::sort(points.begin(), points.end(), [](const QPoint& a, const QPoint& b) {
             return a.y() < b.y();
-        });
+            });
 
         //we obtain the marginals of each pixel
         std::map<int, QVector<QPoint>> clusters;
@@ -1284,43 +1320,29 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
         //We get the area
         int area = 0;
         for (const auto& cluster : clusters) {
-        
-            for (int j = 0; j < cluster.second.size() -1 ; j++) {
+
+            for (int j = 0; j < cluster.second.size() - 1; j++) {
                 if (cluster.second[j].y() - cluster.second[j + 1].y() == 0) {
                     area++;
                 }
                 else {
-                    area += cluster.second[j].y() - cluster.second[j + 1].y()+2;
+                    area += cluster.second[j].y() - cluster.second[j + 1].y() + 2;
                 }
             }
         }
         //we add the area
         descritorsReturn(i, 1) = area;
-        QString message = "Area: "+QString::number(descritorsReturn(i, 1)) + "Perimetro: " + QString::number(descritorsReturn(i, 0));
-        outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << i  << std::endl;
-        
-        
-        
-        QMessageBox::warning(this, tr("Load Image"),  message);
+        QString message = "Area: " + QString::number(descritorsReturn(i, 1)) + "Perimetro: " + QString::number(descritorsReturn(i, 0));
+        outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << " object " + std::to_string(i+1) << std::endl;
 
 
 
+        QMessageBox::warning(this, tr("Load Image"), message);
 
 
-
-
-
-
-        
     }
-
-
-    
-
-   
-
     outFile.close();
-    
+
     if (!(image->image.isNull())) {
 
         QLabel* imageLabel = getImageLabel();
@@ -1339,4 +1361,3 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
 
 
 }
-
