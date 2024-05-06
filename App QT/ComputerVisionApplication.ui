@@ -94,13 +94,13 @@
      <string>DataSet</string>
     </property>
     <addaction name="actionLoadDataSet"/>
+    <addaction name="actionReadCSV"/>
    </widget>
    <widget class="QMenu" name="menuObj_Segment">
     <property name="title">
      <string>Obj Segment</string>
     </property>
     <addaction name="actionConected_N4"/>
-    
    </widget>
    <addaction name="menu"/>
    <addaction name="menuConvert"/>
@@ -207,6 +207,11 @@
   <action name="actionConected_N4">
    <property name="text">
     <string>Conected N4</string>
+   </property>
+  </action>
+  <action name="actionReadCSV">
+   <property name="text">
+    <string>ReadCSV</string>
    </property>
   </action>
  </widget>
