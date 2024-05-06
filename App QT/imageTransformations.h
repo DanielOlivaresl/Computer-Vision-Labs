@@ -3,6 +3,9 @@
 #include <QPainter>
 #include <QRect>
 #include <QColor>
+#include <fstream>
+#include <cstdlib>  
+#include <ctime>    
 
 
 #include <cmath>
@@ -11,7 +14,7 @@
 class ImageTransformations {
 
 public:
-	static QImage convertToGray(QImage &image);
+	static QImage convertToGray(QImage& image);
 	static std::vector<std::vector<QRgb>> getPixels(QImage image);
 	static QImage createImage(std::vector<std::vector<QRgb>> matrix);
 	static QImage negativeImage(QImage image);
@@ -19,18 +22,20 @@ public:
 	static QImage gammaTransform(QImage, double c, double alpha);
 
 	//Histogram Processing
-	static std::vector<double> normalizeHistogram(std::vector<int> histogram); 
+	static std::vector<double> normalizeHistogram(std::vector<int> histogram);
 	static std::vector<int> linearHistogramEqualization(QImage image, int maxVal);
 	static std::vector<int> computeHistogram(QImage image);
-	static QImage histogramToImage(std::vector<int> histogram,QImage image);
-		//Histogram Specification
+	static QImage histogramToImage(std::vector<int> histogram, QImage image);
+	//Histogram Specification
 	static std::vector<int> equalizationHistogram(std::vector<int> histogram, int maxVal);
-	std::vector<int> histogramSpecification(std::vector<int> histogram,std::vector<double> specifiedHistogram, int maxVal);
+	std::vector<int> histogramSpecification(std::vector<int> histogram, std::vector<double> specifiedHistogram, int maxVal);
+
+
+	static void imageObjectsToCsv(QImage& image,QString filaname , int i); // used to transform an image into a csv with the information of all the objects in the image 
 
 	static void thereshold(QImage& image, int thresholded);
 	static QVector<QVector<QPoint>> connectedN4(QImage& image);
 	static  QVector<QPoint> outLine(QImage& image, int i, int j);
 };
 
- 
-	
+
