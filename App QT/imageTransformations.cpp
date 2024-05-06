@@ -33,7 +33,7 @@ void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, in
 	qDebug() << "ENTRANDO en "<< i<< '\n';
 	// calling the function that retrieves the information 
 	QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image);
-	Eigen::MatrixXd descritorsReturn(objects.size(), 2);
+	Eigen::MatrixXd descritorsReturn(objects.size(), 3);
 	std::ofstream outFile("FilesOut/objects.csv", std::ios::app);
 	if (!outFile.is_open()) {
 		std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
@@ -69,8 +69,32 @@ void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, in
 		}
 		//we add the area
 		descritorsReturn(i, 1) = area;
-		QString message = "Area: " + QString::number(descritorsReturn(i, 1)) + "Perimetro: " + QString::number(descritorsReturn(i, 0));
-		outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << " object " + std::to_string(i + 1)<< " " << filaname.toStdString() << std::endl;
+		
+
+		//We calculate the center of gravity
+		int moment0 = 0;
+		int moment10 = 0;
+		int moment01 = 0;
+
+		for (int j = 0; j < objects[i].size(); j++) { //We will iterate the points of the current object
+			moment0 += 1;
+			moment10 += objects[i][j].x(); //x spatial distribution
+			moment01 += objects[i][j].y(); //y spatial distribution
+
+		}
+
+		int cx = static_cast<int>(moment10 / moment0);
+		int cy = static_cast<int>(moment01 / moment0);
+
+		//we now add the metric to the descriptors
+		descritorsReturn(i, 2) = cx + cy*image.size().width();
+		QString message = "Area: " + QString::number(descritorsReturn(i, 1)) +
+			"Perimetro: " + QString::number(descritorsReturn(i, 0)) +
+			"Centro de Gravedad: " + "(" + QString::number(descritorsReturn(i, 2)) + "," + QString::number(descritorsReturn(i, 3)) + ")";
+
+
+
+		outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << descritorsReturn(i, 2) << "," << " object " + std::to_string(i + 1) << std::endl;
 		
 	}
 	outFile.close();
