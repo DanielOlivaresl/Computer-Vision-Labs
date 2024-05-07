@@ -10,38 +10,26 @@
 //Constructor
 ComputerVisionApplication::ComputerVisionApplication(QWidget* parent) :
     QMainWindow(parent), ui(new Ui::ComputerVisionApplication)
-
 {
     qDebug() << "Dock moved";
-
-
     ui->setupUi(this);
     settings = new QSettings("organization", "application");
-
-
-
     settings->beginGroup("FileDialog");
     lastDirectory = settings->value("lastDirectory", "../Images").toString();
     settings->endGroup();
-
     //We disable some of the UI buttons
     ui->menuConvert->setDisabled(true);
     ui->menuDistances->setDisabled(true);
     ui->menuCross_Validation->setDisabled(true);
     ui->menuPrueba_Chevy->setDisabled(false);
-
     this->setFixedSize(1500, 900);
     ui->menuBar->installEventFilter(this);
     singleClickTimer = new QTimer(this);
     singleClickTimer->setSingleShot(true);
     singleClickTimer->setInterval(200);
-
     ui->Tabs->installEventFilter(this);
-
     this->setDockOptions(this->AllowNestedDocks);
-
     QTabBar* tabBar = ui->Tabs->tabBar();
-
     connect(tabBar, &QTabBar::tabBarDoubleClicked, [tabBar, this](int index) {
         /*QMessageBox::warning(this, tr("Confusion Matrix"), QString::number(index));*/
         convertTabToDock(ui->Tabs, index);
@@ -54,22 +42,15 @@ ComputerVisionApplication::ComputerVisionApplication(QWidget* parent) :
 //Destructor
 ComputerVisionApplication::~ComputerVisionApplication()
 {
-    delete ui;
 
+    delete ui;
     settings->beginGroup("FileDialog");
     settings->setValue("lastDirectory", lastDirectory);
-
     QString dir = settings->value("lastDirectory", "null").toString();
-
     settings->endGroup();
-
 }
-
-
 void ComputerVisionApplication::on_actionSelect_Image_triggered()
 {
-
-
     QString initialDir = lastDirectory.isEmpty() ? QDir::homePath() : lastDirectory;
 
     QString filePath = QFileDialog::getOpenFileName(this, tr("Select Image"), initialDir + "/peppers.jpg", tr("Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"));
@@ -117,8 +98,6 @@ void ComputerVisionApplication::on_actionSelect_Image_triggered()
         }
     }
 }
-
-
 void ComputerVisionApplication::on_actionToGray_triggered() {
     Image* image = getImage();
     if (image == NULL) {
@@ -552,7 +531,9 @@ void ComputerVisionApplication::on_actionReadCSV_triggered()
     //cols.push_back("Perimetro");
     //cols.push_back("Centro gravedad");
     //Plots::plotMatrix(data, cols);
-    Plots::matrixPlot3D_labels(test.numericData, test.stringData[0], "Area", "Perimetro", "Centro de gravedad");
+    Plots::matrixPlot3D_labels(test.numericData, test.stringData[0], "Perimetro", "Area", "Centro de gravedad");
+    ML mlModule;
+    mlModule.Kmeans(test.numericData,test.numericData.cols());
 }
 
 bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
@@ -582,9 +563,6 @@ bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
 
     if (watched->objectName() != "menuBar" && event->type() == QEvent::MouseButtonPress) {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-
-
-
         auto eventType = mouseEvent->type();
         auto mousePos = mouseEvent->pos();
         auto button = mouseEvent->button();
@@ -596,8 +574,6 @@ bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
                 singleClickFunctionality(button, mousePos);
                 }, Qt::UniqueConnection);
         }
-
-
     }
     QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 
@@ -607,13 +583,7 @@ bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
         singleClickTimer->stop();
         doubleClickFunctionality(button);
     }
-
-
-
     //We start tracking the position of the mouse so we can see what pixel is being clicked
-
-
-
     return false; // Continue default processing
 }
 
@@ -639,14 +609,9 @@ void ComputerVisionApplication::on_actionimageProcessingFunction1_triggered() {
 
     updateImage(img->image);
 
-
-
-
-
-
 }
-void ComputerVisionApplication::paintEvent(QPaintEvent* event) {
-
+void ComputerVisionApplication::paintEvent(QPaintEvent* event) 
+{
     Image* image = getImage();
     if (image == NULL) {
         return;
@@ -684,16 +649,12 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
         int step = 1;
         knn = QInputDialog::getInt(this, tr("KNN"), tr("Type the number of k: "), defaultValue, minVal, maxVal, step, &ok);
     }
-
-
     //we now fill a prediction vector
 
     //we will first separate our data with cross validation
 
     std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> cvSet = CrossValidation::crossValidation(image->matrixClasses);
     std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> resSet = CrossValidation::Restitucion(image->matrixClasses);
-
-
     //we will now create the data for each of the predictions
 
     std::vector<std::vector<std::vector<int>>> resPred = generatePredictions(resSet.at(0), resSet.at(1), knn);
@@ -725,8 +686,6 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
             ////KNN
             res = kNearestNeighbours(currSplit.at(1), clas.row(i), knn);
             looPredictions.at(3).at(currClass).at(i) = res;
-
-
         }
         currClass++;
     }
@@ -1350,11 +1309,11 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
         int moment10 = 0;
         int moment01 = 0;
 
-        for (int j = 0; j < objects[i].size(); j++) { //We will iterate the points of the current object
+        for (int j = 0; j < objects[i].size(); j++)
+        { //We will iterate the points of the current object
             moment0 += 1;
             moment10 += objects[i][j].x(); //x spatial distribution
             moment01 += objects[i][j].y(); //y spatial distribution
-
         }
 
         int cx = static_cast<int>(moment10 / moment0);
@@ -1376,16 +1335,12 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
 
 
         outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << descritorsReturn(i, 2) << "," << descritorsReturn(i, 3) << " object " + std::to_string(i + 1) << std::endl;
-
-
-
         QMessageBox::warning(this, tr("Load Image"), message);
-
-
     }
     outFile.close();
 
-    if (!(image->image.isNull())) {
+    if (!(image->image.isNull())) 
+    {
 
         QLabel* imageLabel = getImageLabel();
 
@@ -1394,15 +1349,10 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
 
         this->resize(QPixmap::fromImage(image->image).size());
     }
-    else {
+    else 
+    {
         QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image."));
 
     }
-
-
-
-
     return descritorsReturn;
-
-
 }
