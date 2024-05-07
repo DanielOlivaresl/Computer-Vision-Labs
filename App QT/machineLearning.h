@@ -2,6 +2,17 @@
 #include <string>
 #include<Eigen/Dense>
 #include <QString>
+#include "computations.h"
+
+class ML
+{
+public:
+    Eigen::MatrixXd Kmeans(const Eigen::MatrixXd data, int k ); // returns a matrix where each row is a centroid, k centroids so k rows (k = numClasses). 
+    int query_centroids(Eigen::MatrixXd inputToClass); // return a an integer representing the most closest centroid
+
+};
+
+
 class Perceptron
 {
 public:
