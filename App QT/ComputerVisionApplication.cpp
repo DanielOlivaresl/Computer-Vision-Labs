@@ -522,10 +522,10 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
 
         for (int i = 1; i < vectorImages.size(); i++)
         {
-            //if (i == 6 || i == 17 || i == 25 || i == 30 || i == 34 || i == 83 || i == 87 || i == 95) continue;
-
-            if (i == 7|| i == 20 ||i == 30|| i == 36|| i==40 || i==99 ||i==104 || i==114) continue;
-            ImageTransformations::imageObjectsToCsv(vectorImages[i],imageNames[i], i);
+            //if (i == 6 || i == 17 || i == 25 || i == 30 || i == 34 || i == 83 || i == 87 || i == 95) continue; chevy
+            //if (i == 7 || i == 20 || i == 30 || i == 36 || i == 40 || i == 99 || i == 104 || i == 114) continue; daniel
+            if (i == 6 || i == 17 || i == 25 || i == 30 || i == 34 || i == 83 || i == 87 || i == 95) continue;
+            ImageTransformations::imageObjectsToCsv(vectorImages[i], imageNames[i], i);
         }
         // llamando a la funcion que obtiene las caracteristicas de las imagenes 
         // here goes that function ------------
@@ -541,8 +541,18 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
 void ComputerVisionApplication::on_actionReadCSV_triggered()
 {
     QString filePath = getFilePath("csv");
-    Eigen::MatrixXd data = read_csv(filePath);
-    Plots::matrixPlot2D(data, "Perimeter", "Area");
+    //Eigen::MatrixXd data = read_csv(filePath);
+    DataStore test = read_csvToDataStore(filePath);
+    //qDebug() << "Size of the matrix " << data.cols();
+    //qDebug() << "Size of the matrix test " << test.numericData.rows();
+    //qDebug() << "Size of vector strings " << test.stringData.size();
+    //qDebug() << "Size of vector strings at 0  " << test.stringData[0].size();
+    //std::vector <std::string> cols;
+    //cols.push_back("Area");
+    //cols.push_back("Perimetro");
+    //cols.push_back("Centro gravedad");
+    //Plots::plotMatrix(data, cols);
+    Plots::matrixPlot3D_labels(test.numericData, test.stringData[0], "Area", "Perimetro", "Centro de gravedad");
 }
 
 bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
@@ -1271,7 +1281,7 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
         painter.setPen(QPen(Qt::blue, 2));  // Color azul y un grosor de 5
 
         painter.drawRect(minY - 5, minX - 5, maxY - minY + 10, maxX - minX + 10);  // Rectángulo en la posición (50,50) con ancho 300 y alto 200
-        
+
     }
 
 
@@ -1351,21 +1361,21 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
         int cy = static_cast<int>(moment01 / moment0);
 
         //we now add the metric to the descriptors
-        descritorsReturn(i, 2) =cx + cy* image->image.size().width();
-        descritorsReturn(i, 3) =cy ;
+        descritorsReturn(i, 2) = cx + cy * image->image.size().width();
+        descritorsReturn(i, 3) = cy;
         QString message = "Area: " + QString::number(descritorsReturn(i, 1)) +
             "Perimetro: " + QString::number(descritorsReturn(i, 0)) +
             "Centro de Gravedad: " + "(" + QString::number(descritorsReturn(i, 2)) + "," + QString::number(descritorsReturn(i, 3)) + ")";
-        
-        
+
+
         QPainter painter(&image->image);
         painter.setPen(QPen(Qt::green, 2));
 
-        painter.drawEllipse(cy-10,cx-10,20,20);
+        painter.drawEllipse(cy - 10, cx - 10, 20, 20);
 
 
 
-        outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," <<descritorsReturn(i,2) << "," << descritorsReturn(i, 3) << " object " + std::to_string(i+1) << std::endl;
+        outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << descritorsReturn(i, 2) << "," << descritorsReturn(i, 3) << " object " + std::to_string(i + 1) << std::endl;
 
 
 
