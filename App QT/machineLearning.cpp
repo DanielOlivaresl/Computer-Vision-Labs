@@ -49,7 +49,6 @@ Eigen::VectorXd Perceptron::init_weights(const int& input_shape)
 {
     return Eigen::VectorXd::Random(input_shape + 1);
 }
-
 Eigen::VectorXd Perceptron::get_h(const Eigen::MatrixXd& inputData)
 {
     return inputData * weights;
@@ -125,4 +124,40 @@ Eigen::VectorXd Perceptron::query(const Eigen::VectorXd& x) // arreglar esta jun
     Eigen::MatrixXd x_normalized = init_query(x);
     qDebug() << "Observando lo obtenido " + std::to_string(feed_forward(x_normalized).size());
     return feed_forward(x_normalized);
+}
+
+void printM(Eigen::MatrixXd m)
+{
+    for (int i = 0; i < m.rows(); i++)
+    {
+        for (int j = 0; j < m.cols(); j++)
+        {
+            qDebug() << m(i, j) << "";
+        }
+        qDebug() << "\n";
+    }
+}
+
+Eigen::MatrixXd ML::Kmeans(const Eigen::MatrixXd data, int k)
+{
+    // Crear los centroides
+    Eigen::MatrixXd centroids(k, data.cols());
+    centroids.setRandom();
+    centroids = (centroids + Eigen::MatrixXd::Constant(data.rows(), k, 1.0)) * 0.5;
+    for (int j = 0; j < data.cols(); j++)
+    {
+        //normalizeColumn(data,j); 
+    }
+    for (int i = 0; i < k; i++)
+    {
+        Eigen::MatrixXd data_minus_centroid = data.rowwise() - centroids.row(i);
+        qDebug() << "Size of the rest r:" << data_minus_centroid.rows() << "c:" << data_minus_centroid.cols()<< '\n';
+        printM(data_minus_centroid);
+    }
+    return centroids;
+}
+
+int ML::query_centroids(Eigen::MatrixXd inputToClass)
+{
+    return 0;
 }
