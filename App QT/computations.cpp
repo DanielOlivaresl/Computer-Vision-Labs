@@ -447,7 +447,17 @@ std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen
 
 }
 
+void normalizeColumn(Eigen::MatrixXd& matrix, int column) {
+	// getting the col
+	Eigen::VectorXd col = matrix.col(column);
 
+	// min val and max val 
+	double minVal = col.minCoeff();
+	double maxVal = col.maxCoeff();
+
+	// range in (0,1)
+	matrix.col(column) = (col.array() - minVal) / (maxVal - minVal);
+}
 std::vector<std::vector<double>> get_matrixConfusion(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> mat, std::vector<std::vector<int>> vectorOfPredictions) {
 
 
