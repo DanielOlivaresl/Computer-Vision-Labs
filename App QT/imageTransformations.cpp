@@ -30,14 +30,14 @@ QImage ImageTransformations::convertToGray(QImage& image) {
 
 void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, int i)
 {
-	qDebug() << "ENTRANDO en "<< i<< '\n';
+	qDebug() << "ENTRANDO en " << i << '\n';
 	// calling the function that retrieves the information 
 	QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image);
 	Eigen::MatrixXd descritorsReturn(objects.size(), 3);
 	std::ofstream outFile("FilesOut/objects.csv", std::ios::app);
 	if (!outFile.is_open()) {
 		std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
-		return ;
+		return;
 	}
 
 	for (int i = 0; i < objects.size(); i++) {
@@ -69,7 +69,7 @@ void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, in
 		}
 		//we add the area
 		descritorsReturn(i, 1) = area;
-		
+
 
 		//We calculate the center of gravity
 		int moment0 = 0;
@@ -87,15 +87,15 @@ void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, in
 		int cy = static_cast<int>(moment01 / moment0);
 
 		//we now add the metric to the descriptors
-		descritorsReturn(i, 2) = cx + cy*image.size().width();
+		descritorsReturn(i, 2) = cx + cy * image.size().width();
 		QString message = "Area: " + QString::number(descritorsReturn(i, 1)) +
 			"Perimetro: " + QString::number(descritorsReturn(i, 0)) +
 			"Centro de Gravedad: " + "(" + QString::number(descritorsReturn(i, 2)) + "," + QString::number(descritorsReturn(i, 3)) + ")";
 
 
 
-		outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << descritorsReturn(i, 2) << "," << " object " + std::to_string(i + 1) << std::endl;
-		
+		outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << descritorsReturn(i, 2) << "," << " object" + std::to_string(i + 1) << "At "<< filaname.toStdString() << std::endl;
+
 	}
 	outFile.close();
 	qDebug() << "EXITO" << '\n';
@@ -531,6 +531,3 @@ QVector<QPoint> ImageTransformations::outLine(QImage& image, int i, int j) {
 	}
 	return object;
 }
-
-
-
