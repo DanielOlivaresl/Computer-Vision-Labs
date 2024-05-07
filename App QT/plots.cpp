@@ -2,8 +2,8 @@
 #include <memory>
 #include <QLabel>
 #include <QtCharts/QValueAxis>
-
 #include "imageTransformations.h"
+
 
 void Plots::matrixPlot3D_labels(Eigen::MatrixXd values, std::vector<std::string> labels, std::string col1Name, std::string col2Name, std::string col3Name) {
     // congf of  3D graphic
@@ -29,7 +29,6 @@ void Plots::matrixPlot3D_labels(Eigen::MatrixXd values, std::vector<std::string>
         series->setBaseColor(QColor(Qt::magenta));
         series->setItemSize(0.08);
         series->setItemLabelFormat(QString::fromStdString(labels[i])); // setting for each point an id, name in the dataset
-
         QScatterDataArray dataPoints;
         dataPoints << QVector3D(values(i, 0), values(i, 1), values(i, 2)); // creating a datapoint with the values of each row
         series->dataProxy()->addItems(dataPoints);
@@ -40,7 +39,6 @@ void Plots::matrixPlot3D_labels(Eigen::MatrixXd values, std::vector<std::string>
     container->show();
     container->setMinimumSize(800, 600);
 }
-
 void Plots::plotMatrix(Eigen::MatrixXd matrixData, std::vector<std::string> colNames)
 {
     if (matrixData.cols() > 5)
@@ -120,9 +118,9 @@ void Plots::matrixPlot3D(Eigen::MatrixXd values, std::string col1Name, std::stri
 
     QScatterDataArray* dataPoints = new QScatterDataArray();
 
-    normalizeColumn(values, 0);
-    normalizeColumn(values, 1);
-    normalizeColumn(values, 2);
+    //normalizeColumn(values, 0);
+    //normalizeColumn(values, 1);
+    //normalizeColumn(values, 2);
 
     // Populate data points
     for (int i = 0; i < values.rows(); ++i) {
