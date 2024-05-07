@@ -29,6 +29,9 @@ Eigen::MatrixXd read_csv(QString filePath) {
                 double value = std::stod(field);
                 row.push_back(value);
             }
+            else {
+                // if the field is not numeric the we store that in 
+            }
         }
 
         // pushing into the vector store
@@ -55,7 +58,64 @@ Eigen::MatrixXd read_csv(QString filePath) {
 
     qDebug() << "size rows " << matrix.rows();
     qDebug() << "size cols " << matrix.cols();
-    // closing
+    // Cerrar el archivo
     file.close();
     return matrix;
+}
+DataStore read_csvToDataStore(QString filePath) {
+    qDebug() << filePath << "Archivo recibido" << '\n';
+    std::ifstream file(filePath.toStdString());
+    if (!file.is_open()) {
+        qDebug() << "Error al abrir el archivo: " << filePath << '\n';
+        return DataStore();
+    }
+
+    std::vector<std::vector<double>> numericData;
+    std::vector<std::vector<std::string>> stringData;
+
+    std::string line;
+    if (std::getline(file, line)) { // Leer la primera línea para inicializar stringData
+        std::istringstream ss(line);
+        std::string field;
+        while (std::getline(ss, field, ',')) {
+            if (field.empty() || std::any_of(field.begin(), field.end(), [](char c) { return !std::isdigit(c) && c != '.' && c != '-'; })) {
+                stringData.push_back(std::vector<std::string>()); // Añade un vector para cada columna de texto
+            }
+        }
+    }
+
+    file.clear(); // Limpia los flags de eof()
+    file.seekg(0); // Vuelve al inicio del archivo para leer de nuevo
+
+    while (std::getline(file, line)) {
+        std::vector<double> numericRow; // Vector to store numeric data of each row
+        std::istringstream ss(line);
+        std::string field;
+        size_t textIndex = 0; // Índice para el vector de vectores de texto
+        while (std::getline(ss, field, ',')) {
+            if (!field.empty() && std::all_of(field.begin(), field.end(), [](char c) { return std::isdigit(c) || c == '.' || c == '-'; })) {
+                numericRow.push_back(std::stod(field));
+            }
+            else {
+                if (textIndex < stringData.size()) {
+                    stringData[textIndex++].push_back(field);
+                }
+            }
+        }
+        numericData.push_back(numericRow);
+    }
+
+    Eigen::MatrixXd matrix(numericData.size(), numericData.empty() ? 0 : numericData[0].size());
+    for (size_t i = 0; i < numericData.size(); ++i) {
+        for (size_t j = 0; j < numericData[i].size(); ++j) {
+            matrix(i, j) = numericData[i][j];
+        }
+    }
+
+    DataStore result;
+    result.numericData = matrix;
+    result.stringData = stringData;
+
+    file.close();
+    return result;
 }
