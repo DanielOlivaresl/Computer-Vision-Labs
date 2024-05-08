@@ -113,20 +113,24 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="image.cpp" />
-    <QtMoc Include="image.h" />
+    <ClCompile Include="machineLearning.cpp" />
     <ClCompile Include="plots.cpp" />
-    <ClInclude Include="plots.h" />
+    <ClCompile Include="reader.cpp" />
     <QtRcc Include="ComputerVisionApplication.qrc" />
+    <QtUic Include="ComputerVisionApplication.ui" />
     <QtMoc Include="ComputerVisionApplication.h" />
     <ClCompile Include="computations.cpp" />
-    <ClCompile Include="imageTransformations.cpp" />
-    <ClInclude Include="computations.h" />
-    <ClInclude Include="imageTransformations.h" />
     <ClCompile Include="ComputerVisionApplication.cpp" />
+    <ClCompile Include="imageTransformations.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <QtUic Include="ComputerVisionApplication.ui" />
+    <ClInclude Include="computations.h" />
+    <ClInclude Include="reader.h" />
+    <QtMoc Include="image.h" />
+    <ClInclude Include="imageTransformations.h" />
+    <ClInclude Include="machineLearning.h" />
+    <ClInclude Include="plots.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
