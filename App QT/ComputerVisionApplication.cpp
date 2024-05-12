@@ -502,8 +502,8 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
         for (int i = 1; i < vectorImages.size(); i++)
         {
             //if (i == 6 || i == 17 || i == 25 || i == 30 || i == 34 || i == 83 || i == 87 || i == 95) continue; chevy
-            //if (i == 7 || i == 20 || i == 30 || i == 36 || i == 40 || i == 99 || i == 104 || i == 114) continue; daniel
-            if (i == 6 || i == 17 || i == 25 || i == 30 || i == 34 || i == 83 || i == 87 || i == 95) continue;
+            if (i == 7 || i == 20 || i == 30 || i == 36 || i == 40 || i == 99 || i == 104 || i == 114) continue;// daniel
+            //if (i == 6 || i == 17 || i == 25 || i == 30 || i == 34 || i == 83 || i == 87 || i == 95) continue;
             ImageTransformations::imageObjectsToCsv(vectorImages[i], imageNames[i], i);
         }
         // llamando a la funcion que obtiene las caracteristicas de las imagenes 
@@ -520,7 +520,7 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
 void ComputerVisionApplication::on_actionReadCSV_triggered()
 {
     QString filePath = getFilePath("csv");
-    //Eigen::MatrixXd data = read_csv(filePath);
+    Eigen::MatrixXd data = read_csv(filePath);
     DataStore test = read_csvToDataStore(filePath);
     //qDebug() << "Size of the matrix " << data.cols();
     //qDebug() << "Size of the matrix test " << test.numericData.rows();
@@ -532,8 +532,8 @@ void ComputerVisionApplication::on_actionReadCSV_triggered()
     //cols.push_back("Centro gravedad");
     //Plots::plotMatrix(data, cols);
     Plots::matrixPlot3D_labels(test.numericData, test.stringData[0], "Perimetro", "Area", "Centro de gravedad");
-    ML mlModule;
-    mlModule.Kmeans(test.numericData,test.numericData.cols());
+    //ML mlModule;
+    //mlModule.Kmeans(test.numericData,test.numericData.cols());
 }
 
 bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
@@ -1201,6 +1201,7 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
     Image* image = getImage();
     Image tmp = *image;
     if (image == NULL) {
+        QMessageBox::warning(this, tr("Load Image"), tr("Failed, Image is NULL"));
 
         return Eigen::MatrixXd(0, 0);
     }
@@ -1237,9 +1238,19 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
         QPainter painter(&image->image);
 
 
-        painter.setPen(QPen(Qt::blue, 2));  // Color azul y un grosor de 5
+        painter.setPen(QPen(Qt::red, 2));  // Color azul y un grosor de 5
 
         painter.drawRect(minY - 5, minX - 5, maxY - minY + 10, maxX - minX + 10);  // Rectángulo en la posición (50,50) con ancho 300 y alto 200
+        QString str = QString("Object: ")+ QString::fromStdString(std::to_string(i));
+        
+
+        /*QPainter painter(&image->image);*/
+
+
+        painter.setPen(QPen(Qt::red, 2));  // Color azul y un grosor de 5
+
+
+        painter.drawText(minY-5, maxX-5, 100, 20,Qt::AlignLeft,str );
 
     }
 
@@ -1251,7 +1262,7 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
         std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
         return Eigen::MatrixXd(0, 0);
     }
-
+    //We iterate over the objects in an image
     for (int i = 0; i < objects.size(); i++) {
 
         //we get the perimeter
@@ -1355,4 +1366,37 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
 
     }
     return descritorsReturn;
+}
+
+void ComputerVisionApplication::on_actionClassify_Image_triggered(){
+    qDebug() << "Entering";
+    Image* image = getImage();
+
+    std::vector < std::function<std::vector<double>(QVector<QPoint>, QImage&)>> func = {
+        ObjectMetrics::calculateArea,
+        ObjectMetrics::calculateCenterOfGravity,
+        ObjectMetrics::calculatePerimeter
+    };
+
+
+    //we first will get the centroids from the kmeans algorithm, but in this case, we don't have them so we will randomly generate 5 centroids
+
+    Eigen::MatrixXd centroids(5, 3); // 5 rows and 3 columns
+
+    // Fill the matrix with random values
+    centroids= Eigen::MatrixXd::Random(5, 3);
+
+
+    std::map<int, std::string> namesMap;
+
+    namesMap[0] = "Tuerca";
+    namesMap[1] = "Tornillo";
+    namesMap[2] = "Rondanda";
+    namesMap[3] = "Arandelas";
+    namesMap[4] = "Ganchos";
+
+
+
+
+    ImageTransformations::classifyImage(image->image, centroids, func, namesMap);
 }
