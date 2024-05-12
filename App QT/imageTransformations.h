@@ -36,6 +36,17 @@ public:
 	static void thereshold(QImage& image, int thresholded);
 	static QVector<QVector<QPoint>> connectedN4(QImage& image);
 	static  QVector<QPoint> outLine(QImage& image, int i, int j);
+
+
+	//unclassified methods
+
+	static void classifyImage(QImage& image, Eigen::MatrixXd centroids, std::vector < std::function <std::vector<double>(QVector<QPoint>, QImage&)>> functions, std::map<int, std::string> namesMap);
+
+
+
 };
+
+
+
 
 

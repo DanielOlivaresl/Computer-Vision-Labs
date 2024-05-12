@@ -33,68 +33,39 @@ void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, in
 	qDebug() << "ENTRANDO en " << i << '\n';
 	// calling the function that retrieves the information 
 	QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image);
-	Eigen::MatrixXd descritorsReturn(objects.size(), 3);
 	std::ofstream outFile("FilesOut/objects.csv", std::ios::app);
 	if (!outFile.is_open()) {
 		std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
 		return;
 	}
 
-	for (int i = 0; i < objects.size(); i++) {
-		//we get the perimeter
-		descritorsReturn(i, 0) = objects[i].size();
-		QVector<QPoint> points = objects[i];
-		std::sort(points.begin(), points.end(), [](const QPoint& a, const QPoint& b) {
-			return a.y() < b.y();
-			});
+	//We first store the functions to be applied to a list
+	std::vector < std::function<std::vector<double>(QVector<QPoint>, QImage&)>> func = {
+		ObjectMetrics::calculateArea,
+		ObjectMetrics::calculateCenterOfGravity,
+		ObjectMetrics::calculatePerimeter
+	};
+	
+	
 
-		//we obtain the marginals of each pixel
-		std::map<int, QVector<QPoint>> clusters;
-		for (const auto& points : points) {
-			clusters[points.y()].push_back(points);
+
+	
+
+
+
+
+	for (int i = 0; i < objects.size(); i++) {//we iterate the objects
+
+		Eigen::MatrixXd descritorsReturn = ObjectMetrics::featureExtraction(func, objects[i], image);
+
+
+
+		for (int j = 0; j < descritorsReturn.cols(); j++) { //we iterate the features of the objects 
+			outFile << descritorsReturn(i, j) << ",";
 		}
-
-		//We get the area
-		int area = 0;
-		for (const auto& cluster : clusters) {
-
-			for (int j = 0; j < cluster.second.size() - 1; j++) {
-				if (cluster.second[j].y() - cluster.second[j + 1].y() == 0) {
-					area++;
-				}
-				else {
-					area += cluster.second[j].y() - cluster.second[j + 1].y() + 2;
-				}
-			}
-		}
-		//we add the area
-		descritorsReturn(i, 1) = area;
+		outFile << "object" << std::to_string(i + 1) << "At " << filaname.toStdString() << std::endl;
 
 
-		//We calculate the center of gravity
-		int moment0 = 0;
-		int moment10 = 0;
-		int moment01 = 0;
-
-		for (int j = 0; j < objects[i].size(); j++) { //We will iterate the points of the current object
-			moment0 += 1;
-			moment10 += objects[i][j].x(); //x spatial distribution
-			moment01 += objects[i][j].y(); //y spatial distribution
-
-		}
-
-		int cx = static_cast<int>(moment10 / moment0);
-		int cy = static_cast<int>(moment01 / moment0);
-
-		//we now add the metric to the descriptors
-		descritorsReturn(i, 2) = cx + cy * image.size().width();
-		QString message = "Area: " + QString::number(descritorsReturn(i, 1)) +
-			"Perimetro: " + QString::number(descritorsReturn(i, 0)) +
-			"Centro de Gravedad: " + "(" + QString::number(descritorsReturn(i, 2)) + "," + QString::number(descritorsReturn(i, 3)) + ")";
-
-
-
-		outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << descritorsReturn(i, 2) << "," << " object" + std::to_string(i + 1) << "At "<< filaname.toStdString() << std::endl;
 
 	}
 	outFile.close();
@@ -531,3 +502,67 @@ QVector<QPoint> ImageTransformations::outLine(QImage& image, int i, int j) {
 	}
 	return object;
 }
+
+void ImageTransformations::classifyImage(QImage& image, Eigen::MatrixXd centroids, std::vector < std::function <std::vector<double>(QVector<QPoint>, QImage&)>> functions, std::map<int,std::string> namesMap){
+	
+	//first we will apply all the transformations that were applied to images in the dataset, in order to get the metrics
+
+
+	QVector<QVector<QPoint>> objects;
+	objects = connectedN4(image);
+	
+	
+
+	//we iterate each of the objects and get they're features
+
+	std::vector<Eigen::MatrixXd> objectMetrics;
+
+	std::vector<int> classification; //Vector that stores the classification of each object
+
+
+	for (auto object : objects) {
+		Eigen::VectorXd pointToClassify = ObjectMetrics::featureExtraction(functions, object, image);
+		objectMetrics.push_back(pointToClassify);
+		//Once we got they're features we will calculate the distance of each object to the centroid given by Kmeans
+
+		std::vector<double> distances =euclidean(objectMetrics[objectMetrics.size() - 1], pointToClassify);
+		classification.push_back(getClosest(distances));
+
+	}
+
+
+	//now that we have classified the objects we print the results
+
+
+	for (int i = 0; i < classification.size(); i++) {
+		std::string className;
+		if (namesMap.find(classification[i]) == namesMap.end()) {
+			className = "None";
+		}else {
+		
+			className = namesMap[i];
+		}
+		qDebug() << "Object[" << i << "] belongs to class: " << className <<"\n";
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
