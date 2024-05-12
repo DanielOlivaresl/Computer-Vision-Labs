@@ -1,13 +1,21 @@
 #pragma once
 
-#include<vector>
-#include<Eigen/Dense>
 #include<iostream>
+#include<vector>
 #include<cmath>	
 #include<algorithm>
+#include<map>
+
+#include<Eigen/Dense>
 #include <QString>
 #include<QImage>
+#include <QPoint>
 std::vector<double> euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);
+std::vector<double> euclidean(Eigen::MatrixXd points, Eigen::VectorXd point); //we pass a matrix of n cols and n rows and a point of n dimensions
+
+
+
+
 Eigen::MatrixXd  calculateCovMatrix(Eigen::MatrixXd data);
 std::vector<double> manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);
 int getClosest(std::vector<double> distances);
@@ -25,4 +33,14 @@ public:
 	static std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> crossValidation(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes);
 	static std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> Restitucion(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes);
 
+};
+
+class ObjectMetrics {
+public:
+	static std::vector<double> calculateArea(QVector<QPoint> object, QImage& image);
+	static std::vector<double> calculatePerimeter(QVector<QPoint> object, QImage& image);
+	static std::vector<double> calculateCenterOfGravity(QVector<QPoint> object, QImage& image);
+	static Eigen::MatrixXd featureExtraction(std::vector < std::function <std::vector<double>(QVector<QPoint>,QImage&)>>& functions, QVector<QPoint> object, QImage& image);
+
+	
 };
