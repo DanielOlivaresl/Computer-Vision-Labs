@@ -3,13 +3,14 @@
 #include<Eigen/Dense>
 #include <QString>
 #include "computations.h"
-
+#include <algorithm>
+#include <cstdlib>
+#include <QDebug>
 class ML
 {
 public:
-    Eigen::MatrixXd Kmeans(const Eigen::MatrixXd data, int k ); // returns a matrix where each row is a centroid, k centroids so k rows (k = numClasses). 
-    int query_centroids(Eigen::MatrixXd inputToClass); // return a an integer representing the most closest centroid
-
+    static std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> Kmeans(const Eigen::MatrixXd data, int k, float threshold); // returns a matrix where each row is a centroid, k centroids so k rows (k = numClasses). 
+    
 };
 
 
