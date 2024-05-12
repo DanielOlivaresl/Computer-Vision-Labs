@@ -27,7 +27,8 @@
 #include <cstdlib>  
 #include <ctime>    
 #include "reader.h"
-
+#include "machineLearning.h"
+#include "plots.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class ComputerVisionApplication; }
 QT_END_NAMESPACE

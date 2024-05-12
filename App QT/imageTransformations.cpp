@@ -28,17 +28,82 @@ QImage ImageTransformations::convertToGray(QImage& image) {
 
 }
 
-void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, int i)
+void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, int i, std::vector<QImage>& subimages)
 {
 	qDebug() << "ENTRANDO en " << i << '\n';
 	// calling the function that retrieves the information 
 	QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image);
 	std::ofstream outFile("FilesOut/objects.csv", std::ios::app);
+
 	if (!outFile.is_open()) {
 		std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
 		return;
 	}
 
+	for (int i = 0; i < objects.size(); i++) {
+		// getting the subimage of the object
+		QVector<QPoint> pointsS = objects[i];
+		int minX = pointsS[0].x();
+		int minY = pointsS[0].y();
+		int maxX = pointsS[0].x();
+		int maxY = pointsS[0].y();
+
+		// Find the bounding box of the object
+		for (const QPoint& point : pointsS) {
+			if (point.x() < minX) {
+				minX = point.x();
+			}
+			if (point.x() > maxX) {
+				maxX = point.x();
+			}
+			if (point.y() < minY) {
+				minY = point.y();
+			}
+			if (point.y() > maxY) {
+				maxY = point.y();
+			}
+		}
+
+		// Create a new image containing only the object
+		QImage objectImage = image.copy(minY - 5, minX - 5, maxY - minY + 10, maxX - minX + 10);
+		subimages.push_back(objectImage);
+		descritorsReturn(i, 0) = objects[i].size();
+
+		//we get the area
+		 //let's  suppose we have an image whit an objects outline 
+		 /*
+			 -------------------------
+			 |00000000000000000000000|
+			 |00000011111111110000000|
+			 |00000010000000010000000|
+			 |00000010000000010000000|
+			 |00000010000000010000000|
+			 |00000010000000010000000|
+			 |00000010011110010000000|
+			 |00000010010010010000000|
+			 |00000010010010010000000|
+			 |00000011110011110000000|
+			 |00000000000000000000000|
+			 -------------------------
+
+		 */
+		 //The perimeter is the size of objects outline
+		 //First, we sort the tuples of poinst
+		QVector<QPoint> points = objects[i];
+		std::sort(points.begin(), points.end(), [](const QPoint& a, const QPoint& b) {
+			return a.x() < b.x();
+			});
+
+		//we obtain the marginals of each pixel
+		std::map<int, QVector<QPoint>> clusters;
+		for (const auto& points : points) {
+			clusters[points.y()].push_back(points);
+		}
+
+		//We get the area
+		int area = 0;
+
+		for (const auto& cluster : clusters) {
 	//We first store the functions to be applied to a list
 	std::vector < std::function<std::vector<double>(QVector<QPoint>, QImage&)>> func = {
 		ObjectMetrics::calculateArea,

@@ -33,6 +33,7 @@ void Plots::matrixPlot3D_labels(Eigen::MatrixXd values, std::vector<std::string>
         dataPoints << QVector3D(values(i, 0), values(i, 1), values(i, 2)); // creating a datapoint with the values of each row
         series->dataProxy()->addItems(dataPoints);
         scatter->addSeries(series);
+
     }
 
     // showing
@@ -52,7 +53,7 @@ void Plots::plotMatrix(Eigen::MatrixXd matrixData, std::vector<std::string> colN
     }
     else if (matrixData.cols() == 3)
     {
-        matrixPlot3D(matrixData, colNames[0], colNames[1], colNames[2]);
+        //matrixPlot3D(matrixData, colNames[0], colNames[1], colNames[2]);
         return;
     }
 }
@@ -92,7 +93,7 @@ void Plots::matrixPlot2D(Eigen::MatrixXd values, std::string col1Name, std::stri
     chartView->resize(800, 600);
     chartView->show();
 }
-void Plots::matrixPlot3D(Eigen::MatrixXd values, std::string col1Name, std::string col2Name, std::string col3Name)
+void Plots::matrixPlot3D(Eigen::MatrixXd values,std::vector<std::string> labels, std::string col1Name, std::string col2Name, std::string col3Name)
 {
     // configuration of 3Dscatter
     Q3DScatter* scatter = new Q3DScatter();
@@ -107,6 +108,15 @@ void Plots::matrixPlot3D(Eigen::MatrixXd values, std::string col1Name, std::stri
 
     // container of scatter
     QWidget* container = QWidget::createWindowContainer(scatter);
+    QGridLayout* layout = new QGridLayout();
+    container->setLayout(layout);
+
+    layout->addWidget(container, 0, 0, 2, 1); 
+
+    // adding the image label of the photo
+    QLabel* imageLabel = new QLabel();
+    imageLabel->setMaximumSize(100, 100); 
+    layout->addWidget(imageLabel, 0, 1, Qt::AlignTop | Qt::AlignRight); 
 
 
     // conf of dataSeries
@@ -114,21 +124,54 @@ void Plots::matrixPlot3D(Eigen::MatrixXd values, std::string col1Name, std::stri
     QScatter3DSeries* dataSeries = new QScatter3DSeries(dataProxy);
     dataSeries->setBaseColor(QColor(Qt::magenta));
     dataSeries->setItemSize(0.08);
-    dataSeries->setItemLabelFormat(QString("Data point"));
+    
 
     QScatterDataArray* dataPoints = new QScatterDataArray();
 
-    //normalizeColumn(values, 0);
-    //normalizeColumn(values, 1);
-    //normalizeColumn(values, 2);
+    normalizeColumn(values, 0);
+    normalizeColumn(values, 1);
+    normalizeColumn(values, 2);
 
     // Populate data points
     for (int i = 0; i < values.rows(); ++i) {
         QVector3D point(values(i, 0), values(i, 1), values(i, 2));
         dataPoints->push_back(point);
     }
+    QString outputDir = "FilesOut/SubImages";
+
+    std::vector<QLabel*> imLabels;
+
+
+    QObject::connect(scatter, &Q3DScatter::selectedSeriesChanged, [=](QScatter3DSeries* series) {
+        if (series) {
+            int item = series->selectedItem();
+            dataSeries->setItemLabelFormat(QString::fromStdString(labels[item]));
+            QString filename = QString("%1/SubImage_%2.png").arg(outputDir).arg(item);
+            QImage image(filename);
+            if (!image.isNull()) {
+                QLabel* imageLabel = new QLabel();  
+                imageLabel->setPixmap(QPixmap::fromImage(image));
+                imageLabel->show();
+                //imLabels.push_back(imageLabel);
+            }
+            else {
+                qDebug() << "Imagen no encontrada: " << filename;
+            }
+        }
+        else {
+            // here is where i need to delete all the imageLabel created
+        }
+        });
+
+
     dataSeries->dataProxy()->addItems(*dataPoints);
     scatter->addSeries(dataSeries);
+
+
+    
+
+
+
     container->show();
     container->setMinimumSize(800, 600);
 }
@@ -323,8 +366,42 @@ void Plots::histogram(std::vector<int> histogram) {
     chartView->show();
 
 }
+void Plots::plotMatrixClasses(std::vector<Eigen::MatrixXd> mc)
+{
+    Q3DScatter* scatter = new Q3DScatter();
+    QWidget* container = QWidget::createWindowContainer(scatter);
+    scatter->setSelectionMode(QAbstract3DGraph::SelectionItemAndRow | QAbstract3DGraph::SelectionSlice);
+    scatter->scene()->activeCamera()->setCameraPreset(Q3DCamera::CameraPresetFront);
 
-void Plots::plotPerceptrons(std::vector<Perceptron> perceptrons) {
+    QVector<QColor> baseColors = { QColor(Qt::red), QColor(Qt::green), QColor(Qt::blue), QColor(Qt::yellow), QColor(Qt::cyan), QColor(Qt::magenta), QColor(Qt::gray) };
+
+    for (int idx = 0; idx < mc.size(); ++idx) {
+        
+        // Data points series
+        QScatterDataProxy* dataProxy = new QScatterDataProxy();
+        QScatter3DSeries* dataSeries = new QScatter3DSeries(dataProxy);
+        dataSeries->setBaseColor(baseColors[idx]);
+        dataSeries->setItemSize(0.1);
+        dataSeries->setItemLabelFormat(QString("Data - Class %1").arg(idx));
+
+        QScatterDataArray* dataPoints = new QScatterDataArray();
+
+        for (int i = 0; i < mc[idx].rows(); ++i) {
+            QVector3D point(mc[idx](i, 0), mc[idx](i, 1), mc[idx](i, 2));
+            dataPoints->push_back(point);
+        }
+
+        dataSeries->dataProxy()->addItems(*dataPoints);
+        scatter->addSeries(dataSeries);
+    }
+
+    container->show();
+    container->setMinimumSize(800, 600);
+}
+
+
+/*
+* void Plots::plotPerceptrons(std::vector<Perceptron> perceptrons) {
     qDebug() << "Numero de perceptrones recibidos " << perceptrons.size();
     for (auto p : perceptrons) {
         p.showInfo();
@@ -388,3 +465,4 @@ void Plots::plotPerceptrons(std::vector<Perceptron> perceptrons) {
     container->show();
     container->setMinimumSize(800, 600);
 }
+*/
