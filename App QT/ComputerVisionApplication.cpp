@@ -1,6 +1,5 @@
 #include "ComputerVisionApplication.h"
 #include "computations.h"
-#include "plots.h"
 #include "image.h"
 #include<QPixmap>
 #include<QPixmap>
@@ -457,7 +456,7 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
 
         std::vector<QImage> vectorImages; // vector that stores the images 
         std::vector<QString> imageNames;
-
+        std::vector<QImage> subImages; // vector that store the subImages of the data
         foreach(QString filename, images) {
             qDebug() << "Archivo encontrado:" << filename;
             QString filePath = directory.absoluteFilePath(filename); // getting the absolute path of each image 
@@ -504,13 +503,20 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
             //if (i == 6 || i == 17 || i == 25 || i == 30 || i == 34 || i == 83 || i == 87 || i == 95) continue; chevy
             //if (i == 7 || i == 20 || i == 30 || i == 36 || i == 40 || i == 99 || i == 104 || i == 114) continue; daniel
             if (i == 6 || i == 17 || i == 25 || i == 30 || i == 34 || i == 83 || i == 87 || i == 95) continue;
-            ImageTransformations::imageObjectsToCsv(vectorImages[i], imageNames[i], i);
+            ImageTransformations::imageObjectsToCsv(vectorImages[i], imageNames[i], i,subImages);
         }
-        // llamando a la funcion que obtiene las caracteristicas de las imagenes 
-        // here goes that function ------------
-        //
-        //-----------------------------------------------------------------------
+        qDebug() << "Size of the subImages" << subImages.size() << '\n';
+        QString outputDir = "FilesOut/SubImages";
 
+        // Crear directorio de salida si no existe
+        QDir().mkpath(outputDir);
+
+        // Iterar sobre las imágenes y guardarlas en el directorio de salida
+        for (int i = 0; i < subImages.size(); ++i) {
+            QString imagePath = QDir(outputDir).filePath(QString("SubImage_%1.png").arg(i));
+            subImages[i].save(imagePath);
+
+        }
     }
     else {
         qDebug() << "No directory selected.";
@@ -520,20 +526,14 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
 void ComputerVisionApplication::on_actionReadCSV_triggered()
 {
     QString filePath = getFilePath("csv");
-    //Eigen::MatrixXd data = read_csv(filePath);
     DataStore test = read_csvToDataStore(filePath);
-    //qDebug() << "Size of the matrix " << data.cols();
-    //qDebug() << "Size of the matrix test " << test.numericData.rows();
-    //qDebug() << "Size of vector strings " << test.stringData.size();
-    //qDebug() << "Size of vector strings at 0  " << test.stringData[0].size();
-    //std::vector <std::string> cols;
-    //cols.push_back("Area");
-    //cols.push_back("Perimetro");
-    //cols.push_back("Centro gravedad");
-    //Plots::plotMatrix(data, cols);
-    Plots::matrixPlot3D_labels(test.numericData, test.stringData[0], "Perimetro", "Area", "Centro de gravedad");
-    ML mlModule;
-    mlModule.Kmeans(test.numericData,test.numericData.cols());
+    std::vector <std::string> cols;
+    cols.push_back("Area");
+    cols.push_back("Perimetro");
+    cols.push_back("Centro gravedad");
+    Plots::matrixPlot3D(test.numericData,test.stringData[0], cols[0], cols[1], cols[2]);
+    auto result = ML::Kmeans(test.numericData,5,0.1);
+    Plots::plotMatrixClasses(result.first);
 }
 
 bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
