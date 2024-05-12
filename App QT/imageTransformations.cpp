@@ -28,24 +28,74 @@ QImage ImageTransformations::convertToGray(QImage& image) {
 
 }
 
-void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, int i)
+void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, int i, std::vector<QImage>& subimages)
 {
 	qDebug() << "ENTRANDO en " << i << '\n';
 	// calling the function that retrieves the information 
 	QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image);
+	qDebug() << "size of META qvector " << objects.size() << " size of qvector " << objects[0].size() << '\n';
+	
+	
 	Eigen::MatrixXd descritorsReturn(objects.size(), 3);
 	std::ofstream outFile("FilesOut/objects.csv", std::ios::app);
+
 	if (!outFile.is_open()) {
 		std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
 		return;
 	}
 
 	for (int i = 0; i < objects.size(); i++) {
-		//we get the perimeter
+		// getting the subimage of the object
+		QVector<QPoint> pointsS = objects[i];
+		int minX = pointsS[0].x();
+		int minY = pointsS[0].y();
+		int maxX = pointsS[0].x();
+		int maxY = pointsS[0].y();
+
+		// Find the bounding box of the object
+		for (const QPoint& point : pointsS) {
+			if (point.x() < minX) {
+				minX = point.x();
+			}
+			if (point.x() > maxX) {
+				maxX = point.x();
+			}
+			if (point.y() < minY) {
+				minY = point.y();
+			}
+			if (point.y() > maxY) {
+				maxY = point.y();
+			}
+		}
+
+		// Create a new image containing only the object
+		QImage objectImage = image.copy(minY - 5, minX - 5, maxY - minY + 10, maxX - minX + 10);
+		subimages.push_back(objectImage);
 		descritorsReturn(i, 0) = objects[i].size();
+
+		//we get the area
+		 //let's  suppose we have an image whit an objects outline 
+		 /*
+			 -------------------------
+			 |00000000000000000000000|
+			 |00000011111111110000000|
+			 |00000010000000010000000|
+			 |00000010000000010000000|
+			 |00000010000000010000000|
+			 |00000010000000010000000|
+			 |00000010011110010000000|
+			 |00000010010010010000000|
+			 |00000010010010010000000|
+			 |00000011110011110000000|
+			 |00000000000000000000000|
+			 -------------------------
+
+		 */
+		 //The perimeter is the size of objects outline
+		 //First, we sort the tuples of poinst
 		QVector<QPoint> points = objects[i];
 		std::sort(points.begin(), points.end(), [](const QPoint& a, const QPoint& b) {
-			return a.y() < b.y();
+			return a.x() < b.x();
 			});
 
 		//we obtain the marginals of each pixel
@@ -56,21 +106,26 @@ void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, in
 
 		//We get the area
 		int area = 0;
+
 		for (const auto& cluster : clusters) {
 
 			for (int j = 0; j < cluster.second.size() - 1; j++) {
-				if (cluster.second[j].y() - cluster.second[j + 1].y() == 0) {
+				//area += abs(cluster.second[j + 1].x() - cluster.second[j].x());
+
+				if (abs(cluster.second[j + 1].x() - cluster.second[j].x()) == 1) {
 					area++;
+					//QMessageBox::warning(this, tr("Load Image"), "Condicion 1");
+
 				}
 				else {
-					area += cluster.second[j].y() - cluster.second[j + 1].y() + 2;
+
+					area += abs(cluster.second[j + 1].x() - cluster.second[j].x()) + 1;
+					//QMessageBox::warning(this, tr("Load Image"), "Condicion 2: " + QString::number(abs(cluster.second[j + 1].x() - cluster.second[j].x())+1));
 				}
 			}
 		}
-		//we add the area
+		
 		descritorsReturn(i, 1) = area;
-
-
 		//We calculate the center of gravity
 		int moment0 = 0;
 		int moment10 = 0;
@@ -87,14 +142,16 @@ void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, in
 		int cy = static_cast<int>(moment01 / moment0);
 
 		//we now add the metric to the descriptors
-		descritorsReturn(i, 2) = cx + cy * image.size().width();
-		QString message = "Area: " + QString::number(descritorsReturn(i, 1)) +
-			"Perimetro: " + QString::number(descritorsReturn(i, 0)) +
-			"Centro de Gravedad: " + "(" + QString::number(descritorsReturn(i, 2)) + "," + QString::number(descritorsReturn(i, 3)) + ")";
+	    //descritorsReturn(i, 2) = cy; + cx  image.size().width();
+		//descritorsReturn(i, 1) = moment0;
+
+		//QString message = "Area: " + QString::number(descritorsReturn(i, 1)) +
+			//"Perimetro: " + QString::number(descritorsReturn(i, 0)) +
+			//"Centro de Gravedad: " + "(" + QString::number(descritorsReturn(i, 2)) + "," + QString::number(descritorsReturn(i, 3)) + ")";
 
 
-
-		outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << descritorsReturn(i, 2) << "," << " object" + std::to_string(i + 1) << "At "<< filaname.toStdString() << std::endl;
+		        // Perimeter                       pos y        area                                 id 
+		outFile << descritorsReturn(i, 0) << "," << (cx + cy)/2 << "," << descritorsReturn(i, 1) << "," << " object" + std::to_string(i + 1) << "At " << filaname.toStdString() << std::endl;
 
 	}
 	outFile.close();
