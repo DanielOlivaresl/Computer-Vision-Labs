@@ -1,5 +1,5 @@
 #include "machineLearning.h"
-#include <QDebug>
+
 Perceptron::Perceptron(const Eigen::Matrix<double, Eigen::Dynamic, 3>& X_input, const std::string& F_input)
 {
     inputMean = X_input.colwise().mean();  
@@ -138,26 +138,86 @@ void printM(Eigen::MatrixXd m)
     }
 }
 
-Eigen::MatrixXd ML::Kmeans(const Eigen::MatrixXd data, int k)
+std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> ML::Kmeans(const Eigen::MatrixXd data, int k, float threshold)
 {
-    // Crear los centroides
+    std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> result;
+    // Creates the centroids 
     Eigen::MatrixXd centroids(k, data.cols());
-    centroids.setRandom();
-    centroids = (centroids + Eigen::MatrixXd::Constant(data.rows(), k, 1.0)) * 0.5;
-    for (int j = 0; j < data.cols(); j++)
-    {
-        //normalizeColumn(data,j); 
-    }
+    // getting a random smaple from the data
     for (int i = 0; i < k; i++)
     {
-        Eigen::MatrixXd data_minus_centroid = data.rowwise() - centroids.row(i);
-        qDebug() << "Size of the rest r:" << data_minus_centroid.rows() << "c:" << data_minus_centroid.cols()<< '\n';
-        printM(data_minus_centroid);
+        for (int j = 0; j < data.cols(); j++)
+        {
+            centroids(i, j) = data(rand() % data.rows(), j);
+        }
     }
-    return centroids;
+
+    int iter = 0;
+    Eigen::MatrixXd centroids_copy = centroids; // to check how  much the centroids move in each iteration 
+    std::vector<Eigen::MatrixXd> matrixClassesFinal; // to store the data in the class that corresponds
+    while (true)
+    {
+        // Calculates euc distance--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        Eigen::MatrixXd distances(data.rows(), k); // matrix to store distances. [diastance to c1, distance to c2, distance to c3] instance 1,[diastance to c1, distance to c2, distance to c3] instance 2 ... 
+        for (int i = 0; i < k; i++)
+        {
+            Eigen::MatrixXd data_minus_centroid = data.rowwise() - centroids.row(i);
+            data_minus_centroid = data_minus_centroid.array().square();
+            Eigen::VectorXd sum_squared_diff_sqrt = (data_minus_centroid.rowwise().sum()).array().sqrt();
+            distances.col(i) = sum_squared_diff_sqrt;
+        }
+        // ----------------------------------------------------------------------------------------------------------------------------- here whe can call another dist function if needed but must be the same shape as distances...
+
+
+
+        std::vector<Eigen::MatrixXd> matrixClasses; // to store where all instances belong in the classes--------------------------------------------
+        for (int c = 0; c < k; c++)
+        {
+            matrixClasses.push_back(Eigen::MatrixXd(0, data.cols())); // init the vector of classes
+        }
+        for (int ind = 0; ind < distances.rows(); ind++)
+        {
+            Eigen::MatrixXd::Index minIndex;
+            distances.row(ind).minCoeff(&minIndex);
+            //qDebug() << "centoide mas cercano para el ejemplo " << ind << " Es : " << minIndex << "\n";
+            matrixClasses[minIndex].conservativeResize(matrixClasses[minIndex].rows() + 1, Eigen::NoChange); // adding a new row
+            matrixClasses[minIndex].row(matrixClasses[minIndex].rows() - 1) = data.row(ind);
+        }
+        //--------------------------------------------------------------------------------------------------------------------------------------------
+        
+        
+        for (int r = 0; r < centroids.rows(); r++) // Calculates and sets the values of each centroid with the mean of each column in the matrixClasses
+        {
+            for (int c = 0; c < centroids.cols(); c++)
+            {
+                centroids(r, c) = matrixClasses[r].col(c).mean();
+            }
+        }//-----------------------------------------------------------------
+
+
+        int tf = 0;   // Used to break the loop when all the entries in the rest between actual centroids and past centroids are less than the threshold 
+        for (int i = 0; i < (centroids - centroids_copy).rows(); i++)
+        {
+            for (int j = 0; j < (centroids - centroids_copy).cols(); j++)
+            {
+                if ((centroids - centroids_copy)(i, j) < threshold)
+                {
+                    tf++;
+                }
+            }
+        }
+        if (tf == (centroids - centroids_copy).size())
+        {
+            matrixClassesFinal = matrixClasses;
+            break;
+        }//--------------------------------------------------------------------------------------------------------------------------------------------------
+
+        centroids_copy = centroids; // to store the last centroids calculated
+        iter++; // iterator to store how much iterations ocurred
+    }
+    qDebug() << "Centoides finales en " << iter << "Iteraciones ";
+    printM(centroids);
+    result = std::make_pair(matrixClassesFinal, centroids);
+    return result;
 }
 
-int ML::query_centroids(Eigen::MatrixXd inputToClass)
-{
-    return 0;
-}
