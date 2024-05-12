@@ -65,6 +65,33 @@ std::vector<double>  euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic,
 
 
 }
+/**
+* @brief Function that calculates the euclidean distance between two points in n dimensions
+ * @param Eigen::MatrixXd Matrix that contains all the points which we want to calc the distance
+ * @param Eigen::VectorXd vector of N dimensions, that we want to know the distance to
+ * @return Vector of distances
+ *
+ */
+std::vector<double> euclidean(Eigen::MatrixXd points, Eigen::VectorXd point)
+{
+	std::vector<double> distances(points.rows());
+
+	//we iterate the points
+	for (int i = 0; i < points.rows(); i++) {
+
+		//we iterate the dimensions of each point
+		double sum = 0;
+		for (int j = 0; j < points.cols(); j++) {
+			sum += pow(point[j] - points(i, j), 2);
+		}
+		distances[i] = sqrt(sum);
+
+	}
+
+
+
+	return distances;
+}
 
 
 /**
@@ -180,6 +207,47 @@ std::vector<double>  manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynam
 	return distances;
 
 }
+
+//std::vector<double>  manhalanobis(Eigen::MatrixXd points, Eigen::Vector3d point) {
+//
+//
+//	
+//
+//	std::vector<double> distances;
+//
+//
+//	for (int i = 0; i < classes.size(); i++) {
+//		//We	first transpose the matrix
+//
+//
+//		Eigen::MatrixXd cov = calculateCovMatrix(classes.at(i));
+//
+//		//The point minus the centroid of the current class
+//		Eigen::Vector3d x_minus_mu = point - points.at(i);
+//
+//		Eigen::MatrixXd inv_cov = cov.inverse();
+//
+//
+//
+//		Eigen::MatrixXd left_term = x_minus_mu.transpose() * inv_cov;
+//		Eigen::MatrixXd res = left_term * x_minus_mu;
+//
+//
+//
+//		distances.push_back(res(0, 0));
+//
+//	}
+//
+//	return distances;
+//
+//}
+//
+
+
+
+
+
+
 /**
  * @brief function that calculates the probabilities of a point belonging to a set of classes
  * @param std::vector<Eigen::Matrix<double, Eigen::Dynamic,3>> classes: vector of matrices of size nx3 where each matrix represents a class
@@ -224,7 +292,6 @@ std::vector<double>  max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 
 
 
 }
-
 
 int kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point, int k) {
 	//Vector that stores a set of vectors that have the distance to the point, this is because each index in the vector represents a class,
@@ -469,3 +536,101 @@ std::vector<std::vector<double>> get_matrixConfusion(std::vector<Eigen::Matrix<d
 	}
 	return matConf;
 }
+
+std::vector<double> ObjectMetrics::calculateArea(QVector<QPoint> points, QImage& image)
+{
+	
+	std::sort(points.begin(), points.end(), [](const QPoint& a, const QPoint& b) {
+		return a.x() < b.x();
+		});
+
+	//we obtain the marginals of each pixel
+	std::map<int, QVector<QPoint>> clusters;
+	for (const auto& points : points) {
+		clusters[points.y()].push_back(points);
+	}
+
+	//We get the area
+	int area = 0;
+	for (const auto& cluster : clusters) {
+
+		for (int j = 0; j < cluster.second.size() - 1; j++) {
+			//area += abs(cluster.second[j + 1].x() - cluster.second[j].x());
+
+			if (abs(cluster.second[j + 1].x() - cluster.second[j].x()) == 1) {
+				area++;
+
+			}
+			else {
+
+				area += abs(cluster.second[j + 1].x() - cluster.second[j].x()) + 1;
+			}
+		}
+	}
+	return std::vector<double>(1, area);
+}
+
+
+std::vector<double> ObjectMetrics::calculatePerimeter(QVector<QPoint> object, QImage& image)
+{
+	return std::vector<double>(1,object.size());
+}
+
+std::vector<double> ObjectMetrics::calculateCenterOfGravity(QVector<QPoint> object, QImage& image)
+{
+	std::vector<double> centerOfGravity(2);
+
+	int moment0 = 0;
+	int moment10 = 0;
+	int moment01 = 0;
+
+	for (int j = 0; j < object.size(); j++) { //We will iterate the points of the current object
+		moment0 += 1;
+		moment10 += object[j].x(); //x spatial distribution
+		moment01 += object[j].y(); //y spatial distribution
+
+	}
+
+	centerOfGravity[0] = static_cast<int>(moment10 / moment0);
+	centerOfGravity[1] = static_cast<int>(moment01 / moment0);
+
+	return centerOfGravity;
+}
+
+Eigen::MatrixXd ObjectMetrics::featureExtraction(std::vector<std::function<std::vector<double>(QVector<QPoint>, QImage&)>>& functions, QVector<QPoint> object, QImage& image)
+{
+	Eigen::MatrixXd descriptors(1, functions.size());
+	int metricCount = 0;
+	for (auto func: functions) {
+		
+
+
+		std::vector<double> currMetric = func(object, image);
+
+		//we iterate the current metrics values
+
+		if (currMetric.size() > 1) {
+			descriptors.conservativeResize(descriptors.rows(), descriptors.cols() + currMetric.size() - 1);
+		}
+
+		for (auto metric : currMetric) {
+			descriptors(0, metricCount) = metric;
+			metricCount++;
+		}
+
+
+	}
+	
+	
+	
+	
+	
+	
+	
+	return descriptors;
+}
+
+
+
+
+
