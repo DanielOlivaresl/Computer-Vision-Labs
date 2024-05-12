@@ -31,7 +31,7 @@ public:
 	std::vector<int> histogramSpecification(std::vector<int> histogram, std::vector<double> specifiedHistogram, int maxVal);
 
 
-	static void imageObjectsToCsv(QImage& image,QString filaname , int i); // used to transform an image into a csv with the information of all the objects in the image 
+	static void imageObjectsToCsv(QImage& image,QString filaname , int i, std::vector<QImage>& subimages); // used to transform an image into a csv with the information of all the objects in the image 
 
 	static void thereshold(QImage& image, int thresholded);
 	static QVector<QVector<QPoint>> connectedN4(QImage& image);
