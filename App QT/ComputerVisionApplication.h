@@ -88,6 +88,7 @@ private slots: // listeners to buttons
 
     //Segmentation
     Eigen::MatrixXd on_actionConected_N4_triggered();
+    void on_actionClassify_Image_triggered();
 
 private:
     Ui::ComputerVisionApplication* ui; //UI
