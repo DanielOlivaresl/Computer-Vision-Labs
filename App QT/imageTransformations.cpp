@@ -1,30 +1,32 @@
 #include "imageTransformations.h"
 
 QImage ImageTransformations::convertToGray(QImage& image) {
-	if (image.isNull()) {
-		return image;
-	}
-	//We obtain the image matrix
-	std::vector<std::vector<QRgb>> matrix = getPixels(image);
-	int height = matrix.size();
-	int width = matrix[0].size();
-	//We then convert the image to gray
+	//if (image.isNull()) {
+	//	return image;
+	//}
+	////We obtain the image matrix
+	//std::vector<std::vector<QRgb>> matrix = getPixels(image);
+	//int height = matrix.size();
+	//int width = matrix[0].size();
+	////We then convert the image to gray
 
 
 
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
+	//for (int y = 0; y < height; y++) {
+	//	for (int x = 0; x < width; x++) {
 
-			QRgb currentPixel = matrix[y][x];
-			int value = qRed(currentPixel) * 0.299 + qGreen(currentPixel) * 0.587 + qBlue(currentPixel) * 0.114;
-			matrix[y][x] = qRgb(value, value, value);
+	//		QRgb currentPixel = matrix[y][x];
+	//		int value = qRed(currentPixel) * 0.299 + qGreen(currentPixel) * 0.587 + qBlue(currentPixel) * 0.114;
+	//		matrix[y][x] = qRgb(value, value, value);
 
-		}
-	}
+	//	}
+	//}
 
 
-	image = createImage(matrix);
-	return image;
+	//image = createImage(matrix);
+	//return image;
+	QImage newImage = image.convertToFormat(QImage::Format_Grayscale8);
+	return newImage;
 
 }
 
@@ -41,6 +43,8 @@ void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, in
 	}
 
 	for (int i = 0; i < objects.size(); i++) {
+		
+
 		// getting the subimage of the object
 		QVector<QPoint> pointsS = objects[i];
 		int minX = pointsS[0].x();
@@ -65,104 +69,92 @@ void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, in
 		}
 
 		// Create a new image containing only the object
-		QImage objectImage = image.copy(minY - 5, minX - 5, maxY - minY + 10, maxX - minX + 10);
+		QImage objectImage = image.copy(minX - 5, minY - 5, maxX - minX + 10, maxY - minY + 10);
 		subimages.push_back(objectImage);
-		descritorsReturn(i, 0) = objects[i].size();
 
-		//we get the area
-		 //let's  suppose we have an image whit an objects outline 
-		 /*
-			 -------------------------
-			 |00000000000000000000000|
-			 |00000011111111110000000|
-			 |00000010000000010000000|
-			 |00000010000000010000000|
-			 |00000010000000010000000|
-			 |00000010000000010000000|
-			 |00000010011110010000000|
-			 |00000010010010010000000|
-			 |00000010010010010000000|
-			 |00000011110011110000000|
-			 |00000000000000000000000|
-			 -------------------------
 
-		 */
-		 //The perimeter is the size of objects outline
-		 //First, we sort the tuples of poinst
-		QVector<QPoint> points = objects[i];
-		std::sort(points.begin(), points.end(), [](const QPoint& a, const QPoint& b) {
-			return a.x() < b.x();
-			});
 
-		//we obtain the marginals of each pixel
-		std::map<int, QVector<QPoint>> clusters;
-		for (const auto& points : points) {
-			clusters[points.y()].push_back(points);
+
+
+		std::vector < std::function<std::vector<int>(QVector<QPoint>, QImage&)>> func = {
+			ObjectMetrics::calculateArea,
+			ObjectMetrics::calculateCenterOfGravity,
+			ObjectMetrics::calculatePerimeter
+		};
+
+
+
+
+
+
+
+
+
+		for (int i = 0; i < objects.size(); i++) {//we iterate the objects
+			Eigen::MatrixXd descritorsReturn = ObjectMetrics::featureExtraction(func, objects[i], image);
+			
+			
+
+			for (int j = 0; j < descritorsReturn.cols(); j++) { //we iterate the features of the objects 
+				outFile << descritorsReturn(0, j) << ",";
+			}
+
+
+			outFile << "object" << std::to_string(i + 1) << "At " << filaname.toStdString() << std::endl;
+
+
+
 		}
-
-		//We get the area
-		int area = 0;
-
-		for (const auto& cluster : clusters) {
-	//We first store the functions to be applied to a list
-	std::vector < std::function<std::vector<double>(QVector<QPoint>, QImage&)>> func = {
-		ObjectMetrics::calculateArea,
-		ObjectMetrics::calculateCenterOfGravity,
-		ObjectMetrics::calculatePerimeter
-	};
-	
-	
-
-
-	
-
-
-
-
-	for (int i = 0; i < objects.size(); i++) {//we iterate the objects
-
-		Eigen::MatrixXd descritorsReturn = ObjectMetrics::featureExtraction(func, objects[i], image);
-
-
-
-		for (int j = 0; j < descritorsReturn.cols(); j++) { //we iterate the features of the objects 
-			outFile << descritorsReturn(i, j) << ",";
-		}
-		outFile << "object" << std::to_string(i + 1) << "At " << filaname.toStdString() << std::endl;
-
-
-
+		outFile.close();
+		qDebug() << "EXITO" << '\n';
 	}
-	outFile.close();
-	qDebug() << "EXITO" << '\n';
+
+
+
 }
 
-void ImageTransformations::thereshold(QImage& image, int threshold) {
+
+QImage ImageTransformations::thereshold(QImage& image, int threshold) {
 	if (image.isNull()) {
-		return;
+		return image;
 	}
 
 
 	//We pass to gray color
-	convertToGray(image);
+	QImage gray= convertToGray(image);
+	QImage thresholdedImage(gray.size(), QImage::Format_Grayscale8);
 
-	//We obtain the image matrix
-	std::vector<std::vector<QRgb>> matrix = getPixels(image);
-	int height = matrix.size();
-	int width = matrix[0].size();
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			QRgb currentPixel = matrix[y][x];
-			if (qRed(currentPixel) >= threshold) {
-				matrix[y][x] = qRgb(255, 255, 255);
-			}
-			else {
-				matrix[y][x] = qRgb(0, 0, 0);
-			}
 
+	////We obtain the image matrix
+	//std::vector<std::vector<QRgb>> matrix = getPixels(image);
+	//int height = matrix.size();
+	//int width = matrix[0].size();
+	//for (int y = 0; y < height; y++) {
+	//	for (int x = 0; x < width; x++) {
+	//		QRgb currentPixel = matrix[y][x];
+	//		if (qRed(currentPixel) >= threshold) {
+	//			matrix[y][x] = qRgb(255, 255, 255);
+	//		}
+	//		else {
+	//			matrix[y][x] = qRgb(0, 0, 0);
+	//		}
+
+	//	}
+	//}
+	//image = createImage(matrix);
+
+
+
+	for (int y = 0; y < gray.height(); ++y) {
+		const uchar* srcRow = gray.constScanLine(y);
+		uchar* dstRow = thresholdedImage.scanLine(y);
+		for (int x = 0; x < gray.width(); ++x) {
+			dstRow[x] = srcRow[x] > threshold ? 255 : 0;
 		}
 	}
-	image = createImage(matrix);
+
+	return thresholdedImage;
+
 
 }
 
@@ -451,10 +443,451 @@ bool pointExistsInVector(const QVector<QVector<QPoint>>& vector, int i, int j) {
 }
 
 
+
+
+/*
+
+QPoint ImageTransformations::nextCell(QPoint& currPixel, int &currDir, QPoint &savePixel) {
+	int i = currPixel.y();
+	int j = currPixel.x();
+	int r, c;
+	savePixel = QPoint();
+
+	switch (currDir) {
+	case 0:
+		r = i - 1;
+		c = j;
+		currDir = 1;
+		savePixel = QPoint(j + 1, i);
+		break;
+	case 1:
+		r = i;
+		c = j - 1;
+		currDir = 2;
+		break;
+	case 2:
+		r = i + 1;
+		c = j;
+		currDir = 3;
+		break;
+	case 3:
+		r = i;
+		c = j + 1;
+		currDir = 0;
+		break;
+	}
+	return QPoint(c,r);
+}
+
+
+QVector<QPoint> ImageTransformations::borderFollow(QImage & img, QPoint& start, QPoint& prev, int direction, int& NBD)
+{
+	ImageTransformations transformer;
+	QPoint curr = start;
+	QPoint exam = prev;
+	QPoint save;
+	QPoint save2 = exam;
+	QVector<QPoint> contour;
+	contour.push_back(curr);
+
+	// Infinite loop fix: Ensure exam updates correctly
+	while (img.pixelColor(exam).value() == 0) {
+		exam = nextCell(curr, direction, save);
+		if (exam == save2) {
+			img.setPixelColor(curr, QColor(-NBD, 0, 0));
+			return contour;
+		}
+	}
+
+	if (!save.isNull()) {
+		img.setPixelColor(curr, QColor(-NBD, 0, 0));
+	}
+	else if ((save.isNull() || img.pixelColor(save).value() != 0) && img.pixelColor(curr).value() == 1) {
+		img.setPixelColor(curr, QColor(NBD, 0, 0));
+	}
+
+	QPoint prevPt = curr;
+	curr = exam;
+	contour.push_back(curr);
+	direction = (direction >= 2) ? (direction - 2) : (2 + direction);
+	int flag = 0;
+	QPoint startNext = curr;
+
+	while (true) {
+		if (!(curr == startNext && prevPt == start && flag == 1)) {
+			flag = 1;
+			exam = nextCell(curr, direction, save);
+
+			// Infinite loop fix: Ensure exam updates correctly
+			while (img.pixelColor(exam).value() == 0) {
+				exam = nextCell(curr, direction, save);
+				if (exam == save2) {
+					img.setPixelColor(curr, QColor(-NBD, 0, 0));
+					return contour;
+				}
+			}
+
+			if (!save.isNull() && img.pixelColor(save).value() == 0) {
+				img.setPixelColor(curr, QColor(-NBD, 0, 0));
+			}
+			else if ((save.isNull() || img.pixelColor(save).value() != 0) && img.pixelColor(curr).value() == 1) {
+				img.setPixelColor(curr, QColor(NBD, 0, 0));
+			}
+
+			prevPt = curr;
+			curr = exam;
+			contour.push_back(curr);
+			direction = (direction >= 2) ? (direction - 2) : (2 + direction);
+		}
+		else {
+			break;
+		}
+	}
+
+	return contour;
+}
+
+
+
+
+
+QVector<QVector<QPoint>> ImageTransformations::rasterScan(QImage& img) {
+	int rows = img.height();
+	int cols = img.width();
+	int LNBD = 1;
+	int NBD = 1;
+	QVector<QVector<QPoint>> contours;
+	QVector<QPoint> addedPoints;
+
+	for (int i = 1; i < rows - 1; ++i) {
+		LNBD = 1;
+		for (int j = 1; j < cols - 1; ++j) {
+			QPoint curr(j, i);
+			QPoint prev(j - 1, i);
+			QPoint next(j + 1, i);
+			if (addedPoints.contains(curr)) {
+				continue;
+			}
+			if (img.pixelColor(j, i).value() == 255 && img.pixelColor(j - 1, i).value() == 0) {
+				NBD += 1;
+				int direction = 2;
+				QVector<QPoint> contour = borderFollow(img, curr, prev, direction, NBD);
+				contours.push_back(contour);
+				for (auto point : contour) {
+					addedPoints.push_back(point);
+				}
+			}
+			else if (img.pixelColor(j, i).value() >= 1 && img.pixelColor(j + 1, i).value() == 0) {
+				NBD += 1;
+				int direction = 0;
+				if (img.pixelColor(j, i).value() > 1) {
+					LNBD = img.pixelColor(j, i).value();
+				}
+				QVector<QPoint> contour = borderFollow(img, curr, next, direction, NBD);
+				contours.push_back(contour);
+				for (auto point : contour) {
+					addedPoints.push_back(point);
+				}
+				}
+			}
+		}
+
+	return contours;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 QVector<QVector<QPoint>> ImageTransformations::connectedN4(QImage& image) {
 
-	thereshold(image, 130);
+
+	QImage binaryImage = thereshold(image, 130);
+	
+	
+	return rasterScan(binaryImage);
+	
+	//QVector<QVector<QPoint>> contours;
+	//QImage visited = QImage(binaryImage.size(), QImage::Format_ARGB32);
+	//visited.fill(QColor(0, 0, 0, 0));
+
+	//for (int y = 0; y < binaryImage.height(); ++y) {
+	//	for (int x = 0; x < binaryImage.width(); ++x) {
+	//		if (binaryImage.pixelColor(x, y).value() == 255 && visited.pixelColor(x, y).value() == 0) { // Unvisited white pixel
+	//			int initialDir = 0;
+	//			QList<QPoint> contour = followContour(binaryImage, QPoint(x, y), initialDir, visited);
+	//			if (contour.size() > 50) { // Only consider contours with more than 50 points
+	//				contours.append(contour);
+	//			}
+	//		}
+	//	}
+	//}
+
+	//return contours;
+
+
+
+
+
+
+*/
+
+
+#include <QImage>
+#include <QPoint>
+#include <QColor>
+#include <QVector>
+#include <tuple>
+#include <cmath>
+
+// Assuming the existence of the borderFollow and nextCell functions as previously translated
+
+QPoint ImageTransformations::nextCell(QPoint& currPixel, int& currDir, QPoint& savePixel) {
+	int i = currPixel.y();
+	int j = currPixel.x();
+	int r, c;
+	savePixel = QPoint();
+
+	switch (currDir) {
+	case 0:
+		r = i - 1;
+		c = j;
+		currDir = 1;
+		savePixel = QPoint(j + 1, i);
+		break;
+	case 1:
+		r = i;
+		c = j - 1;
+		currDir = 2;
+		break;
+	case 2:
+		r = i + 1;
+		c = j;
+		currDir = 3;
+		break;
+	case 3:
+		r = i;
+		c = j + 1;
+		currDir = 0;
+		break;
+	}
+	return QPoint(c, r);
+}
+
+QVector<QPoint> ImageTransformations::borderFollow(QImage& img, QPoint& start, QPoint& prev, int direction, int& NBD) {
+	QPoint curr = start;
+	QPoint exam = prev;
+	QPoint save;
+	QPoint save2 = exam;
+	QVector<QPoint> contour;
+	contour.push_back(curr);
+
+	while (img.pixelColor(exam).value() == 0) {
+		exam = nextCell(curr, direction, save);
+		if (exam == save2) {
+			img.setPixelColor(curr, QColor(-NBD, 0, 0));
+			return contour;
+		}
+	}
+
+	if (!save.isNull()) {
+		img.setPixelColor(curr, QColor(-NBD, 0, 0));
+	}
+	else if ((save.isNull() || img.pixelColor(save).value() != 0) && img.pixelColor(curr).value() == 1) {
+		img.setPixelColor(curr, QColor(NBD, 0, 0));
+	}
+
+	QPoint prevPt = curr;
+	curr = exam;
+	contour.push_back(curr);
+	direction = (direction >= 2) ? (direction - 2) : (2 + direction);
+	int flag = 0;
+	QPoint startNext = curr;
+
+	while (true) {
+		if (!(curr == startNext && prevPt == start && flag == 1)) {
+			flag = 1;
+			exam = nextCell(curr, direction, save);
+
+			while (img.pixelColor(exam).value() == 0) {
+				exam = nextCell(curr, direction, save);
+				if (exam == save2) {
+					img.setPixelColor(curr, QColor(-NBD, 0, 0));
+					return contour;
+				}
+			}
+
+			if (!save.isNull() && img.pixelColor(save).value() == 0) {
+				img.setPixelColor(curr, QColor(-NBD, 0, 0));
+			}
+			else if ((save.isNull() || img.pixelColor(save).value() != 0) && img.pixelColor(curr).value() == 1) {
+				img.setPixelColor(curr, QColor(NBD, 0, 0));
+			}
+
+			prevPt = curr;
+			curr = exam;
+			contour.push_back(curr);
+			direction = (direction >= 2) ? (direction - 2) : (2 + direction);
+		}
+		else {
+			break;
+		}
+	}
+
+	return contour;
+}
+
+QVector<QVector<QPoint>> ImageTransformations::rasterScan(QImage& img) {
+	int rows = img.height();
+	int cols = img.width();
+	int LNBD = 1;
+	int NBD = 1;
+	QVector<QVector<QPoint>> contours;
+	QVector<QPoint> addedPoints;
+
+	for (int i = 1; i < rows - 1; ++i) {
+		LNBD = 1;
+		for (int j = 1; j < cols - 1; ++j) {
+			QPoint curr(j, i);
+			QPoint prev(j - 1, i);
+
+			if (addedPoints.contains(curr)) {
+				continue;
+			}
+
+			// Detect only outer contours
+			if (img.pixelColor(j, i).value() == 255 && img.pixelColor(j - 1, i).value() == 0) {
+				NBD += 1;
+				int direction = 2;
+				QVector<QPoint> contour = borderFollow(img, curr, prev, direction, NBD);
+				contours.push_back(contour);
+				for (const auto& point : contour) {
+					addedPoints.push_back(point);
+				}
+			}
+		}
+	}
+
+	return contours;
+}
+
+QVector<QVector<QPoint>> ImageTransformations::connectedN4(QImage& image) {
+	QImage binaryImage = thereshold(image, 130);
+	QVector<QVector<QPoint>> objects = rasterScan(binaryImage);
+	for (int i = 0; i < objects.size(); i++) {
+		if (objects[i].size() < 100) {
+			objects.remove(i);
+			i = 0;
+
+		}
+	}
+	return objects;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/*
+
 	std::vector<std::vector<QRgb>> matrix = getPixels(image);
+
 
 	//x-axis count
 	int i = 0;
@@ -468,6 +901,44 @@ QVector<QVector<QPoint>> ImageTransformations::connectedN4(QImage& image) {
 
 
 	QVector<QVector<QPoint>> objects;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	while (i < matrix.size()) {
@@ -501,10 +972,9 @@ QVector<QVector<QPoint>> ImageTransformations::connectedN4(QImage& image) {
 		i += 1;
 		j = 0;
 	}
+	*/
 
 
-	return objects;
-}
 
 
 
@@ -568,9 +1038,11 @@ QVector<QPoint> ImageTransformations::outLine(QImage& image, int i, int j) {
 	return object;
 }
 
-void ImageTransformations::classifyImage(QImage& image, Eigen::MatrixXd centroids, std::vector < std::function <std::vector<double>(QVector<QPoint>, QImage&)>> functions, std::map<int,std::string> namesMap){
+std::vector<std::string> ImageTransformations::classifyImage(QImage& image, Eigen::MatrixXd centroids, std::vector < std::function <std::vector<int>(QVector<QPoint>, QImage&)>> functions, std::map<int, std::string> namesMap) {
 	
 	//first we will apply all the transformations that were applied to images in the dataset, in order to get the metrics
+	
+
 
 
 	QVector<QVector<QPoint>> objects;
@@ -590,7 +1062,8 @@ void ImageTransformations::classifyImage(QImage& image, Eigen::MatrixXd centroid
 		objectMetrics.push_back(pointToClassify);
 		//Once we got they're features we will calculate the distance of each object to the centroid given by Kmeans
 
-		std::vector<double> distances =euclidean(objectMetrics[objectMetrics.size() - 1], pointToClassify);
+		//std::vector<double> distances =euclidean(objectMetrics[objectMetrics.size() - 1], pointToClassify);
+		std::vector<double> distances = euclidean(centroids, pointToClassify);
 		classification.push_back(getClosest(distances));
 
 	}
@@ -598,19 +1071,19 @@ void ImageTransformations::classifyImage(QImage& image, Eigen::MatrixXd centroid
 
 	//now that we have classified the objects we print the results
 
-
+	std::vector<std::string> classificationVec;
 	for (int i = 0; i < classification.size(); i++) {
 		std::string className;
 		if (namesMap.find(classification[i]) == namesMap.end()) {
 			className = "None";
 		}else {
 		
-			className = namesMap[i];
+			className = namesMap[classification[i]];
 		}
-		qDebug() << "Object[" << i << "] belongs to class: " << className <<"\n";
+		classificationVec.push_back((namesMap[classification[i]]));
 	}
 
-
+	return classificationVec;
 
 
 
