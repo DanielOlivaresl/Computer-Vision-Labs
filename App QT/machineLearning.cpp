@@ -140,6 +140,7 @@ void printM(Eigen::MatrixXd m)
 
 std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> ML::Kmeans(const Eigen::MatrixXd data, int k, float threshold)
 {
+    srand(0);
     std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> result;
     // Creates the centroids 
     Eigen::MatrixXd centroids(k, data.cols());
