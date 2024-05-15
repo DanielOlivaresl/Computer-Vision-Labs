@@ -1,16 +1,18 @@
+#include <fstream>
+#include <cstdlib>  
+#include <ctime>    
+#include <cmath>
+
+#include <QPoint>
 #include <QImage>
 #include <vector>
 #include <QPainter>
 #include <QRect>
 #include <QColor>
-#include <fstream>
-#include <cstdlib>  
-#include <ctime>    
 
-
-#include <cmath>
 #include "computations.h"
 #include <QMessageBox>
+
 class ImageTransformations {
 
 public:
@@ -33,14 +35,27 @@ public:
 
 	static void imageObjectsToCsv(QImage& image,QString filaname , int i, std::vector<QImage>& subimages); // used to transform an image into a csv with the information of all the objects in the image 
 
-	static void thereshold(QImage& image, int thresholded);
+	static QImage thereshold(QImage& image, int thresholded);
 	static QVector<QVector<QPoint>> connectedN4(QImage& image);
 	static  QVector<QPoint> outLine(QImage& image, int i, int j);
 
 
+
+
+	static QPoint nextCell( QPoint& crrPixel, int &currDir, QPoint& savePixel);
+
+	static QVector<QPoint> borderFollow(QImage& img, QPoint& start,  QPoint& prev, int direction, int& NBD);
+	static QVector<QVector<QPoint>> rasterScan(QImage & img);
+
+
+
+
+
+
+
 	//unclassified methods
 
-	static void classifyImage(QImage& image, Eigen::MatrixXd centroids, std::vector < std::function <std::vector<double>(QVector<QPoint>, QImage&)>> functions, std::map<int, std::string> namesMap);
+	static std::vector<std::string> classifyImage(QImage& image, Eigen::MatrixXd centroids, std::vector < std::function <std::vector<int>(QVector<QPoint>, QImage&)>> functions, std::map<int, std::string> namesMap);
 
 
 
