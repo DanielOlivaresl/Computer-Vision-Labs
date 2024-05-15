@@ -525,6 +525,14 @@ void normalizeColumn(Eigen::MatrixXd& matrix, int column) {
 	// range in (0,1)
 	matrix.col(column) = (col.array() - minVal) / (maxVal - minVal);
 }
+int clockwise(int dir)
+{
+	return (dir%8) + 1;
+}
+int counterclockwise(int dir)
+{
+	return (dir+6)%8 + 1;
+}
 std::vector<std::vector<double>> get_matrixConfusion(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> mat, std::vector<std::vector<int>> vectorOfPredictions) {
 
 
@@ -537,7 +545,7 @@ std::vector<std::vector<double>> get_matrixConfusion(std::vector<Eigen::Matrix<d
 	return matConf;
 }
 
-std::vector<double> ObjectMetrics::calculateArea(QVector<QPoint> points, QImage& image)
+std::vector<int> ObjectMetrics::calculateArea(QVector<QPoint> points, QImage& image)
 {
 	
 	std::sort(points.begin(), points.end(), [](const QPoint& a, const QPoint& b) {
@@ -567,18 +575,22 @@ std::vector<double> ObjectMetrics::calculateArea(QVector<QPoint> points, QImage&
 			}
 		}
 	}
-	return std::vector<double>(1, area);
+	return std::vector<int>(1, area);
 }
 
 
-std::vector<double> ObjectMetrics::calculatePerimeter(QVector<QPoint> object, QImage& image)
+std::vector<int> ObjectMetrics::calculatePerimeter(QVector<QPoint> object, QImage& image)
 {
-	return std::vector<double>(1,object.size());
+	int res = object.size();
+	
+	std::vector<int> resultingMet;
+	resultingMet.push_back(res);
+	return resultingMet;
 }
 
-std::vector<double> ObjectMetrics::calculateCenterOfGravity(QVector<QPoint> object, QImage& image)
+std::vector<int> ObjectMetrics::calculateCenterOfGravity(QVector<QPoint> object, QImage& image)
 {
-	std::vector<double> centerOfGravity(2);
+	std::vector<int> centerOfGravity(2);
 
 	int moment0 = 0;
 	int moment10 = 0;
@@ -594,10 +606,12 @@ std::vector<double> ObjectMetrics::calculateCenterOfGravity(QVector<QPoint> obje
 	centerOfGravity[0] = static_cast<int>(moment10 / moment0);
 	centerOfGravity[1] = static_cast<int>(moment01 / moment0);
 
+
+
 	return centerOfGravity;
 }
 
-Eigen::MatrixXd ObjectMetrics::featureExtraction(std::vector<std::function<std::vector<double>(QVector<QPoint>, QImage&)>>& functions, QVector<QPoint> object, QImage& image)
+Eigen::MatrixXd ObjectMetrics::featureExtraction(std::vector<std::function<std::vector<int>(QVector<QPoint>, QImage&)>> functions, QVector<QPoint> object, QImage& image)
 {
 	Eigen::MatrixXd descriptors(1, functions.size());
 	int metricCount = 0;
@@ -605,10 +619,10 @@ Eigen::MatrixXd ObjectMetrics::featureExtraction(std::vector<std::function<std::
 		
 
 
-		std::vector<double> currMetric = func(object, image);
+		std::vector<int> currMetric = func(object, image);
 
 		//we iterate the current metrics values
-
+		
 		if (currMetric.size() > 1) {
 			descriptors.conservativeResize(descriptors.rows(), descriptors.cols() + currMetric.size() - 1);
 		}
