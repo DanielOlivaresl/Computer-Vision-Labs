@@ -27,6 +27,11 @@ std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen
 void normalizeColumn(Eigen::MatrixXd& matrix, int column);
 
 
+int clockwise(int dir);
+int counterclockwise(int dir);
+
+
+
 class CrossValidation {
 public:
 	static std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> leaveOneOut(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, int clas, int el);
@@ -37,10 +42,10 @@ public:
 
 class ObjectMetrics {
 public:
-	static std::vector<double> calculateArea(QVector<QPoint> object, QImage& image);
-	static std::vector<double> calculatePerimeter(QVector<QPoint> object, QImage& image);
-	static std::vector<double> calculateCenterOfGravity(QVector<QPoint> object, QImage& image);
-	static Eigen::MatrixXd featureExtraction(std::vector < std::function <std::vector<double>(QVector<QPoint>,QImage&)>>& functions, QVector<QPoint> object, QImage& image);
+	static std::vector<int> calculateArea(QVector<QPoint> object, QImage& image);
+	static std::vector<int> calculatePerimeter(QVector<QPoint> object, QImage& image);
+	static std::vector<int> calculateCenterOfGravity(QVector<QPoint> object, QImage& image);
+	static Eigen::MatrixXd featureExtraction(std::vector < std::function <std::vector<int>(QVector<QPoint>,QImage&)>> functions, QVector<QPoint> object, QImage& image);
 
 	
 };
