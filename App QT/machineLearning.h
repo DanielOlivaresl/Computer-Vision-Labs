@@ -10,7 +10,7 @@ class ML
 {
 public:
     static std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> Kmeans(const Eigen::MatrixXd data, int k, float threshold); // returns a matrix where each row is a centroid, k centroids so k rows (k = numClasses). 
-    
+
 };
 
 
@@ -37,9 +37,8 @@ public:
 private:
     Eigen::VectorXd inputMean;
     Eigen::VectorXd inputStd;
-    
+
     std::string activationFunction;
-    
+
 
 };
-
