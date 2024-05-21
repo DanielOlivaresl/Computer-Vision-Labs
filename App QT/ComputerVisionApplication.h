@@ -79,7 +79,7 @@ private slots: // listeners to buttons
 
     void on_actionLoadDataSet_triggered(); // used to load images dataset from a folder
     void on_actionReadCSV_triggered(); // used to read an csv onto a 
-    
+
     //Dock actions
 
     void handleDockLocationChanged(Qt::DockWidgetArea area);
