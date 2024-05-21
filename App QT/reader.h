@@ -13,4 +13,3 @@ struct DataStore
 Eigen::MatrixXd read_csv(QString filePath); // this reader does not store string variables
 DataStore read_csvToDataStore(QString filePath);
 
-
