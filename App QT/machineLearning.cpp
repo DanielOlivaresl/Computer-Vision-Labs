@@ -2,7 +2,7 @@
 
 Perceptron::Perceptron(const Eigen::Matrix<double, Eigen::Dynamic, 3>& X_input, const std::string& F_input)
 {
-    inputMean = X_input.colwise().mean();  
+    inputMean = X_input.colwise().mean();
 
 
     Eigen::RowVector3d X_mean_row = inputMean.transpose();
@@ -35,7 +35,7 @@ void Perceptron::showInfo()
     for (int i = 0; i < weights.size(); ++i) {
         qDebug() << "weights[" << i << "] = " << weights[i];
     }
-    
+
 }
 Eigen::MatrixXd Perceptron::init_data(const Eigen::MatrixXd& X_input)
 {
@@ -45,7 +45,7 @@ Eigen::MatrixXd Perceptron::init_data(const Eigen::MatrixXd& X_input)
     X_with_ones << X_normalized, ones_column;
     return X_with_ones;
 }
-Eigen::VectorXd Perceptron::init_weights(const int& input_shape) 
+Eigen::VectorXd Perceptron::init_weights(const int& input_shape)
 {
     return Eigen::VectorXd::Random(input_shape + 1);
 }
@@ -57,7 +57,7 @@ Eigen::VectorXd Perceptron::sigmoid(const Eigen::VectorXd& h)
 {
     return 1 / (1 + (-h.array()).exp());
 }
-Eigen::VectorXd Perceptron::sigmoid_prime(const Eigen::VectorXd & h)
+Eigen::VectorXd Perceptron::sigmoid_prime(const Eigen::VectorXd& h)
 {
     return sigmoid(h).array() * (1 - sigmoid(h).array());
 }
@@ -126,6 +126,7 @@ Eigen::VectorXd Perceptron::query(const Eigen::VectorXd& x) // arreglar esta jun
     return feed_forward(x_normalized);
 }
 
+
 void printM(Eigen::MatrixXd m)
 {
     for (int i = 0; i < m.rows(); i++)
@@ -137,6 +138,7 @@ void printM(Eigen::MatrixXd m)
         qDebug() << "\n";
     }
 }
+
 
 std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> ML::Kmeans(const Eigen::MatrixXd data, int k, float threshold)
 {
@@ -185,8 +187,8 @@ std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> ML::Kmeans(const Eigen:
             matrixClasses[minIndex].row(matrixClasses[minIndex].rows() - 1) = data.row(ind);
         }
         //--------------------------------------------------------------------------------------------------------------------------------------------
-        
-        
+
+
         for (int r = 0; r < centroids.rows(); r++) // Calculates and sets the values of each centroid with the mean of each column in the matrixClasses
         {
             for (int c = 0; c < centroids.cols(); c++)
@@ -221,4 +223,3 @@ std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> ML::Kmeans(const Eigen:
     result = std::make_pair(matrixClassesFinal, centroids);
     return result;
 }
-
