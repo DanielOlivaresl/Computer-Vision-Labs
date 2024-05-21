@@ -43,7 +43,7 @@ void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, in
 	}
 
 	for (int i = 0; i < objects.size(); i++) {
-		
+
 
 		// getting the subimage of the object
 		QVector<QPoint> pointsS = objects[i];
@@ -70,47 +70,35 @@ void ImageTransformations::imageObjectsToCsv(QImage& image, QString filaname, in
 
 		// Create a new image containing only the object
 		QImage objectImage = image.copy(minX - 5, minY - 5, maxX - minX + 10, maxY - minY + 10);
-		subimages.push_back(objectImage);
+		
+		QImage objectImageBinary = thereshold(objectImage, 130);
+		subimages.push_back(objectImageBinary);
+		double e = ObjectMetrics::calculateEccentricity((objectImageBinary));
+		QImage ImageBinary = thereshold(image, 130);
+		qDebug() << "e at " << filaname << " = " << e;
 
-
-
-
+		
 
 		std::vector < std::function<std::vector<int>(QVector<QPoint>, QImage&)>> func = {
-			ObjectMetrics::calculateArea,
-			ObjectMetrics::calculateCenterOfGravity,
+			//ObjectMetrics::calculateArea,
+			//ObjectMetrics::calculateCenterOfGravity,
 			ObjectMetrics::calculatePerimeter
 		};
 
 
-
-
-
-
-
-
-
 		for (int i = 0; i < objects.size(); i++) {//we iterate the objects
-			Eigen::MatrixXd descritorsReturn = ObjectMetrics::featureExtraction(func, objects[i], image);
-			
-			
+			Eigen::MatrixXd descritorsReturn = ObjectMetrics::featureExtraction(func, objects[i], ImageBinary);
 
 			for (int j = 0; j < descritorsReturn.cols(); j++) { //we iterate the features of the objects 
 				outFile << descritorsReturn(0, j) << ",";
 			}
 
-
 			outFile << "object" << std::to_string(i + 1) << "At " << filaname.toStdString() << std::endl;
-
-
 
 		}
 		outFile.close();
 		qDebug() << "EXITO" << '\n';
 	}
-
-
-
 }
 
 
@@ -118,10 +106,8 @@ QImage ImageTransformations::thereshold(QImage& image, int threshold) {
 	if (image.isNull()) {
 		return image;
 	}
-
-
 	//We pass to gray color
-	QImage gray= convertToGray(image);
+	QImage gray = convertToGray(image);
 	QImage thresholdedImage(gray.size(), QImage::Format_Grayscale8);
 
 
@@ -671,10 +657,10 @@ QVector<QVector<QPoint>> ImageTransformations::connectedN4(QImage& image) {
 
 
 	QImage binaryImage = thereshold(image, 130);
-	
-	
+
+
 	return rasterScan(binaryImage);
-	
+
 	//QVector<QVector<QPoint>> contours;
 	//QImage visited = QImage(binaryImage.size(), QImage::Format_ARGB32);
 	//visited.fill(QColor(0, 0, 0, 0));
@@ -884,25 +870,23 @@ QVector<QVector<QPoint>> ImageTransformations::connectedN4(QImage& image) {
 
 
 
-	/*
+/*
 
-	std::vector<std::vector<QRgb>> matrix = getPixels(image);
-
-
-	//x-axis count
-	int i = 0;
-	//y-axis count
-	int j = 0;
-	//aux count
-	int count = 0;
-
-	int height = matrix.size();
-	int width = matrix[0].size();
+std::vector<std::vector<QRgb>> matrix = getPixels(image);
 
 
-	QVector<QVector<QPoint>> objects;
+//x-axis count
+int i = 0;
+//y-axis count
+int j = 0;
+//aux count
+int count = 0;
+
+int height = matrix.size();
+int width = matrix[0].size();
 
 
+QVector<QVector<QPoint>> objects;
 
 
 
@@ -941,38 +925,40 @@ QVector<QVector<QPoint>> ImageTransformations::connectedN4(QImage& image) {
 
 
 
-	while (i < matrix.size()) {
-		int jPrevious = 0;
-		while (j < matrix[i].size()) {
-			if (qRed(matrix[i][j]) > 250 && !pointExistsInVector(objects, i, j) && count == 0) {
-				objects.append(outLine(image, i, j));
-				i = 0;
-				j = 0;
-
-			}
-			else if (qRed(matrix[i][j]) > 250 && !pointExistsInVector(objects, i, j) && count != 0) {
-				i += 1;
-				continue;
-			}
-			else if (qRed(matrix[i][j]) > 250 && pointExistsInVector(objects, i, j) && count == 0) {
-				count += 1;
-			}
-			else if (qRed(matrix[i][j]) > 250 && pointExistsInVector(objects, i, j) && count != 0 && !pointExistsInVector(objects, i, jPrevious)) {
-				count = 0;
-			}
-			else if (qRed(matrix[i][j]) == 0 && pointExistsInVector(objects, i, jPrevious) && count != 0) {
-				count = 0;
-			}
-			jPrevious = j;
-			j += 1;
 
 
+while (i < matrix.size()) {
+	int jPrevious = 0;
+	while (j < matrix[i].size()) {
+		if (qRed(matrix[i][j]) > 250 && !pointExistsInVector(objects, i, j) && count == 0) {
+			objects.append(outLine(image, i, j));
+			i = 0;
+			j = 0;
 
 		}
-		i += 1;
-		j = 0;
+		else if (qRed(matrix[i][j]) > 250 && !pointExistsInVector(objects, i, j) && count != 0) {
+			i += 1;
+			continue;
+		}
+		else if (qRed(matrix[i][j]) > 250 && pointExistsInVector(objects, i, j) && count == 0) {
+			count += 1;
+		}
+		else if (qRed(matrix[i][j]) > 250 && pointExistsInVector(objects, i, j) && count != 0 && !pointExistsInVector(objects, i, jPrevious)) {
+			count = 0;
+		}
+		else if (qRed(matrix[i][j]) == 0 && pointExistsInVector(objects, i, jPrevious) && count != 0) {
+			count = 0;
+		}
+		jPrevious = j;
+		j += 1;
+
+
+
 	}
-	*/
+	i += 1;
+	j = 0;
+}
+*/
 
 
 
@@ -1038,49 +1024,102 @@ QVector<QPoint> ImageTransformations::outLine(QImage& image, int i, int j) {
 	return object;
 }
 
+	
 std::vector<std::string> ImageTransformations::classifyImage(QImage& image, Eigen::MatrixXd centroids, std::vector < std::function <std::vector<int>(QVector<QPoint>, QImage&)>> functions, std::map<int, std::string> namesMap) {
-	
+
 	//first we will apply all the transformations that were applied to images in the dataset, in order to get the metrics
-	
+	qDebug() << "Centroids";
+	for (int i = 0; i < centroids.rows(); i++)
+	{
+		for (int j = 0; j < centroids.cols(); j++)
+		{
+			qDebug() << centroids(i, j) << "";
+		}
+		qDebug() << "\n";
+	}
 
-
-
+	//normalizeColumn(centroids,0);
+	//normalizeColumn(centroids, 1);
+	//normalizeColumn(centroids, 2);
 	QVector<QVector<QPoint>> objects;
 	objects = connectedN4(image);
-	
-	
 
 	//we iterate each of the objects and get they're features
 
 	std::vector<Eigen::MatrixXd> objectMetrics;
 
+	Eigen::MatrixXd objetitos(objects.size(),3);
+
 	std::vector<int> classification; //Vector that stores the classification of each object
-
-
+	bool flag = false;
+	int i = 0;
 	for (auto object : objects) {
-		Eigen::VectorXd pointToClassify = ObjectMetrics::featureExtraction(functions, object, image);
+		Eigen::MatrixXd pointToClassify = ObjectMetrics::featureExtraction(functions, object, image); // aki
 		objectMetrics.push_back(pointToClassify);
+		qDebug() << " objeto perimetro " << pointToClassify(0) << " objeto exce " << pointToClassify(1) << " objeto area " << pointToClassify(2);
+		if (pointToClassify(2) > 1400) { flag = true; }
 		//Once we got they're features we will calculate the distance of each object to the centroid given by Kmeans
-
+		objetitos(i, 0) = pointToClassify(0,0);
+		objetitos(i, 1) = pointToClassify(0,1);
+		objetitos(i, 2) = pointToClassify(0,2);
+		//objetitos(i, 3) = pointToClassify(0,3);
+		i++;
 		//std::vector<double> distances =euclidean(objectMetrics[objectMetrics.size() - 1], pointToClassify);
 		std::vector<double> distances = euclidean(centroids, pointToClassify);
+		qDebug() << "Distancias para ese objeto ";
+		for (auto d : distances)
+		{
+			qDebug() << d;
+		}
 		classification.push_back(getClosest(distances));
-
+	}
+	
+	//normalizeColumn(objetitos,0);
+	//normalizeColumn(objetitos, 1);
+	//normalizeColumn(objetitos, 2);
+	qDebug() << "Informacion de los objetos de la imagen ";
+	// Calculates euc distance--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	Eigen::MatrixXd distances2(objetitos.rows(), centroids.rows()); // matrix to store distances. [diastance to c1, distance to c2, distance to c3] instance 1,[diastance to c1, distance to c2, distance to c3] instance 2 ... 
+	for (int i = 0; i < centroids.rows(); i++)
+	{
+		Eigen::MatrixXd data_minus_centroid = objetitos.rowwise() - centroids.row(i);
+		data_minus_centroid = data_minus_centroid.array().square();
+		Eigen::VectorXd sum_squared_diff_sqrt = (data_minus_centroid.rowwise().sum()).array().sqrt();
+		distances2.col(i) = sum_squared_diff_sqrt;
+	}
+	std::vector<int> indexes;
+	for (int ind = 0; ind < distances2.rows(); ind++)
+	{
+		Eigen::MatrixXd::Index minIndex;
+		distances2.row(ind).minCoeff(&minIndex);
+		indexes.push_back(minIndex);
+		qDebug() << "centoide mas cercano para el ejemplo " << ind << " Es : " << minIndex << "\n";
+	}
+	qDebug() << "Informacion de las distancias de los objetos ";
+	for (int i = 0; i < distances2.rows(); i++)
+	{
+		for (int j = 0; j < distances2.cols(); j++)
+		{
+			qDebug() << distances2(i, j) << "";
+		}
+		qDebug() << "\n";
 	}
 
-
-	//now that we have classified the objects we print the results
-
 	std::vector<std::string> classificationVec;
-	for (int i = 0; i < classification.size(); i++) {
+	for (int i = 0; i < indexes.size(); i++) {
 		std::string className;
-		if (namesMap.find(classification[i]) == namesMap.end()) {
+		if (namesMap.find(indexes[i]) == namesMap.end()) {
 			className = "None";
-		}else {
-		
-			className = namesMap[classification[i]];
 		}
-		classificationVec.push_back((namesMap[classification[i]]));
+		else if (flag)
+		{
+			classificationVec.push_back("Non an object");
+		} 
+		else {
+
+			className = namesMap[indexes[i]];
+			classificationVec.push_back((namesMap[indexes[i]]));
+		}
 	}
 
 	return classificationVec;
@@ -1102,5 +1141,3 @@ std::vector<std::string> ImageTransformations::classifyImage(QImage& image, Eige
 
 
 }
-
-
