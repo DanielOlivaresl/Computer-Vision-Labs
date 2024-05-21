@@ -33,7 +33,7 @@ public:
 	std::vector<int> histogramSpecification(std::vector<int> histogram, std::vector<double> specifiedHistogram, int maxVal);
 
 
-	static void imageObjectsToCsv(QImage& image,QString filaname , int i, std::vector<QImage>& subimages); // used to transform an image into a csv with the information of all the objects in the image 
+	static void imageObjectsToCsv(QImage& image, QString filaname, int i, std::vector<QImage>& subimages); // used to transform an image into a csv with the information of all the objects in the image 
 
 	static QImage thereshold(QImage& image, int thresholded);
 	static QVector<QVector<QPoint>> connectedN4(QImage& image);
@@ -42,10 +42,10 @@ public:
 
 
 
-	static QPoint nextCell( QPoint& crrPixel, int &currDir, QPoint& savePixel);
+	static QPoint nextCell(QPoint& crrPixel, int& currDir, QPoint& savePixel);
 
-	static QVector<QPoint> borderFollow(QImage& img, QPoint& start,  QPoint& prev, int direction, int& NBD);
-	static QVector<QVector<QPoint>> rasterScan(QImage & img);
+	static QVector<QPoint> borderFollow(QImage& img, QPoint& start, QPoint& prev, int direction, int& NBD);
+	static QVector<QVector<QPoint>> rasterScan(QImage& img);
 
 
 
@@ -60,8 +60,3 @@ public:
 
 
 };
-
-
-
-
-
