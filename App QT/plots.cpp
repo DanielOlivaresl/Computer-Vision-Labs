@@ -93,7 +93,7 @@ void Plots::matrixPlot2D(Eigen::MatrixXd values, std::string col1Name, std::stri
     chartView->resize(800, 600);
     chartView->show();
 }
-void Plots::matrixPlot3D(Eigen::MatrixXd values,std::vector<std::string> labels, std::string col1Name, std::string col2Name, std::string col3Name)
+void Plots::matrixPlot3D(Eigen::MatrixXd values, std::vector<std::string> labels, std::string col1Name, std::string col2Name, std::string col3Name)
 {
     // configuration of 3Dscatter
     Q3DScatter* scatter = new Q3DScatter();
@@ -111,12 +111,12 @@ void Plots::matrixPlot3D(Eigen::MatrixXd values,std::vector<std::string> labels,
     QGridLayout* layout = new QGridLayout();
     container->setLayout(layout);
 
-    layout->addWidget(container, 0, 0, 2, 1); 
+    layout->addWidget(container, 0, 0, 2, 1);
 
     // adding the image label of the photo
     QLabel* imageLabel = new QLabel();
-    imageLabel->setMaximumSize(100, 100); 
-    layout->addWidget(imageLabel, 0, 1, Qt::AlignTop | Qt::AlignRight); 
+    imageLabel->setMaximumSize(100, 100);
+    layout->addWidget(imageLabel, 0, 1, Qt::AlignTop | Qt::AlignRight);
 
 
     // conf of dataSeries
@@ -124,7 +124,7 @@ void Plots::matrixPlot3D(Eigen::MatrixXd values,std::vector<std::string> labels,
     QScatter3DSeries* dataSeries = new QScatter3DSeries(dataProxy);
     dataSeries->setBaseColor(QColor(Qt::magenta));
     dataSeries->setItemSize(0.08);
-    
+
 
     QScatterDataArray* dataPoints = new QScatterDataArray();
 
@@ -134,7 +134,7 @@ void Plots::matrixPlot3D(Eigen::MatrixXd values,std::vector<std::string> labels,
 
     // Populate data points
     for (int i = 0; i < values.rows(); ++i) {
-        QVector3D point(values(i, 0), values(i, 1), values(i, 2));
+        QVector3D point(0, values(i, 1), 0);
         dataPoints->push_back(point);
     }
     QString outputDir = "FilesOut/SubImages";
@@ -149,7 +149,7 @@ void Plots::matrixPlot3D(Eigen::MatrixXd values,std::vector<std::string> labels,
             QString filename = QString("%1/SubImage_%2.png").arg(outputDir).arg(item);
             QImage image(filename);
             if (!image.isNull()) {
-                QLabel* imageLabel = new QLabel();  
+                QLabel* imageLabel = new QLabel();
                 imageLabel->setPixmap(QPixmap::fromImage(image));
                 imageLabel->show();
                 //imLabels.push_back(imageLabel);
@@ -168,7 +168,7 @@ void Plots::matrixPlot3D(Eigen::MatrixXd values,std::vector<std::string> labels,
     scatter->addSeries(dataSeries);
 
 
-    
+
 
 
 
@@ -376,7 +376,7 @@ void Plots::plotMatrixClasses(std::vector<Eigen::MatrixXd> mc)
     QVector<QColor> baseColors = { QColor(Qt::red), QColor(Qt::green), QColor(Qt::blue), QColor(Qt::yellow), QColor(Qt::cyan), QColor(Qt::magenta), QColor(Qt::gray) };
 
     for (int idx = 0; idx < mc.size(); ++idx) {
-        
+
         // Data points series
         QScatterDataProxy* dataProxy = new QScatterDataProxy();
         QScatter3DSeries* dataSeries = new QScatter3DSeries(dataProxy);
