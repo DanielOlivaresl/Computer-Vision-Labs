@@ -5,7 +5,7 @@
 #include<cmath>	
 #include<algorithm>
 #include<map>
-
+#include <QDebug>
 #include<Eigen/Dense>
 #include <QString>
 #include<QImage>
@@ -42,10 +42,13 @@ public:
 
 class ObjectMetrics {
 public:
+	
 	static std::vector<int> calculateArea(QVector<QPoint> object, QImage& image);
 	static std::vector<int> calculatePerimeter(QVector<QPoint> object, QImage& image);
 	static std::vector<int> calculateCenterOfGravity(QVector<QPoint> object, QImage& image);
-	static Eigen::MatrixXd featureExtraction(std::vector < std::function <std::vector<int>(QVector<QPoint>,QImage&)>> functions, QVector<QPoint> object, QImage& image);
+	static Eigen::MatrixXd featureExtraction(std::vector < std::function <std::vector<int>(QVector<QPoint>, QImage&)>> functions, QVector<QPoint> object, QImage& image);
+	static double imageMoments(QImage& binarizedImage, int p, int q);
+	static double centralMoments(QImage& binarizedImage, int p, int q, double xCent, double yCent);
+	static double calculateEccentricity(QImage& image);
 
-	
 };
