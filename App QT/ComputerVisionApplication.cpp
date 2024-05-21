@@ -500,11 +500,10 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
         qDebug() << "size of one image " << vectorImages[0].size();
 
         for (int i = 1; i < vectorImages.size(); i++)
-
         {
-            
+
             qDebug() << "Processing image: " << i;
-            ImageTransformations::imageObjectsToCsv(vectorImages[i], imageNames[i], i,subImages);
+            ImageTransformations::imageObjectsToCsv(vectorImages[i], imageNames[i], i, subImages);
         }
         qDebug() << "Size of the subImages" << subImages.size() << '\n';
         QString outputDir = "FilesOut/SubImages";
@@ -516,7 +515,6 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
         for (int i = 0; i < subImages.size(); ++i) {
             QString imagePath = QDir(outputDir).filePath(QString("SubImage_%1.png").arg(i));
             subImages[i].save(imagePath);
-
         }
     }
     else {
@@ -528,11 +526,11 @@ void ComputerVisionApplication::on_actionReadCSV_triggered()
 {
     QString filePath = getFilePath("csv");
     DataStore test = read_csvToDataStore(filePath);
-    
+
     std::vector <std::string> cols;
     cols.push_back("Area");
     cols.push_back("Perimetro");
-    cols.push_back("Centro gravedad");
+    cols.push_back("eXCEN");
 
     //we normalize the data by iterating the cols
 
@@ -540,8 +538,8 @@ void ComputerVisionApplication::on_actionReadCSV_triggered()
         normalizeColumn(test.numericData, i);
     }*/
 
-    Plots::matrixPlot3D(test.numericData,test.stringData[0], cols[0], cols[1], cols[2]);
-    auto result = ML::Kmeans(test.numericData,5,0.01);
+    Plots::matrixPlot3D(test.numericData, test.stringData[0], cols[0], cols[1], cols[2]);
+    auto result = ML::Kmeans(test.numericData, 5, 0.001);
     Plots::plotMatrixClasses(result.first);
 }
 
@@ -619,7 +617,7 @@ void ComputerVisionApplication::on_actionimageProcessingFunction1_triggered() {
     updateImage(img->image);
 
 }
-void ComputerVisionApplication::paintEvent(QPaintEvent* event) 
+void ComputerVisionApplication::paintEvent(QPaintEvent* event)
 {
     Image* image = getImage();
     if (image == NULL) {
@@ -1222,22 +1220,22 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
 
     QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image->image); //Each element of this list represents a object in the image
 
-    
-
-    
 
 
-    
+
+
+
+
     for (int i = 0; i < objects.size(); i++) {
-    
+
         qDebug() << objects[i].size();
 
-    
-    }
-    
 
-    qDebug() <<"Object Size : " <<  objects.size();
-        
+    }
+
+
+    qDebug() << "Object Size : " << objects.size();
+
 
 
 
@@ -1288,7 +1286,7 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
 
         //painter.drawRect(minX - 5, maxY - 5, maxX - minX + 10, maxY - minY + 10);  // Rectángulo en la posición (50,50) con ancho 300 y alto 200
         //QString str = QString("Object: ")+ QString::fromStdString(std::to_string(i));
-        
+
 
 
 
@@ -1383,10 +1381,10 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
             "Centro de Gravedad: " + "(" + QString::number(descritorsReturn(i, 2)) + "," + QString::number(descritorsReturn(i, 3)) + ")";*/
 
 
-        //QPainter painter(&image->image);
-        //painter.setPen(QPen(Qt::green, 2));
+            //QPainter painter(&image->image);
+            //painter.setPen(QPen(Qt::green, 2));
 
-        //painter.drawEllipse(cy - 10, cx - 10, 20, 20);
+            //painter.drawEllipse(cy - 10, cx - 10, 20, 20);
 
 
 
@@ -1395,7 +1393,7 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
     }
     outFile.close();
 
-    if (!(image->image.isNull())) 
+    if (!(image->image.isNull()))
     {
 
         QLabel* imageLabel = getImageLabel();
@@ -1405,7 +1403,7 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
 
         this->resize(QPixmap::fromImage(image->image).size());
     }
-    else 
+    else
     {
         QMessageBox::warning(this, tr("Load Image"), tr("Failed to load the image."));
 
@@ -1413,48 +1411,23 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
     return descritorsReturn;
 }
 
-void ComputerVisionApplication::on_actionClassify_Image_triggered(){
+void ComputerVisionApplication::on_actionClassify_Image_triggered() {
 
+    QStringList opciones;
+    opciones << "K-nn" << "MaxProb" << "Euclidian" << "Mahalanobis";
 
-
-
-
+    bool ok;
+    QInputDialog::getItem(nullptr, "Select Option", "Select any option:", opciones, 0, false, &ok);
     qDebug() << "Entering";
     Image* image = getImage();
 
 
-
-
     QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image->image); //Each element of this list represents a object in the image
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     std::vector < std::function<std::vector<int>(QVector<QPoint>, QImage&)>> func = {
-        ObjectMetrics::calculateArea,
-        ObjectMetrics::calculateCenterOfGravity,
+        //ObjectMetrics::calculateArea,
+        //ObjectMetrics::calculateCenterOfGravity,
         ObjectMetrics::calculatePerimeter
     };
 
@@ -1464,7 +1437,10 @@ void ComputerVisionApplication::on_actionClassify_Image_triggered(){
 
     QString filePath = "filesout/objects.csv";
     DataStore test = read_csvToDataStore(filePath);
-    auto result = ML::Kmeans(test.numericData, 5, 0.1);
+
+
+    
+    auto result = ML::Kmeans(test.numericData, 5, 0.001);
 
     // Fill the matrix with random values
     //Eigen::MatrixXd centroids= result.second;
@@ -1485,24 +1461,26 @@ void ComputerVisionApplication::on_actionClassify_Image_triggered(){
     //namesMap[3] = "Arandelas";
     //namesMap[4] = "Ganchos";*/
 
-    namesMap[0] = "Rondada";
-    namesMap[1] = "Tornillo"; 
-    namesMap[2] = "Unidentified 2";
-    namesMap[3] = "Unidentified";
-    namesMap[4] = "Hangers";
+    namesMap[0] = "Cola de Pato";
+    namesMap[1] = "Tornillo";
+    namesMap[2] = "Rondana";
+    namesMap[3] = "Allen";
+    namesMap[4] = "Argolla";
 
     //Allen y Gancho no claramente identificados
 
-
-
-
-
-    std::vector<std::string> classif = ImageTransformations::classifyImage(image->image, result.second, func, namesMap);
-
-
+    QImage imageTest = ImageTransformations::thereshold(image->image, 130);
+    qDebug() << "antes";
+    std::vector<std::string> classif = ImageTransformations::classifyImage(imageTest, result.second, func, namesMap);
 
     //we now label the image that we just processed
 
+    std::map<std::string, int> resultsMap;
+    resultsMap["Cola de Pato"] = 0;
+    resultsMap["Tornillo"] = 0;
+    resultsMap["Rondana"] = 0;
+    resultsMap["Allen"] = 0;
+    resultsMap["Argolla"] = 0;
 
     //QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image->image); //Each element of this list represents a object in the image
     QPainter painter(&image->image);
@@ -1528,23 +1506,25 @@ void ComputerVisionApplication::on_actionClassify_Image_triggered(){
                 maxY = point.y();
             }
         }
-
-
         painter.setPen(QPen(Qt::green, 2));  // Color azul y un grosor de 
-        painter.drawRect(minX,minY, maxX - minX + 10, maxY - minY + 10);  // Rectángulo en la posición (50,50) con ancho 300 y alto 200
-        QString str =  QString::fromStdString(classif[i]);
-
-
-
+        painter.drawRect(minX, minY, maxX - minX + 10, maxY - minY + 10);  // Rectángulo en la posición (50,50) con ancho 300 y alto 200
+        QString str = QString::fromStdString(classif[i]);
+        resultsMap[classif[i]]++;
         painter.setPen(QPen(Qt::red, 2));  // Color azul y un grosor de 5
 
         painter.drawText(minX - 5, maxY - 5, 100, 20, Qt::AlignLeft, str);
 
-        }
-        
+    }
+    std::vector<std::string> itemNames = { "Cola de Pato" ,"Tornillo" , "Rondana", "Allen" , "Argolla" };
+    for (auto item : itemNames) {
+        qDebug() << "Hay " << resultsMap[item] <<" "<< item;
+
+    }
+
+
     if (!(image->image.isNull()))
     {
-
+        
         QLabel* imageLabel = getImageLabel();
 
         imageLabel->setPixmap(QPixmap::fromImage(image->image));
