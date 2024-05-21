@@ -17,5 +17,5 @@ Image::Image(const Image& other) : QObject(other.parent()) {
     this->rectangles = other.rectangles;
     this->matrixClasses = other.matrixClasses;
     this->image = other.image;
-   
+
 }
