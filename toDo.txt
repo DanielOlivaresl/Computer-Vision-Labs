@@ -1,22 +1,5 @@
 Things to do                                          
 
-- Tratar de hacer funciones las partes repetitivas del codigo, por ejemplo en cEditor.cpp se aplica la misma metologia para obtener los datos del usuario, pasarlo a una funcion
-- agregar la clase neurona,clase capa, clase red bla bla bla... (what u mean chevy)
-- hacer una funcion para pasar de la imagen en widgets a una matriz de eigen y hacer una funcion para pasar de una matriz a una imagen de wxwidgets(unsigned char)   
-- modulo para graficar funciones.
-- implementar la funcion para cambiar los valores de una imagen (rgb -> rgb)
-- implementar filtros y que el usuario pueda hacer sus propios elementos de estructura
-Arreglar la impresion de maxima probabilidad
-
-
-Para la practica (urgente)
-  -Crear metodos de validacion 
-  -Agregar plots a la UI para visualizar el rendimiento de las distintas metricas
-  -Agregar funcion para la matriz de confusion
-  -Agregar a la UI matriz de confusion
-
-
-
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 plots.h: 
