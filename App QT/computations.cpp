@@ -94,6 +94,10 @@ std::vector<double> euclidean(Eigen::MatrixXd points, Eigen::VectorXd point)
 }
 
 
+
+
+
+
 /**
  *
  * @brief Helper function that calculates the covariance matrix from a set of data
