@@ -1,16 +1,35 @@
 Things to do                                          
 
-- Tratar de hacer funciones las partes repetitivas del codigo, por ejemplo en cEditor.cpp se aplica la misma metologia para obtener los datos del usuario, pasarlo a una funcion
-- agregar la clase neurona,clase capa, clase red bla bla bla... (what u mean chevy)
-- hacer una funcion para pasar de la imagen en widgets a una matriz de eigen y hacer una funcion para pasar de una matriz a una imagen de wxwidgets(unsigned char)   
-- modulo para graficar funciones.
-- implementar la funcion para cambiar los valores de una imagen (rgb -> rgb)
-- implementar filtros y que el usuario pueda hacer sus propios elementos de estructura
-Arreglar la impresion de maxima probabilidad
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+plots.h: 
+  -Fix ConfusionMatrix, generalize datatypes, fix visualization to see numbers, not just colors
+  -Scatter plot: generalize scatterplot, and add range
+
+machineLearning.h: 
+  Perceptron: Generalize Datatypes: MatrixXd
+  query: Implement function, to make predictions
 
 
-Para la practica (urgente)
-  -Crear metodos de validacion 
-  -Agregar plots a la UI para visualizar el rendimiento de las distintas metricas
-  -Agregar funcion para la matriz de confusion
-  -Agregar a la UI matriz de confusion
+ImageTransformations.h
+  thresholded: Fix image name, and refactor code
+  imageObjectToCsv: remove the i parameter, and add code to select the .csv but the folder will always be the same(FilesOut) 
+  classifyImage: Automate calculation of distance, to just call a function from computations (any distance), and add parameter for all the data
+  Add function to calculate the bounds of an object (min, max) using the contour of an object (connectedN4) and refactor code
+  Add function  to calculate subimage, given a border
+  Add functon to store images in a path, given a vector of images, and a folder, within FilesOut
+
+Computations.h: 
+  -generalize distance functions, and helper functions 
+  -get_matrixConfusion: Modify parameter for matrices of nxn, Review that it generates the prediction given a metric
+  -fix area metric with central moments
+  -fix feature extraction: DO NOT CALCULATE AREA AND EXENTRICITY, CALL THE FUNCTIONS
+
+  -CrossValidation: Modify parameters for nxn matrices
+
+ComputerVisionApplication:
+  -Add execentricity to the function vector
+
+general: 
+  -Add reset button 
+  
