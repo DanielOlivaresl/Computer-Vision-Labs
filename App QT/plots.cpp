@@ -4,7 +4,6 @@
 #include <QtCharts/QValueAxis>
 #include "imageTransformations.h"
 
-
 void Plots::matrixPlot3D_labels(Eigen::MatrixXd values, std::vector<std::string> labels, std::string col1Name, std::string col2Name, std::string col3Name) {
     // congf of  3D graphic
     Q3DScatter* scatter = new Q3DScatter();
@@ -19,9 +18,9 @@ void Plots::matrixPlot3D_labels(Eigen::MatrixXd values, std::vector<std::string>
     scatter->axisZ()->setTitleVisible(true);
 
     // Normalice (0 to 1)
-    normalizeColumn(values, 0);
-    normalizeColumn(values, 1);
-    normalizeColumn(values, 2);
+    Computations::Helper::normalizeColumn(values, 0);
+    Computations::Helper::normalizeColumn(values, 1);
+    Computations::Helper::normalizeColumn(values, 2);
 
     // creates a new series for each point
     for (int i = 0; i < values.rows(); ++i) {
@@ -65,7 +64,7 @@ void Plots::matrixPlot2D(Eigen::MatrixXd values, std::string col1Name, std::stri
     series->setName("Data Values");
     series->setMarkerSize(10);
     chartView->setRenderHint(QPainter::Antialiasing);
-    chartView->setRubberBand(QChartView::RectangleRubberBand);  // Habilita el zoom de rectángulo
+    chartView->setRubberBand(QChartView::RectangleRubberBand);  // Habilita el zoom de rect�ngulo
     chartView->setInteractive(true);
     qDebug() << values.rows();
     int t = 0;
@@ -76,6 +75,7 @@ void Plots::matrixPlot2D(Eigen::MatrixXd values, std::string col1Name, std::stri
         series->append(values(i, 0), values(i, 1));
         qDebug() << values(i, 0) << " " << values(i, 1) << "\n";
     }
+
     qDebug() << " Final t  " << t;
     QChart* chart = new QChart();
     chart->addSeries(series);
@@ -93,7 +93,7 @@ void Plots::matrixPlot2D(Eigen::MatrixXd values, std::string col1Name, std::stri
     chartView->resize(800, 600);
     chartView->show();
 }
-void Plots::matrixPlot3D(Eigen::MatrixXd values, std::vector<std::string> labels, std::string col1Name, std::string col2Name, std::string col3Name)
+void Plots::matrixPlot3D_subImages(Eigen::MatrixXd values, std::vector<std::string> labels, std::string col1Name, std::string col2Name, std::string col3Name)
 {
     // configuration of 3Dscatter
     Q3DScatter* scatter = new Q3DScatter();
@@ -128,13 +128,13 @@ void Plots::matrixPlot3D(Eigen::MatrixXd values, std::vector<std::string> labels
 
     QScatterDataArray* dataPoints = new QScatterDataArray();
 
-    normalizeColumn(values, 0);
-    normalizeColumn(values, 1);
-    normalizeColumn(values, 2);
+    Computations::Helper::normalizeColumn(values, 0);
+    Computations::Helper::normalizeColumn(values, 1);
+    Computations::Helper::normalizeColumn(values, 2);
 
     // Populate data points
     for (int i = 0; i < values.rows(); ++i) {
-        QVector3D point(0, values(i, 1), 0);
+        QVector3D point(values(i, 0), values(i, 1), values(i, 2));
         dataPoints->push_back(point);
     }
     QString outputDir = "FilesOut/SubImages";
@@ -162,16 +162,8 @@ void Plots::matrixPlot3D(Eigen::MatrixXd values, std::vector<std::string> labels
             // here is where i need to delete all the imageLabel created
         }
         });
-
-
     dataSeries->dataProxy()->addItems(*dataPoints);
     scatter->addSeries(dataSeries);
-
-
-
-
-
-
     container->show();
     container->setMinimumSize(800, 600);
 }
@@ -327,7 +319,6 @@ void Plots::ConfusionMatrix(std::vector<std::vector<std::vector<double>>> matric
             }
         }
     }
-
     container->setLayout(layout);
     container->resize(800, 600);
     container->show();
@@ -400,8 +391,8 @@ void Plots::plotMatrixClasses(std::vector<Eigen::MatrixXd> mc)
 }
 
 
-/*
-* void Plots::plotPerceptrons(std::vector<Perceptron> perceptrons) {
+
+void Plots::plotPerceptrons(std::vector<Perceptron> perceptrons) {
     qDebug() << "Numero de perceptrones recibidos " << perceptrons.size();
     for (auto p : perceptrons) {
         p.showInfo();
@@ -412,21 +403,22 @@ void Plots::plotMatrixClasses(std::vector<Eigen::MatrixXd> mc)
     scatter->setSelectionMode(QAbstract3DGraph::SelectionItemAndRow | QAbstract3DGraph::SelectionSlice);
     scatter->scene()->activeCamera()->setCameraPreset(Q3DCamera::CameraPresetFront);
 
-    QVector<QColor> baseColors = { QColor(Qt::red), QColor(Qt::green), QColor(Qt::blue), QColor(Qt::yellow), QColor(Qt::cyan), QColor(Qt::magenta), QColor(Qt::gray) };
+    QVector<QColor> baseColors = { QColor(Qt::red), QColor(Qt::cyan), QColor(Qt::darkGreen), QColor(Qt::yellow), QColor(Qt::cyan), QColor(Qt::magenta), QColor(Qt::gray) };
     QVector<QColor> transparentColors;
     for (const auto& color : baseColors) {
         QColor transparentColor = color;
-        transparentColor.setAlpha(20); // Adjust the transparency
+        transparentColor.setAlpha(10); // Adjust the transparency to be more visible
         transparentColors.append(transparentColor);
     }
 
     for (int idx = 0; idx < perceptrons.size(); ++idx) {
         const auto& perceptron = perceptrons[idx];
         auto weights = perceptron.weights;
+
         // Data points series
         QScatterDataProxy* dataProxy = new QScatterDataProxy();
         QScatter3DSeries* dataSeries = new QScatter3DSeries(dataProxy);
-        dataSeries->setBaseColor(baseColors[idx % baseColors.size()]);
+        dataSeries->setBaseColor(baseColors[(idx % baseColors.size()) + 1]);
         dataSeries->setItemSize(0.1);
         dataSeries->setItemLabelFormat(QString("Data - Class %1").arg(idx));
 
@@ -441,17 +433,39 @@ void Plots::plotMatrixClasses(std::vector<Eigen::MatrixXd> mc)
         QScatterDataArray* planePoints = new QScatterDataArray();
 
         // Populate data points
-        for (int i = 0; i < perceptron.inputData.rows() / 2; ++i) {
-            QVector3D point(perceptron.inputData(i, 0), perceptron.inputData(i, 1), perceptron.inputData(i, 2));
-            dataPoints->push_back(point);
+        for (int i = 0; i < perceptron.inputData.rows(); ++i) {
+            if (perceptron.labels(i) == 1) {
+                QVector3D point(perceptron.inputData(i, 0), perceptron.inputData(i, 1), 0);
+                dataPoints->push_back(point);
+            }
         }
 
+        QVector3D point1(0, 0, 0);
+        QVector3D point2(0, 1, 0);
+        QVector3D point3(0, 0, 1);
+        QVector3D point4(1, 1, 1);
+        dataPoints->push_back(point1);
+        dataPoints->push_back(point2);
+        dataPoints->push_back(point3);
+        dataPoints->push_back(point4);
+
+        std::vector<double> z_values;
         // Populate plane points
         double A = weights[0], B = weights[1], C = weights[2], D = weights[3];
-        for (double x = -3; x <= 3; x += 0.3) {
-            for (double y = -3; y <= 3; y += 0.3) {
+        for (double x = 0; x <= 1; x += 0.01) {
+            for (double y = 0; y <= 1; y += 0.01) {
                 double z = -(A * x + B * y + D) / C;
-                planePoints->push_back(QVector3D(x, y, z));
+                z_values.push_back(z);
+            }
+        }
+        double z_min = *std::min_element(z_values.begin(), z_values.end());
+        double z_max = *std::max_element(z_values.begin(), z_values.end());
+
+        for (double x = 0; x <= 1; x += 0.01) {
+            for (double y = 0; y <= 1; y += 0.01) {
+                double z = -(A * x + B * y + D) / C;
+                double z_normalized = (z - z_min) / (z_max - z_min);
+                planePoints->push_back(QVector3D(x, y, z_normalized));
             }
         }
 
@@ -465,4 +479,4 @@ void Plots::plotMatrixClasses(std::vector<Eigen::MatrixXd> mc)
     container->show();
     container->setMinimumSize(800, 600);
 }
-*/
+

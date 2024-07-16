@@ -1,50 +1,349 @@
 #include "machineLearning.h"
 
-Perceptron::Perceptron(const Eigen::Matrix<double, Eigen::Dynamic, 3>& X_input, const std::string& F_input)
-{
-    inputMean = X_input.colwise().mean();
 
 
-    Eigen::RowVector3d X_mean_row = inputMean.transpose();
-    inputStd = Eigen::Vector3d::Zero();
-    for (int i = 0; i < X_input.rows(); ++i) {
-        inputStd += (X_input.row(i) - X_mean_row).array().square().matrix();
+int MachineLearning::kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point, int k) {
+    //Vector that stores a set of vectors that have the distance to the point, this is because each index in the vector represents a class,
+    //This means that each element in the vector is another vector that stores the distances to the point from the ith class
+    std::vector<std::vector<double>> distances;
+
+    //We iterate the classes and fill the vectors
+    for (int i = 0; i < classes.size(); i++) {
+        std::vector<double> currClass;
+        //We first iterate the current class and convert each matrix element into a point
+        for (int j = 0; j < classes.at(i).rows(); j++) {
+            Eigen::Vector3d currPoint = classes.at(i).row(j); //We assign the point
+
+            currClass.push_back(Computations::Distances::euclideanDistance(point, currPoint));
+
+
+
+        }
+        //we sort the points before adding them
+        std::sort(currClass.begin(), currClass.end());
+        //we add the class to the vector
+        distances.push_back(currClass);
     }
-    inputStd = (inputStd / X_input.rows()).array().sqrt();
 
 
+    //Now that are points are stored and sorted we will begin to check which are the k nearest neighbours, to do this we will first, from each class we will
+    //only keep the k first elements because in the worst case the k nearest neighbours are from only one class
+
+    for (int i = 0; i < distances.size(); i++) {
+        if (distances.at(i).size() > k) {
+            distances.at(i).erase(distances.at(i).begin() + k, distances.at(i).end());
+        }
+    }
+    //Now that each class has their k nearest neighbours we will see which ones are the k closest in general, to do this we will iterate each class for their first
+    //element and when we find the one that is the smallest, we will add it to our solution vector and remove that element from the class vector, and repeat this
+    //process until the solution vector is of size k
+
+    std::vector<int> solution;
+
+    while (solution.size() < k) {
+        //We iterate the classes
+        int mindist = 0; //We assume that the first class is the smallest distance and iterate from there
+        for (int i = 1; i < distances.size(); i++) {
+            if (distances.at(i).at(0) < distances.at(mindist).at(0)) {
+                mindist = i;
+            }
+
+        }
+
+        //Now we will add that class to the solution and remove that element
+        solution.push_back(mindist);
+        distances.at(mindist).erase(distances.at(mindist).begin());
+
+    }
+
+    //Now we have the classes of the k nearest neighbours, we will now see what class dominates and make a prediction
+
+    //We will first iterate the classes and check the ocurrence the one with the most occurence will be our final result
+
+    //We will also first assume that the class 0 is the initial prediction and adjust from there
+    int res = 0;
+    int count = std::count(solution.begin(), solution.end(), res);
+    for (int i = 1; i < classes.size(); i++) {
+        int currCount = std::count(solution.begin(), solution.end(), i);
+        if (currCount > count) {
+            res = i;
+            count = currCount;
+        }
+    }
+    //The result is the classification prediction
+    return res;
+
+}
+
+int MachineLearning::kNearestNeighbours(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point, int k) {
+    //Vector that stores a set of vectors that have the distance to the point, this is because each index in the vector represents a class,
+    //This means that each element in the vector is another vector that stores the distances to the point from the ith class
+    std::vector<Eigen::VectorXd> distances;
+
+    //We iterate the classes and fill the vectors
+    for (int i = 0; i < classes.size(); i++) {
+        Eigen::VectorXd currClass(classes.at(i).rows());
+        //We first iterate the current class and convert each matrix element into a point
+        for (int j = 0; j < classes.at(i).rows(); j++) {
+            Eigen::VectorXd currPoint = classes.at(i).row(j); //We assign the point
+
+            currClass(j) = Computations::Distances::euclideanDistance(point, currPoint);
+
+
+
+        }
+        //we sort the points before adding them
+        std::sort(currClass.begin(), currClass.end());
+        //we add the class to the vector
+        distances.push_back(currClass);
+    }
+
+
+    //Now that are points are stored and sorted we will begin to check which are the k nearest neighbours, to do this we will first, from each class we will
+    //only keep the k first elements because in the worst case the k nearest neighbours are from only one class
+
+    for (int i = 0; i < distances.size(); i++) {
+        if (distances.at(i).size() > k) {
+            distances.at(i).conservativeResize(k);
+        }
+    }
+    //Now that each class has their k nearest neighbours we will see which ones are the k closest in general, to do this we will iterate each class for their first
+    //element and when we find the one that is the smallest, we will add it to our solution vector and remove that element from the class vector, and repeat this
+    //process until the solution vector is of size k
+
+    Eigen::VectorXi solution(k);
+    int KCount = 0;
+
+    while (solution.size() < k) {
+        //We iterate the classes
+        int mindist = 0; //We assume that the first class is the smallest distance and iterate from there
+        for (int i = 1; i < distances.size(); i++) {
+            if (distances.at(i)(0) < distances.at(mindist)(0)) {
+                mindist = i;
+            }
+
+        }
+
+        //Now we will add that class to the solution and remove that element
+        solution(KCount) = mindist;
+        distances[mindist] = distances[mindist].segment(1, distances[mindist].size() - 1);;
+
+    }
+
+    //Now we have the classes of the k nearest neighbours, we will now see what class dominates and make a prediction
+
+    //We will first iterate the classes and check the ocurrence the one with the most occurence will be our final result
+
+    //We will also first assume that the class 0 is the initial prediction and adjust from there
+    int res = 0;
+    int count = std::count(solution.begin(), solution.end(), res);
+    for (int i = 1; i < classes.size(); i++) {
+        int currCount = std::count(solution.begin(), solution.end(), i);
+        if (currCount > count) {
+            res = i;
+            count = currCount;
+        }
+    }
+    //The result is the classification prediction
+    return res;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Perceptron::Perceptron(const Eigen::MatrixXd& X_input)
+{
+    //inputMean = X_input.colwise().mean();
+    //Eigen::RowVector3d X_mean_row = inputMean.transpose();
+    //inputStd = Eigen::Vector3d::Zero();
+    //for (int i = 0; i < X_input.rows(); ++i) {
+        //inputStd += (X_input.row(i) - X_mean_row).array().square().matrix();
+    //}
+    //inputStd = (inputStd / X_input.rows()).array().sqrt();
+    qDebug() << "Iterating inputData:";
+    for (int i = 0; i < X_input.rows(); ++i) {
+        qDebug() << i << " [";
+        for (int j = 0; j < X_input.cols(); ++j) {
+            qDebug() << " " << X_input(i, j);
+        }
+        qDebug() << "].\n";
+    }
+    labels = Eigen::VectorXd::Zero(X_input.rows());
     inputData = init_data(X_input);
-    activationFunction = F_input;
     weights = init_weights(X_input.cols());
+}
+
+Perceptron::Perceptron(const std::vector<Eigen::MatrixXd> classes, int class_to_clasiffy)
+{
+    inputData = init_data_classes(classes);
+    labels = init_labels_classes(classes, class_to_clasiffy);
+    weights = init_weights(inputData.cols());
 }
 
 void Perceptron::showInfo()
 {
     qDebug() << "Perceptron info\n";
-    qDebug() << "Iterating inputMean:";
-    for (int i = 0; i < inputMean.size(); ++i) {
-        qDebug() << "X_mean[" << i << "] = " << inputMean[i];
-    }
+
     qDebug() << "Iterating inputData:";
     for (int i = 0; i < inputData.rows(); ++i) {
+        qDebug() << i << " [";
         for (int j = 0; j < inputData.cols(); ++j) {
-            qDebug() << "X[" << i << "," << j << "] = " << inputData(i, j);
+            qDebug() << " " << inputData(i, j);
         }
+        qDebug() << "].\n";
+    }
+
+    qDebug() << "Iterating inputMean:";
+    for (int i = 0; i < inputMean.rows(); ++i) {
+        qDebug() << i << " [";
+        for (int j = 0; j < inputMean.cols(); ++j) {
+            qDebug() << " " << inputMean(i, j);
+        }
+        qDebug() << "].\n";
     }
     qDebug() << "Iterating weights:";
     for (int i = 0; i < weights.size(); ++i) {
         qDebug() << "weights[" << i << "] = " << weights[i];
     }
-
+    qDebug() << "Iterating labels:";
+    for (int i = 0; i < labels.size(); ++i) {
+        qDebug() << "labels[" << i << "] = " << labels[i];
+    }
+    qDebug() << "min val and max val for each column in the data";
+    for (int c = 0; c < minVal.size(); c++)
+    {
+        qDebug() << "column " << c << ", min " << minVal(c) << "max" << maxVal(c);
+    }
 }
-Eigen::MatrixXd Perceptron::init_data(const Eigen::MatrixXd& X_input)
+
+
+Eigen::MatrixXd Perceptron::init_data(const Eigen::MatrixXd inputData)
 {
-    Eigen::MatrixXd X_normalized = (X_input.rowwise() - inputMean.transpose()).array().rowwise() / (inputStd.transpose().array() + std::numeric_limits<float>::epsilon());
-    Eigen::VectorXd ones_column = Eigen::VectorXd::Ones(X_input.rows());
-    Eigen::MatrixXd X_with_ones(X_input.rows(), X_input.cols() + 1);
-    X_with_ones << X_normalized, ones_column;
+    minVal = Eigen::VectorXd(inputData.cols());
+    maxVal = Eigen::VectorXd(inputData.cols());
+    for (int v = 0; v < inputData.cols(); v++)
+    {
+        minVal(v) = inputData.col(v).minCoeff();
+        maxVal(v) = inputData.col(v).maxCoeff();
+    }
+    Eigen::MatrixXd X_input_copy = inputData;
+    for (int i = 0; i < X_input_copy.cols(); i++) { Computations::Helper::normalizeColumn(X_input_copy, i); }
+    Eigen::VectorXd ones_column = Eigen::VectorXd::Ones(X_input_copy.rows());
+    Eigen::MatrixXd X_with_ones(X_input_copy.rows(), X_input_copy.cols() + 1);
+    X_with_ones << X_input_copy, ones_column;
     return X_with_ones;
 }
+
+Eigen::MatrixXd Perceptron::init_data_classes(const std::vector<Eigen::MatrixXd> classes)
+{
+    int totalRows = 0;
+    int numCols = 0;
+    qDebug() << "data recibed ";
+    for (const auto& matrix : classes) {
+        qDebug() << "rows " << matrix.rows() << " cols " << matrix.cols();
+        totalRows += matrix.rows();
+        numCols = matrix.cols();
+    }
+    Eigen::MatrixXd X_input_copy(totalRows, numCols);
+
+    qDebug() << "Nums of final rows " << totalRows << "num of cols " << numCols;
+
+    int currentRow = 0;
+    for (const auto& matrix : classes) {
+        X_input_copy.block(currentRow, 0, matrix.rows(), matrix.cols()) = matrix;
+        currentRow += matrix.rows();
+    }
+    minVal = Eigen::VectorXd(X_input_copy.cols());
+    maxVal = Eigen::VectorXd(X_input_copy.cols());
+    for (int v = 0; v < X_input_copy.cols(); v++)
+    {
+        minVal(v) = X_input_copy.col(v).minCoeff();
+        maxVal(v) = X_input_copy.col(v).maxCoeff();
+    }
+    qDebug() << "Iterating inputData:";
+    for (int i = 0; i < X_input_copy.rows(); ++i) {
+        qDebug() << i << " [";
+        for (int j = 0; j < X_input_copy.cols(); ++j) {
+            qDebug() << " " << X_input_copy(i, j);
+        }
+        qDebug() << "].\n";
+    }
+    for (int i = 0; i < X_input_copy.cols(); i++) { Computations::Helper::normalizeColumn(X_input_copy, i); }
+    Eigen::VectorXd ones_column = Eigen::VectorXd::Ones(X_input_copy.rows());
+    Eigen::MatrixXd X_with_ones(X_input_copy.rows(), X_input_copy.cols() + 1);
+    X_with_ones << X_input_copy, ones_column;
+    return X_with_ones;
+}
+
+Eigen::VectorXd Perceptron::init_labels_classes(const std::vector<Eigen::MatrixXd> classes, int class_to_clasiffy)
+{
+    Eigen::VectorXd finalVector;
+    for (int i = 0; i < classes.size(); i++)
+    {
+        Eigen::VectorXd new_vector;
+        if (i == class_to_clasiffy)
+        {
+            new_vector = Eigen::VectorXd::Ones(classes[i].rows());
+        }
+        else
+        {
+            new_vector = Eigen::VectorXd::Zero(classes[i].rows());
+        }
+        int current_size = finalVector.size();
+        finalVector.conservativeResize(current_size + classes[i].rows());
+
+        finalVector.segment(current_size, classes[i].rows()) = new_vector;
+    }
+    return finalVector;
+}
+
 Eigen::VectorXd Perceptron::init_weights(const int& input_shape)
 {
     return Eigen::VectorXd::Random(input_shape + 1);
@@ -63,11 +362,7 @@ Eigen::VectorXd Perceptron::sigmoid_prime(const Eigen::VectorXd& h)
 }
 Eigen::VectorXd Perceptron::get_activation(const Eigen::VectorXd& h)
 {
-    if (activationFunction == "sigmoid")
-    {
-        return sigmoid(h);
-    }
-    return Eigen::VectorXd::Zero(h.size());
+    return sigmoid(h);
 }
 Eigen::VectorXd Perceptron::feed_forward(const Eigen::MatrixXd& X_data)
 {
@@ -79,10 +374,7 @@ Eigen::VectorXd Perceptron::error(const Eigen::VectorXd& Target)
 }
 Eigen::VectorXd Perceptron::error_term(const Eigen::VectorXd& Target)
 {
-    if (activationFunction == "sigmoid") {
-        return error(Target).array() * sigmoid_prime(get_h(inputData)).array();
-    }
-    return Eigen::VectorXd::Zero(Target.size());
+    return error(Target).array() * sigmoid_prime(get_h(inputData)).array();
 }
 Eigen::VectorXd Perceptron::get_increment(const Eigen::VectorXd& target, const float& learning_rate)
 {
@@ -119,11 +411,40 @@ Eigen::MatrixXd Perceptron::init_query(const Eigen::VectorXd& input)
 
     return result;
 }
-Eigen::VectorXd Perceptron::query(const Eigen::VectorXd& x) // arreglar esta junto con init query
+Eigen::VectorXd Perceptron::query(const Eigen::VectorXd& x)
 {
-    Eigen::MatrixXd x_normalized = init_query(x);
-    qDebug() << "Observando lo obtenido " + std::to_string(feed_forward(x_normalized).size());
-    return feed_forward(x_normalized);
+    qDebug() << "Query recibed ";
+    for (int i = 0; i < x.size(); i++)
+    {
+        qDebug() << x(i) << " ";
+    }
+
+    Eigen::VectorXd query(x.size() + 1);
+    for (int i = 0; i < x.size(); i++)
+    {
+        if (maxVal(i) == minVal(i))
+        {
+            qDebug() << "Warning: maxVal and minVal are equal for column" << i;
+            query(i) = 0;
+        }
+        else {
+            query(i) = (x(i) - minVal(i)) / (maxVal(i) - minVal(i));
+        }
+    }
+    query(x.size()) = 1.0;
+
+    qDebug() << "Query adjust ";
+    for (int i = 0; i < query.size(); i++)
+    {
+        qDebug() << query(i) << " ";
+    }
+    double dot = query.dot(weights);
+    Eigen::VectorXd result(1);
+    result(0) = dot;
+    Eigen::VectorXd resultActivation = sigmoid(result);
+
+    qDebug() << " final " << resultActivation(0);
+    return result;
 }
 
 
@@ -140,7 +461,7 @@ void printM(Eigen::MatrixXd m)
 }
 
 
-std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> ML::Kmeans(const Eigen::MatrixXd data, int k, float threshold)
+std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> MachineLearning::Kmeans(const Eigen::MatrixXd data, int k, float threshold)
 {
     srand(0);
     std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> result;
