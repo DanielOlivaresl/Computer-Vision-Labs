@@ -7,8 +7,13 @@
 #include <cstdlib>  
 #include <ctime>    
 #include <cmath>
+<<<<<<< HEAD
+#include <complex>
+#include<string>
+=======
 #include <tuple>
 
+>>>>>>> 7aec56e2c974d9237c6bde378b1d486b4bfd8c68
 #include <QPoint>
 #include <QImage>
 #include <vector>
