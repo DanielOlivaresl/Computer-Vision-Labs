@@ -1,35 +1,195 @@
 Things to do                                          
-
+*Hacer que funcione con un dataset de MNIST
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-plots.h: 
-  -Fix ConfusionMatrix, generalize datatypes, fix visualization to see numbers, not just colors
-  -Scatter plot: generalize scatterplot, and add range
-
-machineLearning.h: 
-  Perceptron: Generalize Datatypes: MatrixXd
-  query: Implement function, to make predictions
-
-
-ImageTransformations.h
-  thresholded: Fix image name, and refactor code
-  imageObjectToCsv: remove the i parameter, and add code to select the .csv but the folder will always be the same(FilesOut) 
-  classifyImage: Automate calculation of distance, to just call a function from computations (any distance), and add parameter for all the data
-  Add function to calculate the bounds of an object (min, max) using the contour of an object (connectedN4) and refactor code
-  Add function  to calculate subimage, given a border
-  Add functon to store images in a path, given a vector of images, and a folder, within FilesOut
-
-Computations.h: 
-  -generalize distance functions, and helper functions 
-  -get_matrixConfusion: Modify parameter for matrices of nxn, Review that it generates the prediction given a metric
-  -fix area metric with central moments
-  -fix feature extraction: DO NOT CALCULATE AREA AND EXENTRICITY, CALL THE FUNCTIONS
-
-  -CrossValidation: Modify parameters for nxn matrices
-
-ComputerVisionApplication:
-  -Add execentricity to the function vector
-
-general: 
-  -Add reset button 
+-Limpiar el codigo
+  *Generar mas subclases para tener mas orden
   
+  *Pasar todas las estructuras de datos a formato MatrixXd, de tam dinamico
+  *Agregar clase para poder leer y cargar cualquier tipo de dato
+  *Agregar pragma once para no tener problemas de dependencias de los .h
+  *Resolver los problemas de configuraciones
+
+
+
+
+    
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Computations.h: (Main Class)
+  
+  Distances(subclass):
+    -Euclidean
+    -Manhalanobis
+
+  
+  LinearAlgebra:
+    -CovarianceMatrix
+    -Dot product
+    -matrix Multiplication
+    -...
+
+  Math:
+    -fft1d
+    -fft2d
+    
+
+  Helper:
+    -getClosest/getMaxprob(Asc,Des)
+    -normalize Column
+    -clockwise
+    -counterclockwise
+    -getrandom
+    -generateColors
+    -calculateBounds
+    -calculateSubImage
+    -storeImages
+    -computeGistDescriptor
+    -gistGabor
+
+Machine Learning(main class):
+
+  -kNN
+  -KMeans
+
+  SVM(subclass):
+    -lineal
+
+  Model(subclass):
+    -Network
+
+  
+  Layers(subclass):
+    -Dense
+    -Conv
+    -Pooling
+    -Flatten
+    -Dropout
+    -L1,L2 regularizers & batch norm
+    
+
+    Metrics:
+      -ConfusionMatrix
+      -Loss
+      -etc...
+
+    CrossValidation:
+
+
+Plots(main class):
+
+  -scatter(2d)
+  -scatter(3d)
+  *plots for categorical data
+  -histogram
+  -confusionmatrix
+  -loss
+  -heatmap
+  
+
+
+
+ImageTransformations (main class):
+
+  -QImageToEigen
+  -EigenToQImage
+  -NormalizeImage
+  ObjectMetrics(sub class):
+    -area
+    -perimeter
+    -center of grav
+    -humoments
+    -centralmoments
+
+  ColorSpaces:
+    rbg
+    hsv
+    ymk
+    gray
+    bin, otsu
+
+  PixelOperations:
+    logtrans
+    gammatrans
+    
+  Histogram
+    histogram
+    equalization
+    matching
+    linearEq
+    normHist
+    histToImage
+    
+
+  
+  
+  Spatial
+    -Convolution
+    -Padding
+    -DownN
+
+  Kernels
+    -Gabor
+    -Gaussian
+    -Laplace
+    -User Created
+
+
+ObjectDetection (mainclass):
+  -segmentImage
+  -regionGrowing
+  -createBoundary 
+  -ajdustBoundaryMask
+  -ConnectedN4 (Detect object in binary image)
+  -outline
+  -nextcell
+  -borderFollow
+  -rasterscan
+
+
+Reader(mainclass): All must return the same datatype
+  -read_csv
+  -read_txt
+  -read_xlsx(possibly)
+  -load_Image/images
+  -load_model pyTorch/tensorflow
+
+  EEGReader
+      -Read_fif
+    
+
+
+
+
+
+
+-Features
+  *Clase para manejar los eventos y paralelizarlo 
+  *Funcion para descargar datasets 
+  *Agregar funciones de PDI(Histogram manipulation, filters, edge detection, segmentation, clasification)
+  *Agregar a la UI para hacer kernels dinamicos y filtrarlos en el momento
+  *Video Manager 
+  
+
+  *Funcionalidad para poder crear datasets de videos de yt
+  *Que puedas cargar formatos de tensorflow/pytorch
+  
+  *zoom para ver regiones
+
+
+
+
+
+
+  *Implementar mas arquitecturas de Redes Neuronales
+  *Visualizacion de archivos .csv y EDA (Exploratory Data Analisis) 
+
+  *Visualizacion de red
+
+
+
+
+
+
+  *cargar datos EEG, pasarlos a Eigen, especificamente el shape de los datos 
