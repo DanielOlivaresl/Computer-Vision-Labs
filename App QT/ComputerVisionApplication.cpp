@@ -37,6 +37,7 @@ ComputerVisionApplication::ComputerVisionApplication(QWidget* parent) :
 
     ui->Tabs->setDocumentMode(true);
 
+
 }
 //Destructor
 ComputerVisionApplication::~ComputerVisionApplication()
@@ -448,17 +449,38 @@ void ComputerVisionApplication::InInfo() {}
 
 void ComputerVisionApplication::on_actionLoadDataSet_triggered()
 {
+    //We load the image folder
     QMessageBox::information(this, "Dataset loader", "Loading dataset");
     QString directoryPath = QFileDialog::getExistingDirectory(nullptr, "Select Directory", "");
+
+
+
+
+
     if (!directoryPath.isEmpty()) {
+
+        //we create a directory and a list of images
         QDir directory(directoryPath);
-        QStringList images = directory.entryList(QStringList() << "*.bmp", QDir::Files);
+        QStringList images = directory.entryList(QStringList() << "*.png", QDir::Files);
+
 
 
         std::vector<QImage> vectorImages; // vector that stores the images 
         std::vector<QString> imageNames;
         std::vector<QImage> subImages; // vector that store the subImages of the data
+
+
+
+
+
+
+        //We will iterate the images in the directory
+        int count = 0;
         foreach(QString filename, images) {
+            if (count > 100) {
+                break;
+            }
+            count++;
             qDebug() << "Archivo encontrado:" << filename;
             QString filePath = directory.absoluteFilePath(filename); // getting the absolute path of each image 
             Image* tempImg = new Image(); // init the image 
@@ -499,28 +521,43 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
         qDebug() << "Size of the vector of images " << vectorImages.size();
         qDebug() << "size of one image " << vectorImages[0].size();
 
-        for (int i = 1; i < vectorImages.size(); i++)
-        {
+        //Now that the images are loaded, we will select the .csv to write the subimage metrics
 
-            qDebug() << "Processing image: " << i;
-            ImageTransformations::imageObjectsToCsv(vectorImages[i], imageNames[i], i, subImages);
-        }
-        qDebug() << "Size of the subImages" << subImages.size() << '\n';
-        QString outputDir = "FilesOut/SubImages";
 
-        // Crear directorio de salida si no existe
-        QDir().mkpath(outputDir);
+        
 
-        // Iterar sobre las imágenes y guardarlas en el directorio de salida
-        for (int i = 0; i < subImages.size(); ++i) {
-            QString imagePath = QDir(outputDir).filePath(QString("SubImage_%1.png").arg(i));
-            subImages[i].save(imagePath);
-        }
+        auto metrics= ImageTransformations::computeGistDescriptor(vectorImages);
+
+
     }
     else {
         qDebug() << "No directory selected.";
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void ComputerVisionApplication::on_actionReadCSV_triggered()
 {
@@ -544,7 +581,6 @@ void ComputerVisionApplication::on_actionReadCSV_triggered()
 }
 
 bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
-
     //we check if the object which triggered the event is the menuBar
 
 
@@ -579,7 +615,7 @@ bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
             singleClickTimer->start();
             connect(singleClickTimer, &QTimer::timeout, this, [this, button, mousePos]() {
                 singleClickFunctionality(button, mousePos);
-                }, Qt::UniqueConnection);
+                });
         }
     }
     QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
@@ -598,23 +634,26 @@ void ComputerVisionApplication::on_actionimageProcessingFunction1_triggered() {
 
     Image* img = getImage();
 
+    ImageTransformations::DiscreteFFT(img->image);
+
+
     //img->image =ImageTransformations::negativeImage(img->image);
     //img->image = ImageTransformations::logTransform(img->image,20);
     //img->image = ImageTransformations::gammaTransform(img->image, 1, 3);
 
-    std::vector<int> histogram = ImageTransformations::computeHistogram(img->image);
+    //std::vector<int> histogram = ImageTransformations::computeHistogram(img->image);
 
-    Plots::histogram(histogram);
+    //Plots::histogram(histogram);
 
-    //we now transform that images histogram to the range 255
+    ////we now transform that images histogram to the range 255
 
-    std::vector<int> transHist = ImageTransformations::equalizationHistogram(histogram, 64);
+    //std::vector<int> transHist = ImageTransformations::equalizationHistogram(histogram, 64);
 
-    Plots::histogram(transHist);
+    //Plots::histogram(transHist);
 
-    img->image = ImageTransformations::histogramToImage(transHist, img->image);
+    //img->image = ImageTransformations::histogramToImage(transHist, img->image);
 
-    updateImage(img->image);
+    //updateImage(img->image);
 
 }
 void ComputerVisionApplication::paintEvent(QPaintEvent* event)
@@ -1455,11 +1494,6 @@ void ComputerVisionApplication::on_actionClassify_Image_triggered() {
 
     std::map<int, std::string> namesMap;
 
-    ///*namesMap[0] = "Tuerca";
-    //namesMap[1] = "Tornillo";
-    //namesMap[2] = "Rodanda";
-    //namesMap[3] = "Arandelas";
-    //namesMap[4] = "Ganchos";*/
 
     namesMap[0] = "Cola de Pato";
     namesMap[1] = "Tornillo";
