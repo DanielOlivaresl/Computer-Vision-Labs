@@ -2,13 +2,15 @@
 #include <cstdlib>  
 #include <ctime>    
 #include <cmath>
-
+#include <complex>
+#include<string>
 #include <QPoint>
 #include <QImage>
 #include <vector>
 #include <QPainter>
 #include <QRect>
 #include <QColor>
+
 
 #include "computations.h"
 #include <QMessageBox>
@@ -22,6 +24,29 @@ public:
 	static QImage negativeImage(QImage image);
 	static QImage logTransform(QImage image, double c);
 	static QImage gammaTransform(QImage, double c, double alpha);
+
+	static QImage normalizeImage(const QImage& image);
+
+	//Domain Tranforms
+	static QImage DiscreteFFT(QImage image);
+	static QImage InverseFFT(QImage image);
+
+
+	//Kernels
+	QImage createGaborKernel(int ksize,double sigma, double theta, double lambda, double gamma, double psi );
+	static std::vector<QImage> createGarborKernels(const std::vector<int>& orientationsPerScale, int imageSize);
+
+
+	//Filters
+
+	QImage gaborFilter(const QImage &image,const QImage &kernel);
+	static QImage preFilter(const QImage& image, double fc = 4.0); //Prefilters the image byt preforming high-pass & local contrast normalization 
+	//DownSampling
+	static QImage downN(QImage& img, int N);
+
+	static QImage padArray(QImage image, int padSize);
+
+
 
 	//Histogram Processing
 	static std::vector<double> normalizeHistogram(std::vector<int> histogram);
@@ -57,6 +82,7 @@ public:
 
 	static std::vector<std::string> classifyImage(QImage& image, Eigen::MatrixXd centroids, std::vector < std::function <std::vector<int>(QVector<QPoint>, QImage&)>> functions, std::map<int, std::string> namesMap);
 
-
+	static std::vector<std::vector<double>> computeGistDescriptor(std::vector<QImage> images);
+	static std::vector<double> gistGabor(const QImage& image, int w,std::vector<QImage> g,int boundaryExtension);
 
 };

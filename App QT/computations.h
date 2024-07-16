@@ -31,6 +31,11 @@ int clockwise(int dir);
 int counterclockwise(int dir);
 
 
+//Fourier transform functions
+
+void fft1D(std::vector<std::complex<double>>& data, bool invert);
+std::vector<std::vector<std::complex<double>>> fft2D(const std::vector<std::vector<std::complex<double>>>& data,bool invert);
+
 
 class CrossValidation {
 public:
