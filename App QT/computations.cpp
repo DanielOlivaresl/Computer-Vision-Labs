@@ -18,7 +18,15 @@ double euclideanDistance(Eigen::Vector3d p1, Eigen::Vector3d p2) {
 		pow(p1.z() - p2.z(), 2)
 	);
 }
-
+double euclideanDistance(Eigen::VectorXd p1, Eigen::VectorXd p2) {
+	double powSums;
+	if (p1.size() == p2.size()) {
+		for (int i = 0; i < p1.size(); i++) {
+			powSums += pow(p1(i) - p2(i), 2);
+		}
+	}
+	return sqrt(powSums);
+}
 
 /**
 * @brief Function that calculates the euclidean distance between two points
@@ -92,7 +100,42 @@ std::vector<double> euclidean(Eigen::MatrixXd points, Eigen::VectorXd point)
 
 	return distances;
 }
+Eigen::VectorXd euclidean(std::vector <Eigen::MatrixXd> classes, Eigen::VectorXd point) {
 
+	std::vector<Eigen::VectorXd> centroids;
+
+
+	for (const auto& cls : classes) {
+		centroids.push_back(cls.colwise().mean());
+	}
+	Eigen::VectorXd distances(classes.size());
+
+	//We now will calculate the distances for every class
+
+	for (int i = 0; i < classes.size(); i++) {
+
+		distances(i) = (point - centroids[i]).norm();
+	}
+
+	return distances;
+
+
+}
+Eigen::VectorXd euclideanGenerelied(Eigen::MatrixXd points, Eigen::VectorXd point)
+{
+	Eigen::VectorXd distances(points.rows());
+
+	//we iterate the points
+	for (int i = 0; i < points.rows(); i++) {
+		//we iterate the dimensions of each point
+		double sum = 0;
+		for (int j = 0; j < points.cols(); j++) {
+			sum += pow(point[j] - points(i, j), 2);
+		}
+		distances(i) = sqrt(sum);
+	}
+	return distances;
+}
 
 /**
  *
@@ -138,6 +181,15 @@ int  getClosest(std::vector<double> distances) {
 	}
 	return min;
 }
+int getClosest(Eigen::VectorXd distances) {
+	int min = 0;
+	for (int i = 1; i < distances.cols(); i++) {
+		if (distances(i) < distances(min)) {
+			min = i;
+		}
+	}
+	return min;
+}
 /**
  * @brief Helper function that calculates the maximum probability from a given vector of probabilities.
  * @param std::vector<double> probabilities: vector of probabilities, should sum up to 1
@@ -152,7 +204,15 @@ int getMaxProb(std::vector<double> probabilities) {
 	}
 	return max;
 }
-
+int getMaxProb(Eigen::VectorXd probabilities) {
+	int max = 0;
+	for (int i = 1; i < probabilities.cols(); i++) {
+		if (probabilities(i) > probabilities(max)) {
+			max = i;
+		}
+	}
+	return max;
+}
 /**
  * @brief function that calculates the manhalanobis distance from a point and a set of points.
  *
@@ -174,8 +234,6 @@ std::vector<double>  manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynam
 				classes.at(i).col(1).mean(),
 				classes.at(i).col(2).mean()
 			));
-
-
 
 	}
 
@@ -208,40 +266,47 @@ std::vector<double>  manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynam
 
 }
 
-//std::vector<double>  manhalanobis(Eigen::MatrixXd points, Eigen::Vector3d point) {
-//
-//
-//	
-//
-//	std::vector<double> distances;
-//
-//
-//	for (int i = 0; i < classes.size(); i++) {
-//		//We	first transpose the matrix
-//
-//
-//		Eigen::MatrixXd cov = calculateCovMatrix(classes.at(i));
-//
-//		//The point minus the centroid of the current class
-//		Eigen::Vector3d x_minus_mu = point - points.at(i);
-//
-//		Eigen::MatrixXd inv_cov = cov.inverse();
-//
-//
-//
-//		Eigen::MatrixXd left_term = x_minus_mu.transpose() * inv_cov;
-//		Eigen::MatrixXd res = left_term * x_minus_mu;
-//
-//
-//
-//		distances.push_back(res(0, 0));
-//
-//	}
-//
-//	return distances;
-//
-//}
-//
+Eigen::VectorXd manhalanobis(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point) {
+
+	std::vector<Eigen::VectorXd> centroids;
+
+	for (int i = 0; i < classes.size(); i++) {
+		//We add the mean of every class
+		Eigen::VectorXd tmp(classes.at(i).cols());
+		for (int j = 0; j < classes.at(i).cols(); j++) {
+			tmp(j) = classes.at(i).col(j).mean();
+		}
+		centroids.push_back(tmp);
+
+	}
+	Eigen::VectorXd distances(classes.size());
+
+
+	for (int i = 0; i < classes.size(); i++) {
+		//We	first transpose the matrix
+
+
+		Eigen::MatrixXd cov = calculateCovMatrix(classes.at(i));
+
+		//The point minus the centroid of the current class
+		Eigen::VectorXd x_minus_mu = point - centroids.at(i);
+
+		Eigen::MatrixXd inv_cov = cov.inverse();
+
+
+
+		Eigen::MatrixXd left_term = x_minus_mu.transpose() * inv_cov;
+		Eigen::MatrixXd res = left_term * x_minus_mu;
+
+
+
+		distances(i) = res(0, 0);
+
+	}
+
+	return distances;
+
+}
 
 
 
@@ -282,6 +347,38 @@ std::vector<double>  max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 
 	for (int i = 0; i < probabilites.size(); i++) {
 		probabilites.at(i) = probabilites.at(i) / sum;
 	}
+	return probabilites;
+
+}
+
+Eigen::VectorXd max_prob(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point) {
+
+	Eigen::VectorXd manhalanobis_distance = manhalanobis(classes, point);
+
+	Eigen::VectorXd probabilites(classes.size());
+
+	for (int i = 0; i < classes.size(); i++) {
+		Eigen::MatrixXd cov = calculateCovMatrix(classes.at(i));
+		double det_cov = cov.determinant();
+
+		double pi_term = pow(2 * EIGEN_PI, (3 / 2));
+
+		double manh_dist = manhalanobis_distance(i);
+
+		probabilites(i) = (1 / (
+			pi_term * sqrt(det_cov)
+			)) *
+			exp(-0.5 * manh_dist);
+	}
+
+	double sum = 0;
+	for (int i = 0; i < probabilites.size(); i++) {
+		sum += probabilites(i);
+	}
+
+	for (int i = 0; i < probabilites.size(); i++) {
+		probabilites(i) = probabilites(i) / sum;
+	}
 
 
 
@@ -292,6 +389,8 @@ std::vector<double>  max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 
 
 
 }
+
+
 
 int kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point, int k) {
 	//Vector that stores a set of vectors that have the distance to the point, this is because each index in the vector represents a class,
@@ -366,6 +465,82 @@ int kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> cla
 
 }
 
+int kNearestNeighbours(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point, int k) {
+	//Vector that stores a set of vectors that have the distance to the point, this is because each index in the vector represents a class,
+	//This means that each element in the vector is another vector that stores the distances to the point from the ith class
+	std::vector<Eigen::VectorXd> distances;
+
+	//We iterate the classes and fill the vectors
+	for (int i = 0; i < classes.size(); i++) {
+		Eigen::VectorXd currClass(classes.at(i).rows());
+		//We first iterate the current class and convert each matrix element into a point
+		for (int j = 0; j < classes.at(i).rows(); j++) {
+			Eigen::VectorXd currPoint = classes.at(i).row(j); //We assign the point
+
+			currClass(j) = euclideanDistance(point, currPoint);
+
+
+
+		}
+		//we sort the points before adding them
+		std::sort(currClass.begin(), currClass.end());
+		//we add the class to the vector
+		distances.push_back(currClass);
+	}
+
+
+	//Now that are points are stored and sorted we will begin to check which are the k nearest neighbours, to do this we will first, from each class we will
+	//only keep the k first elements because in the worst case the k nearest neighbours are from only one class
+
+	for (int i = 0; i < distances.size(); i++) {
+		if (distances.at(i).size() > k) {
+			distances.at(i).conservativeResize(k);
+		}
+	}
+	//Now that each class has their k nearest neighbours we will see which ones are the k closest in general, to do this we will iterate each class for their first
+	//element and when we find the one that is the smallest, we will add it to our solution vector and remove that element from the class vector, and repeat this
+	//process until the solution vector is of size k
+
+	Eigen::VectorXi solution(k);
+	int KCount = 0;
+
+	while (solution.size() < k) {
+		//We iterate the classes
+		int mindist = 0; //We assume that the first class is the smallest distance and iterate from there
+		for (int i = 1; i < distances.size(); i++) {
+			if (distances.at(i)(0) < distances.at(mindist)(0)) {
+				mindist = i;
+			}
+
+		}
+
+		//Now we will add that class to the solution and remove that element
+		solution(KCount) = mindist;
+		distances[mindist] = distances[mindist].segment(1, distances[mindist].size() - 1);;
+
+	}
+
+	//Now we have the classes of the k nearest neighbours, we will now see what class dominates and make a prediction
+
+	//We will first iterate the classes and check the ocurrence the one with the most occurence will be our final result
+
+	//We will also first assume that the class 0 is the initial prediction and adjust from there
+	int res = 0;
+	int count = std::count(solution.begin(), solution.end(), res);
+	for (int i = 1; i < classes.size(); i++) {
+		int currCount = std::count(solution.begin(), solution.end(), i);
+		if (currCount > count) {
+			res = i;
+			count = currCount;
+		}
+	}
+	//The result is the classification prediction
+	return res;
+
+}
+
+
+
 
 
 // 50/50 split
@@ -426,6 +601,85 @@ std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidati
 
 }
 
+
+// 50/50 split
+std::vector<std::vector<Eigen::MatrixXd>> crossValidation(std::vector<Eigen::MatrixXd> classes) {
+	// We will create vectors of matrices for the test and training sets
+	std::vector<Eigen::MatrixXd> testSplit;
+	std::vector<Eigen::MatrixXd> trainingSplit;
+
+	// Seed the random number generator to ensure different results each run
+	std::srand(std::time(nullptr));
+
+	// Iterate over the original dataset
+	for (const Eigen::MatrixXd& matrix : classes) {
+		Eigen::MatrixXd test;
+		Eigen::MatrixXd train;
+
+		// We will randomly select indexes to add to the test set, until we have enough
+		std::vector<int> indexes;
+
+		while (indexes.size() < (matrix.rows() / 2)) {
+			int index = std::rand() % matrix.rows();
+
+			// Check that the index isn't already in the list
+			while (std::count(indexes.begin(), indexes.end(), index)) {
+				index = std::rand() % matrix.rows();
+			}
+
+			// Now that we know the element isn't in the list we add it
+			indexes.push_back(index);
+		}
+
+		// We will now fill the test and training sets
+		for (int i = 0; i < matrix.rows(); i++) {
+			if (std::count(indexes.begin(), indexes.end(), i)) {
+				test.conservativeResize(test.rows() + 1, Eigen::NoChange);
+				test.row(test.rows() - 1) = matrix.row(i);
+			}
+			else {
+				train.conservativeResize(train.rows() + 1, Eigen::NoChange);
+				train.row(train.rows() - 1) = matrix.row(i);
+			}
+		}
+
+		testSplit.push_back(test);
+		trainingSplit.push_back(train);
+	}
+
+	// Final result containing test and training splits
+	std::vector<std::vector<Eigen::MatrixXd>> result = { testSplit, trainingSplit };
+	return result;
+}
+std::vector<std::vector<Eigen::MatrixXd>> leaveOneOut(std::vector<Eigen::MatrixXd> classes, int clas, int el) {
+	std::vector<Eigen::MatrixXd> testSplit;
+	std::vector<Eigen::MatrixXd> trainingSplit;
+
+	for (int i = 0; i < classes.size(); i++) {
+		Eigen::MatrixXd trainMatrix;
+
+		for (int j = 0; j < classes.at(i).rows(); j++) {
+			if (i == clas && j == el) {
+				// Correctly handling the creation of a matrix from a single row
+				Eigen::MatrixXd singleRowMatrix = classes.at(i).row(j);
+				testSplit.push_back(singleRowMatrix);
+			}
+			else {
+				// Ensuring we resize only if needed to add rows
+				trainMatrix.conservativeResize(trainMatrix.rows() + 1, Eigen::NoChange);
+				trainMatrix.row(trainMatrix.rows() - 1) = classes.at(i).row(j);
+			}
+		}
+
+		if (trainMatrix.rows() > 0) { // Ensure we only add non-empty matrices
+			trainingSplit.push_back(trainMatrix);
+		}
+	}
+
+	std::vector<std::vector<Eigen::MatrixXd>> result = { testSplit, trainingSplit };
+	return result;
+}
+
 // n-1/1 split
 //In the test set only one class will have data at one time thats the element we left out
 std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidation::leaveOneOut(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, int clas, int el) {
@@ -470,7 +724,16 @@ std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidati
 
 
 }
+std::vector<std::vector<Eigen::MatrixXd>> Restitucion(std::vector<Eigen::MatrixXd> classes) {
+	// Directly use the input classes as both test and training splits
+	std::vector<Eigen::MatrixXd> testSplit = classes;
+	std::vector<Eigen::MatrixXd> trainingSplit = classes;
 
+	// Pack both splits into a single result vector
+	std::vector<std::vector<Eigen::MatrixXd>> result = { testSplit, trainingSplit };
+
+	return result;
+}
 
 std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> train, std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> test, int knn) {
 
@@ -502,6 +765,42 @@ std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen
 			//KNN
 			res = kNearestNeighbours(train, clas.row(i), knn);
 			predictions.at(3).at(classNumber).at(i) = res;
+		}
+		classNumber++;
+	}
+
+	return predictions;
+
+}
+std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen::MatrixXd> train, std::vector<Eigen::MatrixXd> test, int knn) {
+
+	//we will create a 3D vector where one dimension is the Method (euclidean,manhalanobis, etc.. .) another dimension is the classes and the last dimension is the actual prediction
+
+	std::vector<std::vector<std::vector<int>>> predictions(4, std::vector<std::vector<int>>(test.size(), std::vector<int>(test.at(0).rows())));
+
+	//now we begin to fill our vector
+
+	int classNumber = 0;
+	for (Eigen::MatrixXd clas : test) {
+		for (int i = 0; i < clas.rows(); i++) {
+			//we begin to fill our vector
+			//Euclidean
+			Eigen::VectorXd distances1 = euclidean(train, clas.row(i));
+			int res = getClosest(distances1);
+			predictions.at(0).at(classNumber).at(i) = res;
+
+			//Manhalanobis
+			Eigen::VectorXd  distances2 = manhalanobis(train, clas.row(i));
+			res = getClosest(distances2);
+			predictions.at(1).at(classNumber).at(i) = res;
+
+			//MaxProb
+			Eigen::VectorXd distances3 = max_prob(train, clas.row(i));
+			res = getMaxProb(distances3);
+			predictions.at(2).at(classNumber).at(i) = res;
+			//KNN
+			res = kNearestNeighbours(train, clas.row(i), knn);
+			predictions.at(3).at(classNumber).at(i) = res;
 
 
 
@@ -513,6 +812,8 @@ std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen
 	return predictions;
 
 }
+
+
 
 void normalizeColumn(Eigen::MatrixXd& matrix, int column) {
 	// getting the col
@@ -626,6 +927,20 @@ std::vector<std::vector<double>> get_matrixConfusion(std::vector<Eigen::Matrix<d
 	}
 	return matConf;
 }
+
+
+std::vector<Eigen::VectorXd> get_matrixConfusion(std::vector<Eigen::MatrixXd> mat, std::vector<std::vector<int>> vectorOfPredictions) {
+
+
+	std::vector<Eigen::VectorXd> matConf(mat.size(), Eigen::VectorXd::Zero(mat.size()));
+	for (int i = 0; i < mat.size(); i++) {
+		for (int v : vectorOfPredictions[i]) {
+			matConf[i][v] += 1;
+		}
+	}
+	return matConf;
+}
+
 
 std::vector<int> ObjectMetrics::calculateArea(QVector<QPoint> points, QImage& image)
 {

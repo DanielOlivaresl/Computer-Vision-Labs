@@ -160,7 +160,7 @@ void ComputerVisionApplication::on_actionThreshold_triggered() {
     int therseholdNumber = 0;
     therseholdNumber = QInputDialog::getInt(this, tr("Thersehold"), tr("Thersehold number: "), defaultValue, minVal, maxVal, step, &ok);
 
-    image->image = ImageTransformations::thereshold(image->image, therseholdNumber);
+    image->image = ImageTransformations::threshold(image->image, therseholdNumber);
 
     //We now update the UI
     if (!(image->image.isNull())) {
@@ -180,9 +180,7 @@ void ComputerVisionApplication::on_actionThreshold_triggered() {
 
 }
 
-void ComputerVisionApplication::toRGB() {
-
-}
+void ComputerVisionApplication::toRGB() {}
 void ComputerVisionApplication::toHSV() {}
 
 void ComputerVisionApplication::toHSL() {}
@@ -454,7 +452,11 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
     QString directoryPath = QFileDialog::getExistingDirectory(nullptr, "Select Directory", "");
 
 
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> 7aec56e2c974d9237c6bde378b1d486b4bfd8c68
 
 
     if (!directoryPath.isEmpty()) {
@@ -465,17 +467,25 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
 
 
 
+
         std::vector<QImage> vectorImages; // vector that stores the images 
         std::vector<QString> imageNames;
         std::vector<QImage> subImages; // vector that store the subImages of the data
 
 
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 7aec56e2c974d9237c6bde378b1d486b4bfd8c68
 
 
 
         //We will iterate the images in the directory
+<<<<<<< HEAD
         int count = 0;
+=======
+>>>>>>> 7aec56e2c974d9237c6bde378b1d486b4bfd8c68
         foreach(QString filename, images) {
             if (count > 100) {
                 break;
@@ -522,6 +532,7 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
         qDebug() << "size of one image " << vectorImages[0].size();
 
         //Now that the images are loaded, we will select the .csv to write the subimage metrics
+<<<<<<< HEAD
 
 
         
@@ -529,6 +540,56 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
         auto metrics= ImageTransformations::computeGistDescriptor(vectorImages);
 
 
+=======
+
+        QString csvPath = QFileDialog::getSaveFileName(nullptr, "Open CSV File", "FilesOut","CSV Files (*.csv)");
+
+
+
+
+
+        //we check if the path selected is empty
+        if (csvPath.isEmpty()) {
+            qDebug() << "Invalid path";
+            return;
+        }
+
+        //We will now check if the file exists
+
+        QFile file(csvPath);
+        if (!file.exists()) {
+            //File doesn't exist, we will create it
+
+            if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                QMessageBox::critical(nullptr, "Error", "Failed to create file.");
+                return;
+            }
+
+            QTextStream stream(&file);
+            file.close();
+            QMessageBox::information(nullptr, "Info", "CSV Created");
+        }
+        else {
+            qDebug() << "File already exists";
+        }
+
+
+
+        std::ofstream tempFile(csvPath.toStdString(), std::ios::trunc);
+        tempFile.close();
+
+        for (int i = 1; i < vectorImages.size(); i++)
+        {
+
+            qDebug() << "Processing image: " << i;
+            ImageTransformations::imageObjectsToCsv(vectorImages[i], imageNames[i], csvPath.toStdString(), subImages);
+        }
+        qDebug() << "Size of the subImages" << subImages.size() << '\n';
+        QString outputDir = "FilesOut/SubImages";
+        
+       //We will write the images to the output file        
+       ImageTransformations::storeImages(outputDir.toStdString(),subImages,0);
+>>>>>>> 7aec56e2c974d9237c6bde378b1d486b4bfd8c68
     }
     else {
         qDebug() << "No directory selected.";
@@ -569,11 +630,6 @@ void ComputerVisionApplication::on_actionReadCSV_triggered()
     cols.push_back("Perimetro");
     cols.push_back("eXCEN");
 
-    //we normalize the data by iterating the cols
-
-   /* for (int i = 0; i < test.numericData.cols(); i++) {
-        normalizeColumn(test.numericData, i);
-    }*/
 
     Plots::matrixPlot3D(test.numericData, test.stringData[0], cols[0], cols[1], cols[2]);
     auto result = ML::Kmeans(test.numericData, 5, 0.001);
@@ -582,7 +638,6 @@ void ComputerVisionApplication::on_actionReadCSV_triggered()
 
 bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
     //we check if the object which triggered the event is the menuBar
-
 
     if (watched->objectName() == "menuBar" && event->type() == QEvent::Enter) {
 
@@ -605,15 +660,18 @@ bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
     }
 
     if (watched->objectName() != "menuBar" && event->type() == QEvent::MouseButtonPress) {
+
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
         auto eventType = mouseEvent->type();
         auto mousePos = mouseEvent->pos();
         auto button = mouseEvent->button();
         if (!(singleClickTimer->isActive())) {
+
             disconnect(singleClickTimer, &QTimer::timeout, this, nullptr);
 
             singleClickTimer->start();
-            connect(singleClickTimer, &QTimer::timeout, this, [this, button, mousePos]() {
+            QObject::connect(singleClickTimer, &QTimer::timeout, this, [this, button, mousePos]() {
+
                 singleClickFunctionality(button, mousePos);
                 });
         }
@@ -656,6 +714,8 @@ void ComputerVisionApplication::on_actionimageProcessingFunction1_triggered() {
     //updateImage(img->image);
 
 }
+
+
 void ComputerVisionApplication::paintEvent(QPaintEvent* event)
 {
     Image* image = getImage();
@@ -952,11 +1012,10 @@ void ComputerVisionApplication::doubleClickFunctionality(Qt::MouseButton button)
 }
 
 void ComputerVisionApplication::singleClickFunctionality(Qt::MouseButton button, const QPoint& mousePos) {
-
+    qDebug() << "Exeecuting";
 
     Image* image = getImage();
     if (image == NULL) {
-
         return;
     }
 
@@ -966,7 +1025,6 @@ void ComputerVisionApplication::singleClickFunctionality(Qt::MouseButton button,
 
 
     if (button == Qt::RightButton) {
-
 
         image->rectangles.clear();
         //image->numClasses = 2;
@@ -1293,142 +1351,46 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
 
 
     for (int i = 0; i < objects.size(); i++) {
-        QVector<QPoint> points = objects[i];
-        int minX = points[0].x();
-        int minY = points[0].y();
-        int maxX = points[0].x();
-        int maxY = points[0].y();
+        int minX, minY, maxX, maxY;
+        ImageTransformations::calculateBounds(objects[i], minX, minY, maxX, maxY);
 
         QPainter painter(&image->image);
-
         painter.setPen(QPen(Qt::blue, 2));  // Color azul y un grosor de 5
 
+        //we draw the object border
+        QVector<QPoint> points = objects[i];
         for (const QPoint& point : points) {
             painter.drawPoint(point);
-            if (point.x() < minX) {
-                minX = point.x();
-            }
-            if (point.x() > maxX) {
-                maxX = point.x();
-            }
-            if (point.y() < minY) {
-                minY = point.y();
-            }
-            if (point.y() > maxY) {
-                maxY = point.y();
-            }
+            
         }
-
-
-
-        painter.setPen(QPen(Qt::red, 2));  // Color azul y un grosor de 5
-
-        //painter.drawRect(minX - 5, maxY - 5, maxX - minX + 10, maxY - minY + 10);  // Rectángulo en la posición (50,50) con ancho 300 y alto 200
-        //QString str = QString("Object: ")+ QString::fromStdString(std::to_string(i));
-
-
-
-
-        //painter.setPen(QPen(Qt::red, 2));  // Color azul y un grosor de 5
-
-
-        //painter.drawText(minX-5, maxY-5, 100, 20,Qt::AlignLeft,str );
 
     }
 
 
 
-    Eigen::MatrixXd descritorsReturn(objects.size(), 4);
+    Eigen::MatrixXd descritorsReturn(objects.size(), 3);
     std::ofstream outFile("FilesOut/objects.csv", std::ios::app);
     if (!outFile.is_open()) {
         std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
         return Eigen::MatrixXd(0, 0);
     }
     //We iterate over the objects in an image
+
+    std::vector<QImage> subImages = ImageTransformations::calculatezSubImage(image->image);
+
     for (int i = 0; i < objects.size(); i++) {
 
         //we get the perimeter
-        descritorsReturn(i, 0) = objects[i].size();
-
+        descritorsReturn(i, 0) = ObjectMetrics::calculatePerimeter(objects[i], image->image)[0];
+        
         //we get the area
-         //let's  suppose we have an image whit an objects outline 
-         /*
-             -------------------------
-             |00000000000000000000000|
-             |00000011111111110000000|
-             |00000010000000010000000|
-             |00000010000000010000000|
-             |00000010000000010000000|
-             |00000010000000010000000|
-             |00000010011110010000000|
-             |00000010010010010000000|
-             |00000010010010010000000|
-             |00000011110011110000000|
-             |00000000000000000000000|
-             -------------------------
+        descritorsReturn(i, 1) = ObjectMetrics::calculatePerimeter(objects[i], image->image)[0];
 
-         */
-         //The perimeter is the size of objects outline
-         //First, we sort the tuples of poinst
-        QVector<QPoint> points = objects[i];
-        std::sort(points.begin(), points.end(), [](const QPoint& a, const QPoint& b) {
-            return a.y() < b.y();
-            });
-
-        //we obtain the marginals of each pixel
-        std::map<int, QVector<QPoint>> clusters;
-        for (const auto& points : points) {
-            clusters[points.y()].push_back(points);
-        }
-
-        //We get the area
-        int area = 0;
-        for (const auto& cluster : clusters) {
-
-            for (int j = 0; j < cluster.second.size() - 1; j++) {
-                if (cluster.second[j].y() - cluster.second[j + 1].y() == 0) {
-                    area++;
-                }
-                else {
-                    area += cluster.second[j].y() - cluster.second[j + 1].y() + 2;
-                }
-            }
-        }
-        //we add the area
-        descritorsReturn(i, 1) = area;
-
-        //We calculate the center of gravity
-        int moment0 = 0;
-        int moment10 = 0;
-        int moment01 = 0;
-
-        for (int j = 0; j < objects[i].size(); j++)
-        { //We will iterate the points of the current object
-            moment0 += 1;
-            moment10 += objects[i][j].x(); //x spatial distribution
-            moment01 += objects[i][j].y(); //y spatial distribution
-        }
-
-        int cx = static_cast<int>(moment10 / moment0);
-        int cy = static_cast<int>(moment01 / moment0);
-
-        //we now add the metric to the descriptors
-        descritorsReturn(i, 2) = cx + cy * image->image.size().width();
-        descritorsReturn(i, 3) = cy;
-        /*QString message = "Area: " + QString::number(descritorsReturn(i, 1)) +
-            "Perimetro: " + QString::number(descritorsReturn(i, 0)) +
-            "Centro de Gravedad: " + "(" + QString::number(descritorsReturn(i, 2)) + "," + QString::number(descritorsReturn(i, 3)) + ")";*/
-
-
-            //QPainter painter(&image->image);
-            //painter.setPen(QPen(Qt::green, 2));
-
-            //painter.drawEllipse(cy - 10, cx - 10, 20, 20);
-
+        //We get the excentricity
+        descritorsReturn(i, 2) = ObjectMetrics::calculateEccentricity(subImages[i]);
 
 
         outFile << descritorsReturn(i, 1) << "," << descritorsReturn(i, 0) << "," << descritorsReturn(i, 2) << "," << descritorsReturn(i, 3) << " object " + std::to_string(i + 1) << std::endl;
-        //QMessageBox::warning(this, tr("Load Image"), message);
     }
     outFile.close();
 
@@ -1449,6 +1411,7 @@ Eigen::MatrixXd ComputerVisionApplication::on_actionConected_N4_triggered() {
     }
     return descritorsReturn;
 }
+
 
 void ComputerVisionApplication::on_actionClassify_Image_triggered() {
 
@@ -1494,7 +1457,10 @@ void ComputerVisionApplication::on_actionClassify_Image_triggered() {
 
     std::map<int, std::string> namesMap;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7aec56e2c974d9237c6bde378b1d486b4bfd8c68
     namesMap[0] = "Cola de Pato";
     namesMap[1] = "Tornillo";
     namesMap[2] = "Rondana";
@@ -1503,7 +1469,7 @@ void ComputerVisionApplication::on_actionClassify_Image_triggered() {
 
     //Allen y Gancho no claramente identificados
 
-    QImage imageTest = ImageTransformations::thereshold(image->image, 130);
+    QImage imageTest = ImageTransformations::threshold(image->image, 130);
     qDebug() << "antes";
     std::vector<std::string> classif = ImageTransformations::classifyImage(imageTest, result.second, func, namesMap);
 
@@ -1518,28 +1484,10 @@ void ComputerVisionApplication::on_actionClassify_Image_triggered() {
 
     //QVector<QVector<QPoint>> objects = ImageTransformations::connectedN4(image->image); //Each element of this list represents a object in the image
     QPainter painter(&image->image);
-
+    int minX, minY, maxX, maxY;
     for (int i = 0; i < objects.size(); i++) {
-        QVector<QPoint> points = objects[i];
-        int minX = points[0].x();
-        int minY = points[0].y();
-        int maxX = points[0].x();
-        int maxY = points[0].y();
+        ImageTransformations::calculateBounds(objects[i], minX, maxX, minY, maxY);
 
-        for (const QPoint& point : points) {
-            if (point.x() < minX) {
-                minX = point.x();
-            }
-            if (point.x() > maxX) {
-                maxX = point.x();
-            }
-            if (point.y() < minY) {
-                minY = point.y();
-            }
-            if (point.y() > maxY) {
-                maxY = point.y();
-            }
-        }
         painter.setPen(QPen(Qt::green, 2));  // Color azul y un grosor de 
         painter.drawRect(minX, minY, maxX - minX + 10, maxY - minY + 10);  // Rectángulo en la posición (50,50) con ancho 300 y alto 200
         QString str = QString::fromStdString(classif[i]);
