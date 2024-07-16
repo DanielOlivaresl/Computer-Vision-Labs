@@ -1,6 +1,13 @@
 #include "reader.h"
+#include "ObjectDetection.h"
+#include "imageTransformations.h"
 
-Eigen::MatrixXd read_csv(QString filePath) {
+
+
+
+
+
+Eigen::MatrixXd Reader::read_csv(QString filePath) {
     qDebug() << filePath << "Archivo recibido " << '\n';
     std::ifstream file(filePath.toStdString());
     if (!file.is_open()) {
@@ -62,7 +69,7 @@ Eigen::MatrixXd read_csv(QString filePath) {
     file.close();
     return matrix;
 }
-DataStore read_csvToDataStore(QString filePath) {
+DataStore Reader::read_csvToDataStore(QString filePath) {
     qDebug() << filePath << "Archivo recibido" << '\n';
     std::ifstream file(filePath.toStdString());
     if (!file.is_open()) {
@@ -119,3 +126,82 @@ DataStore read_csvToDataStore(QString filePath) {
     file.close();
     return result;
 }
+
+
+
+
+void Reader::storeImages(std::string path, std::vector<QImage> images, int counter)
+{
+    QString qPath = QString::fromStdString(path);
+    QDir().mkpath(qPath);
+    for (auto image : images) {
+        QString imagePath = QDir(qPath).filePath(QString("SubImage_%1.png").arg(++counter));
+        image.save(imagePath);
+    }
+
+
+
+}
+
+
+
+
+void Reader::imageObjectsToCsv(QImage& image, QString fileName, std::string csvFileName, std::vector<QImage>& subimages)
+{
+
+    // calling the function that retrieves the information 
+    QVector<QVector<QPoint>> objects = ObjectDetection::connectedN4(image);
+
+    //we first reset the current csv, and then we will start appending to it
+
+
+    std::ofstream outFile(csvFileName, std::ios::app);
+
+    if (!outFile.is_open()) {
+        qDebug()<< "No se pudo abrir el archivo para escritura.";
+        return;
+    }
+
+    for (int i = 0; i < objects.size(); i++) {
+        int minX, maxX, minY, maxY;
+        ObjectDetection::calculateBounds(objects[i], minX, maxX, minY, maxY);
+        // getting the subimage of the object
+        QVector<QPoint> pointsS = objects[i];
+
+        // Find the bounding box of the object
+
+
+        // Create a new image containing only the object
+        QImage objectImage = image.copy(minX - 5, minY - 5, maxX - minX + 10, maxY - minY + 10);
+
+        QImage objectImageBinary = ImageTransformations::ColorSpaces::threshold(objectImage, 130);
+        subimages.push_back(objectImageBinary);
+        double e = ImageTransformations::ObjectMetrics::calculateEccentricity((objectImageBinary));
+        QImage ImageBinary = ImageTransformations::ColorSpaces::threshold(image, 130);
+
+
+
+        std::vector < std::function<std::vector<int>(QVector<QPoint>, QImage&)>> func = {
+            //ImageTransformations::ObjectMetrics::calculateArea,
+            //ImageTransformations::ObjectMetrics::calculateCenterOfGravity,
+            ImageTransformations::ObjectMetrics::calculatePerimeter
+        };
+
+
+        for (int i = 0; i < objects.size(); i++) {//we iterate the objects
+            Eigen::MatrixXd descritorsReturn = ImageTransformations::ObjectMetrics::featureExtraction(func, objects[i], ImageBinary);
+
+            for (int j = 0; j < descritorsReturn.cols(); j++) { //we iterate the features of the objects 
+                outFile << descritorsReturn(0, j) << ",";
+            }
+            //we end the object in the csv
+            outFile << "Object " << i << " " << fileName.toStdString() << "\n";
+
+        }
+        outFile.close();
+    }
+}
+
+
+
+

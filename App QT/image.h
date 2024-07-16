@@ -1,4 +1,4 @@
-#ifndef IMAGE_H
+	#ifndef IMAGE_H
 #define IMAGE_H
 //Q_DECLARE_METATYPE(Image);
 
@@ -16,7 +16,7 @@ public:
 	Image(QObject* parent = nullptr);
 	Image(const Image& other);
 	~Image();
-	int numClasses = 2;
+	int numClasses = 3;
 	std::string currProcess;
 	std::vector<QPointF> rectangles;
 	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> matrixClasses;

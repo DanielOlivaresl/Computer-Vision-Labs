@@ -22,6 +22,7 @@
 #include "image.h"
 #include <string>
 #include "imageTransformations.h"
+#include "ObjectDetection.h"
 #include<vector>
 #include <fstream>
 #include <cstdlib>  
@@ -29,6 +30,22 @@
 #include "reader.h"
 #include "machineLearning.h"
 #include "plots.h"
+
+#include <iostream>
+#include <vector>
+#include <sstream>
+#include <cstdio>
+#include<stdio.h>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <array>
+#include <windows.h>
+#undef min
+#undef max
+#include <algorithm>
+#include "reader.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class ComputerVisionApplication; }
 QT_END_NAMESPACE
