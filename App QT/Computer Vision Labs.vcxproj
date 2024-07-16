@@ -19,8 +19,8 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{69F7AA3E-8248-4C5F-9221-A211F5DD7091}</ProjectGuid>
     <Keyword>QtVS_v304</Keyword>
-    <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">10.0.19041.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">10.0.22621.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">10.0</WindowsTargetPlatformVersion>
     <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -61,30 +61,46 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <ExternalIncludePath>$(QTDIR)\include;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>$(QTDIR)\lib;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>C:\Qt\6.7.0\msvc2019_64\lib;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>C:\Qt\6.7.0\msvc2019_64\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <IncludePath>$(QTDIR)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(QTDIR)\lib;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>C:\Qt\6.7.0\msvc2019_64\lib;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>C:\Qt\6.7.0\msvc2019_64\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(QTDIR)\bin;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\Qt\6.7.0\msvc2019_64\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Qt6Charts.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>"C:\Qt\6.7.0\msvc2019_arm64\include\QtCharts"</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Qt\6.7.0\msvc2019_64\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Qt6DataVisualization.lib
+;Qt6Gui.lib
+;Qt6Widgets.lib;
+Qt6Core.lib
+;Qt6Charts.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <UACUIAccess>false</UACUIAccess>
+      <EnableUAC>true</EnableUAC>
+      <AllowIsolation>true</AllowIsolation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Qt\6.7.0\msvc2019_64\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link />
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt6DataVisualization.lib
+;Qt6Gui.lib
+;Qt6Widgets.lib;
+Qt6Core.lib
+;Qt6Charts.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <UACUIAccess>false</UACUIAccess>
+      <EnableUAC>true</EnableUAC>
+      <AllowIsolation>true</AllowIsolation>
+      <AdditionalLibraryDirectories>C:\Qt\6.7.0\msvc2019_64\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
