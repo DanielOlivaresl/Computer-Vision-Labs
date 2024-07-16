@@ -1,4 +1,6 @@
 #pragma once
+#ifndef COMPUTATIONS_H
+#define COMPUTATIONS_H
 
 #include<iostream>
 #include<vector>
@@ -10,45 +12,103 @@
 #include <QString>
 #include<QImage>
 #include <QPoint>
-std::vector<double> euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);
-std::vector<double> euclidean(Eigen::MatrixXd points, Eigen::VectorXd point); //we pass a matrix of n cols and n rows and a point of n dimensions
 
 
+class Computations { //Base class
 
-
-Eigen::MatrixXd  calculateCovMatrix(Eigen::MatrixXd data);
-std::vector<double> manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);
-int getClosest(std::vector<double> distances);
-int getMaxProb(std::vector<double> probabilities);
-std::vector<double> max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);
-int kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point, int k);
-std::vector<std::vector<double>> get_matrixConfusion(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> mat, std::vector<std::vector<int>> vectorOfPredictions);
-std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> train, std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> test, int knn);
-void normalizeColumn(Eigen::MatrixXd& matrix, int column);
-
-
-int clockwise(int dir);
-int counterclockwise(int dir);
-
-
-
-class CrossValidation {
 public:
-	static std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> leaveOneOut(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, int clas, int el);
-	static std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> crossValidation(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes);
-	static std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> Restitucion(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes);
 
-};
+	class Distances {
+	public:
+		static Eigen::VectorXd euclidean(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point);
+		static double euclideanDistance(Eigen::VectorXd p1, Eigen::VectorXd p2);
+		static Eigen::VectorXd euclideanGenerelied(Eigen::MatrixXd points, Eigen::VectorXd point);
+		static std::vector<double>  euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);
+		static std::vector<double> euclidean(Eigen::MatrixXd points, Eigen::VectorXd point);
+		static std::vector<double> manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);
+		static Eigen::VectorXd manhalanobis(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point);
+	};
 
-class ObjectMetrics {
-public:
+
+	class LinearAlgebra {
+	public:
+		static Eigen::MatrixXd calculateCovMatrix(Eigen::MatrixXd data);
+	};
+
+	class Math {
+	public:
+		//Fourier transform functions
+
+		static void fft1D(std::vector<std::complex<double>>& data, bool invert);
+		static std::vector<std::vector<std::complex<double>>> fft2D(const std::vector<std::vector<std::complex<double>>>& data, bool invert);
+
+	};
+
+
+	class Helper {
+	public:
+		static int getClosest(std::vector<double> distances);
+		static int getClosest(Eigen::VectorXd distances);
+		static int getMaxProb(std::vector<double> probabilities);
+		static int getMaxProb(Eigen::VectorXd probabilities);
+		static Eigen::VectorXd max_prob(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point);
+		static std::vector<double> max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);
+		static void normalizeColumn(Eigen::MatrixXd& matrix, int column);
+		static int clockwise(int dir);
+		static int counterclockwise(int dir);
+
 	
-	static std::vector<int> calculateArea(QVector<QPoint> object, QImage& image);
-	static std::vector<int> calculatePerimeter(QVector<QPoint> object, QImage& image);
-	static std::vector<int> calculateCenterOfGravity(QVector<QPoint> object, QImage& image);
-	static Eigen::MatrixXd featureExtraction(std::vector < std::function <std::vector<int>(QVector<QPoint>, QImage&)>> functions, QVector<QPoint> object, QImage& image);
-	static double imageMoments(QImage& binarizedImage, int p, int q);
-	static double centralMoments(QImage& binarizedImage, int p, int q, double xCent, double yCent);
-	static double calculateEccentricity(QImage& image);
+	};
+
+
 
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
