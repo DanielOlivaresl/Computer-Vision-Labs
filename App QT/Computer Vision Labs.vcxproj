@@ -27,10 +27,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
+    <AdditionalIncludeDirectories>C:\Users\Danie\OneDrive\Desktop\Computer-Vision-Labs\App QT\FilesOut;C:\Qt\6.7.0\msvc2019_64\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
+    <AdditionalIncludeDirectories>C:\Users\Danie\OneDrive\Desktop\Computer-Vision-Labs\App QT\FilesOut;C:\Qt\6.7.0\msvc2019_64\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt_defaults.props')">
@@ -61,26 +63,25 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <ExternalIncludePath>$(QTDIR)\include;$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>$(QTDIR)\lib;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>C:\Qt\6.7.0\msvc2019_64\lib;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>C:\Qt\6.7.0\msvc2019_64\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <IncludePath>$(QTDIR)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(QTDIR)\lib;$(LibraryPath)</LibraryPath>
+    <ExternalIncludePath>C:\Qt\6.7.0\msvc2019_64\lib;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>C:\Qt\6.7.0\msvc2019_64\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Users\Danie\OneDrive\Desktop\Computer-Vision-Labs\App QT\FilesOut;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Qt\6.7.0\msvc2019_64\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Qt6DataVisualization.lib;
-Qt6Gui.lib;
-Qt6Widgets.lib;
-Qt6Core.lib;
-Qt6Charts.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>"C:\Qt\6.7.0\msvc2019_arm64\include\QtCharts"</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>"C:\Qt\6.7.0\msvc2019_64\lib"</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Qt6DataVisualization.lib;Qt6Gui.lib;Qt6Widgets.lib;Qt6Core.lib;Qt6Charts.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACUIAccess>false</UACUIAccess>
+      <EnableUAC>true</EnableUAC>
+      <AllowIsolation>true</AllowIsolation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -88,37 +89,13 @@ Qt6Charts.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Users\Danie\OneDrive\Desktop\Computer-Vision-Labs\App QT\FilesOut;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link />
     <Link>
-      <AdditionalDependencies>Qt6DataVisualization.lib;
-Qt6Gui.lib;
-Qt6Widgets.lib;
-Qt6Core.lib;
-Qt6Charts.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>"C:\Qt\6.7.0\msvc2019_64\lib"</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Qt6DataVisualization.lib;Qt6Gui.lib;Qt6Widgets.lib;Qt6Core.lib;Qt6Charts.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACUIAccess>false</UACUIAccess>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
-    <ClCompile>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <Optimization>Disabled</Optimization>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
-    <ClCompile>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <DebugInformationFormat>None</DebugInformationFormat>
-      <Optimization>MaxSpeed</Optimization>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableUAC>true</EnableUAC>
+      <AllowIsolation>true</AllowIsolation>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

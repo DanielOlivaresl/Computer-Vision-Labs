@@ -37,6 +37,7 @@ ComputerVisionApplication::ComputerVisionApplication(QWidget* parent) :
 
     ui->Tabs->setDocumentMode(true);
 
+
 }
 //Destructor
 ComputerVisionApplication::~ComputerVisionApplication()
@@ -460,7 +461,7 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
 
         //we create a directory and a list of images
         QDir directory(directoryPath);
-        QStringList images = directory.entryList(QStringList() << "*.jpg", QDir::Files);
+        QStringList images = directory.entryList(QStringList() << "*.bmp", QDir::Files);
 
 
 
@@ -471,7 +472,6 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
 
         
 
-        int count = 0;
 
 
         //We will iterate the images in the directory
@@ -576,6 +576,15 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
         qDebug() << "size of one image " << vectorImages[0].size();*/
 
         //Now that the images are loaded, we will select the .csv to write the subimage metrics
+<<<<<<< HEAD
+
+
+        
+
+        auto metrics= ImageTransformations::computeGistDescriptor(vectorImages);
+
+
+=======
 
         //QString csvPath = QFileDialog::getSaveFileName(nullptr, "Open CSV File", "FilesOut","CSV Files (*.csv)");
 
@@ -625,6 +634,7 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
        // 
        ////We will write the images to the output file        
        //ImageTransformations::storeImages(outputDir.toStdString(),subImages,0);
+>>>>>>> 7aec56e2c974d9237c6bde378b1d486b4bfd8c68
         
         ImageTransformations::computeGistDescriptor(vectorImages,classNames);
 
@@ -634,6 +644,30 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
         qDebug() << "No directory selected.";
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void ComputerVisionApplication::on_actionReadCSV_triggered()
 {
@@ -741,215 +775,27 @@ void ComputerVisionApplication::on_actionimageProcessingFunction1_triggered() {
 
     Image* img = getImage();
 
+    ImageTransformations::DiscreteFFT(img->image);
 
 
-    /*
-    
-    //We segment the regions of the image
+    //img->image =ImageTransformations::negativeImage(img->image);
+    //img->image = ImageTransformations::logTransform(img->image,20);
+    //img->image = ImageTransformations::gammaTransform(img->image, 1, 3);
 
-    cv::Mat image = ImageTransformations::QImageToMat(img->image);
-    // Convert the image to grayscale for corner detection
-    cv::Mat grayImage;
-    cv::cvtColor(image, grayImage, cv::COLOR_BGR2GRAY);
+    std::vector<int> histogram = ImageTransformations::computeHistogram(img->image);
 
-    // Detect corners using Shi-Tomasi corner detection
-    std::vector<cv::Point2f> corners;
-    cv::goodFeaturesToTrack(grayImage, corners, 50, 0.01, 10);
+    Plots::histogram(histogram);
 
-    // Detect edges using Canny edge detector
-    cv::Mat edges;
-    cv::Canny(grayImage, edges, 100, 200);
+    //we now transform that images histogram to the range 255
 
-    // Combine corners and edges as seeds
-    std::vector<cv::Point> seeds;
-    for (const auto& corner : corners) {
-        seeds.push_back(cv::Point(corner.x, corner.y));
-    }
-    for (int y = 0; y < edges.rows; y++) {
-        for (int x = 0; x < edges.cols; x++) {
-            if (edges.at<uchar>(y, x) > 0) {
-                seeds.push_back(cv::Point(x, y));
-            }
-        }
-    }
+    std::vector<int> transHist = ImageTransformations::equalizationHistogram(histogram, 64);
 
-    int threshold = 10; // Intensity/color difference threshold
+    Plots::histogram(transHist);
 
-    cv::Mat labels;
-    cv::Vec3b a;
-    ImageTransformations::regionGrowing(image, seeds, threshold, labels, a);
-
-
-
-    //Now we will classify the image
-
-    int boundaryExtension = 32; // Number of pixels to pad the image
-    int imageSize = 256;
-    std::vector<int> orientationsPerScale = { 8,8,8,8 };
-    int numberBlock = 4;
-    int fc_prefilt = 4;
-    auto G = ImageTransformations::createGarborKernels(orientationsPerScale, imageSize + (2 * boundaryExtension));
-    int Nfeatures = G[0][0].size() * numberBlock * numberBlock;
-
-
-
-    std::vector<double> currentGist;
-
-
-
-    
-    QImage copyImage = img->image.copy();
-    copyImage = ImageTransformations::ColorSpaces::convertToGray(copyImage);
-
-
-    QSize newImageSize(imageSize, imageSize);
-    copyImage = copyImage.scaled(newImageSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-
-
-
-
-    auto normalizedImage = ImageTransformations::normalizeImage(copyImage);
-
-
-    auto output = ImageTransformations::preFilter(normalizedImage);
-
-
-
-
-
-
-
-    currentGist = ImageTransformations::gistGabor(output, numberBlock, G, boundaryExtension);
-
-
-
-
-    std::ofstream outFile("descriptor.txt");
-
-
-    for (int col = 0; col < currentGist.size(); col++) {
-        outFile << currentGist[col] << " ";
-    }
-
-    outFile.close();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // Set up the command to run the Python script
-    std::string command = "python predict.py";
-
-    // Additional settings to prevent the command window from showing
-    STARTUPINFOA si;
-    PROCESS_INFORMATION pi;
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    si.dwFlags |= STARTF_USESHOWWINDOW;
-    si.wShowWindow = SW_HIDE;  // Prevents the command window from being shown
-
-    ZeroMemory(&pi, sizeof(pi));
-
-    // Execute the Python script
-    if (!CreateProcessA(
-        NULL,   // No module name (use command line)
-        const_cast<char*>(command.c_str()), // Command line
-        NULL,   // Process handle not inheritable
-        NULL,   // Thread handle not inheritable
-        FALSE,  // Set handle inheritance to FALSE
-        0,      // No creation flags
-        NULL,   // Use parent's environment block
-        NULL,   // Use parent's starting directory 
-        &si,    // Pointer to STARTUPINFO structure
-        &pi)    // Pointer to PROCESS_INFORMATION structure
-        )
-    {
-        std::cerr << "Failed to run the Python script." << std::endl;
-        return;
-    }
-
-    // Wait until child process exits.
-    WaitForSingleObject(pi.hProcess, INFINITE);
-
-    // Close process and thread handles. 
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // Read the results back from the file
-    std::ifstream inFile("result.txt");
-    if (!inFile) {
-        std::cerr << "Failed to open result.txt for reading." << std::endl;
-        return;
-    }
-
-    std::vector<double> predictions;
-    double prediction;
-
-    double temp;
-
-    // Read all the values from the file into the vector
-    while (inFile >> temp) {
-        predictions.push_back(temp);
-    }
-
-    // Close the file
-    inFile.close();
-
-    // Output the predictions
-    qDebug() << "Received predictions: ";
-    std::string pred = "[";
-    for (const auto& prediction : predictions) {
-        pred.append(std::to_string(prediction) + ", ");
-    }
-    pred.append(" ]");
-    qDebug() << pred;
-    auto it = std::max_element(predictions.begin(), predictions.end());
-
-    // Calculate the index based on the iterator
-    int index = std::distance(predictions.begin(), it);
-    std::map<int, std::string> classes;
-    classes[0] = "coastal";
-    classes[1] = "forest";
-    classes[2] = "Mountain";
-    classes[3] = "Country";
-
-
-
-    QPainter painter(&img->image);
-    painter.setPen(QPen(Qt::green, 2));  // Color azul y un grosor de 
-    QString str = QString::fromStdString(classes[index]);
-    painter.drawText(img->image.rect(),Qt::AlignTop | Qt::AlignLeft, str);
-    painter.end();
-
-
-
+    img->image = ImageTransformations::histogramToImage(transHist, img->image);
 
     updateImage(img->image);
-    */
+
 }
 
 
@@ -1695,6 +1541,10 @@ void ComputerVisionApplication::on_actionClassify_Image_triggered() {
 
     std::map<int, std::string> namesMap;
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> 7aec56e2c974d9237c6bde378b1d486b4bfd8c68
     namesMap[0] = "Cola de Pato";
     namesMap[1] = "Tornillo";
     namesMap[2] = "Rondana";
