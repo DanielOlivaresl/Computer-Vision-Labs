@@ -2,18 +2,26 @@
 #include <cstdlib>  
 #include <ctime>    
 #include <cmath>
+<<<<<<< HEAD
 #include <complex>
 #include<string>
+=======
+#include <tuple>
+
+>>>>>>> 7aec56e2c974d9237c6bde378b1d486b4bfd8c68
 #include <QPoint>
 #include <QImage>
 #include <vector>
 #include <QPainter>
 #include <QRect>
 #include <QColor>
+#include <QDir>
+#include <QVector>
+#include <QMessageBox>
+
 
 
 #include "computations.h"
-#include <QMessageBox>
 
 class ImageTransformations {
 
@@ -58,9 +66,10 @@ public:
 	std::vector<int> histogramSpecification(std::vector<int> histogram, std::vector<double> specifiedHistogram, int maxVal);
 
 
-	static void imageObjectsToCsv(QImage& image, QString filaname, int i, std::vector<QImage>& subimages); // used to transform an image into a csv with the information of all the objects in the image 
 
-	static QImage thereshold(QImage& image, int thresholded);
+
+	static void imageObjectsToCsv(QImage& image, QString fileName, std::string csvFileName, std::vector<QImage>& subimages);
+	static QImage threshold(QImage& image, int threshold);
 	static QVector<QVector<QPoint>> connectedN4(QImage& image);
 	static  QVector<QPoint> outLine(QImage& image, int i, int j);
 
@@ -81,6 +90,9 @@ public:
 	//unclassified methods
 
 	static std::vector<std::string> classifyImage(QImage& image, Eigen::MatrixXd centroids, std::vector < std::function <std::vector<int>(QVector<QPoint>, QImage&)>> functions, std::map<int, std::string> namesMap);
+	static void calculateBounds(QList<QPoint> objectBorder, int &minX, int &maxX,int &minY, int &maxY );
+	static std::vector<QImage> calculatezSubImage(QImage& image);
+	static void storeImages(std::string path, std::vector<QImage> images,int counter);
 
 	static std::vector<std::vector<double>> computeGistDescriptor(std::vector<QImage> images);
 	static std::vector<double> gistGabor(const QImage& image, int w,std::vector<QImage> g,int boundaryExtension);
