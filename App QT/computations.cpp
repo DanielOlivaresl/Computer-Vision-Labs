@@ -1,6 +1,5 @@
 //File for extra computations needed in the labs
 
-
 #include"computations.h"
 //Distance functions
 
@@ -21,7 +20,7 @@
  * @param Eigen::VectorXd vector of N dimensions, that we want to know the distance to
  * @return Vector of distances
  *
- */
+ 
 std::vector<double> euclidean(Eigen::MatrixXd points, Eigen::VectorXd point)
 {
 	std::vector<double> distances(points.rows());
@@ -78,13 +77,12 @@ Eigen::VectorXd euclideanGenerelied(Eigen::MatrixXd points, Eigen::VectorXd poin
 	}
 	return distances;
 }
-
+*/
 /**
  *
  * @brief Helper function that calculates the covariance matrix from a set of data
  * @param Eigen::MatrixXd matrix of n rows and m columns, where the m is the number of features in the set of data, and n is the number of instances of that data
  * @returns Eigen::MatrixXd returns the covariance matrix of dimensions mxm, of the data passed.
- */
 Eigen::MatrixXd  calculateCovMatrix(Eigen::MatrixXd data) {
 	/*
 	Eigen::MatrixXd transposed = data.transpose();
@@ -92,7 +90,6 @@ Eigen::MatrixXd  calculateCovMatrix(Eigen::MatrixXd data) {
 	Eigen::MatrixXd centered = transposed.rowwise() - transposed.colwise().mean();
 	// Calculate the covariance matrix
 	Eigen::MatrixXd cov = (centered.adjoint() * centered) / double(centered.rows() - 1);
-	*/
 	int numSamples = data.rows();
 	int numDimensions = data.cols();
 
@@ -113,7 +110,6 @@ Eigen::MatrixXd  calculateCovMatrix(Eigen::MatrixXd data) {
  * @brief Helper function that calculates the closest distance from a vector of distances
  * @param std::vector<double> distances: vector of distances
  * @return int returns the index of the closest point in the vector
- */
 int  getClosest(std::vector<double> distances) {
 	int min = 0;
 	for (int i = 1; i < distances.size(); i++) {
@@ -136,7 +132,6 @@ int getClosest(Eigen::VectorXd distances) {
  * @brief Helper function that calculates the maximum probability from a given vector of probabilities.
  * @param std::vector<double> probabilities: vector of probabilities, should sum up to 1
  * @return int returns the index of the vector which has the maximum probability
- */
 int getMaxProb(std::vector<double> probabilities) {
 	int max = 0;
 	for (int i = 1; i < probabilities.size(); i++) {
@@ -163,7 +158,6 @@ int getMaxProb(Eigen::VectorXd probabilities) {
  * @return std::vector<double> vector that stores the distance calculated from the point to each class
  *
  *
- */
 std::vector<double>  manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
 
 	std::vector<Eigen::Vector3d> centroids;
@@ -260,7 +254,6 @@ Eigen::VectorXd manhalanobis(std::vector<Eigen::MatrixXd> classes, Eigen::Vector
  * @param std::vector<Eigen::Matrix<double, Eigen::Dynamic,3>> classes: vector of matrices of size nx3 where each matrix represents a class
  * @param Eigen::Vector3d point point that will be used to calculate the probabilities that it belogns to each of the classes passed
  * @returns std::vector<double> vector of probabilites, that the point belongs to each of the classes
- */
 std::vector<double>  max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
 
 	std::vector<double> manhalanobis_distance = manhalanobis(classes, point);
@@ -334,159 +327,160 @@ Eigen::VectorXd max_prob(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd p
 
 
 
-int kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point, int k) {
-	//Vector that stores a set of vectors that have the distance to the point, this is because each index in the vector represents a class,
-	//This means that each element in the vector is another vector that stores the distances to the point from the ith class
-	std::vector<std::vector<double>> distances;
-
-	//We iterate the classes and fill the vectors
-	for (int i = 0; i < classes.size(); i++) {
-		std::vector<double> currClass;
-		//We first iterate the current class and convert each matrix element into a point
-		for (int j = 0; j < classes.at(i).rows(); j++) {
-			Eigen::Vector3d currPoint = classes.at(i).row(j); //We assign the point
-
-			currClass.push_back(euclideanDistance(point, currPoint));
-
-
-
-		}
-		//we sort the points before adding them
-		std::sort(currClass.begin(), currClass.end());
-		//we add the class to the vector
-		distances.push_back(currClass);
-	}
-
-
-	//Now that are points are stored and sorted we will begin to check which are the k nearest neighbours, to do this we will first, from each class we will
-	//only keep the k first elements because in the worst case the k nearest neighbours are from only one class
-
-	for (int i = 0; i < distances.size(); i++) {
-		if (distances.at(i).size() > k) {
-			distances.at(i).erase(distances.at(i).begin() + k, distances.at(i).end());
-		}
-	}
-	//Now that each class has their k nearest neighbours we will see which ones are the k closest in general, to do this we will iterate each class for their first
-	//element and when we find the one that is the smallest, we will add it to our solution vector and remove that element from the class vector, and repeat this
-	//process until the solution vector is of size k
-
-	std::vector<int> solution;
-
-	while (solution.size() < k) {
-		//We iterate the classes
-		int mindist = 0; //We assume that the first class is the smallest distance and iterate from there
-		for (int i = 1; i < distances.size(); i++) {
-			if (distances.at(i).at(0) < distances.at(mindist).at(0)) {
-				mindist = i;
-			}
-
-		}
-
-		//Now we will add that class to the solution and remove that element
-		solution.push_back(mindist);
-		distances.at(mindist).erase(distances.at(mindist).begin());
-
-	}
-
-	//Now we have the classes of the k nearest neighbours, we will now see what class dominates and make a prediction
-
-	//We will first iterate the classes and check the ocurrence the one with the most occurence will be our final result
-
-	//We will also first assume that the class 0 is the initial prediction and adjust from there
-	int res = 0;
-	int count = std::count(solution.begin(), solution.end(), res);
-	for (int i = 1; i < classes.size(); i++) {
-		int currCount = std::count(solution.begin(), solution.end(), i);
-		if (currCount > count) {
-			res = i;
-			count = currCount;
-		}
-	}
-	//The result is the classification prediction
-	return res;
-
-}
-
-int kNearestNeighbours(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point, int k) {
-	//Vector that stores a set of vectors that have the distance to the point, this is because each index in the vector represents a class,
-	//This means that each element in the vector is another vector that stores the distances to the point from the ith class
-	std::vector<Eigen::VectorXd> distances;
-
-	//We iterate the classes and fill the vectors
-	for (int i = 0; i < classes.size(); i++) {
-		Eigen::VectorXd currClass(classes.at(i).rows());
-		//We first iterate the current class and convert each matrix element into a point
-		for (int j = 0; j < classes.at(i).rows(); j++) {
-			Eigen::VectorXd currPoint = classes.at(i).row(j); //We assign the point
-
-			currClass(j) = euclideanDistance(point, currPoint);
-
-
-
-		}
-		//we sort the points before adding them
-		std::sort(currClass.begin(), currClass.end());
-		//we add the class to the vector
-		distances.push_back(currClass);
-	}
-
-
-	//Now that are points are stored and sorted we will begin to check which are the k nearest neighbours, to do this we will first, from each class we will
-	//only keep the k first elements because in the worst case the k nearest neighbours are from only one class
-
-	for (int i = 0; i < distances.size(); i++) {
-		if (distances.at(i).size() > k) {
-			distances.at(i).conservativeResize(k);
-		}
-	}
-	//Now that each class has their k nearest neighbours we will see which ones are the k closest in general, to do this we will iterate each class for their first
-	//element and when we find the one that is the smallest, we will add it to our solution vector and remove that element from the class vector, and repeat this
-	//process until the solution vector is of size k
-
-	Eigen::VectorXi solution(k);
-	int KCount = 0;
-
-	while (solution.size() < k) {
-		//We iterate the classes
-		int mindist = 0; //We assume that the first class is the smallest distance and iterate from there
-		for (int i = 1; i < distances.size(); i++) {
-			if (distances.at(i)(0) < distances.at(mindist)(0)) {
-				mindist = i;
-			}
-
-		}
-
-		//Now we will add that class to the solution and remove that element
-		solution(KCount) = mindist;
-		distances[mindist] = distances[mindist].segment(1, distances[mindist].size() - 1);;
-
-	}
-
-	//Now we have the classes of the k nearest neighbours, we will now see what class dominates and make a prediction
-
-	//We will first iterate the classes and check the ocurrence the one with the most occurence will be our final result
-
-	//We will also first assume that the class 0 is the initial prediction and adjust from there
-	int res = 0;
-	int count = std::count(solution.begin(), solution.end(), res);
-	for (int i = 1; i < classes.size(); i++) {
-		int currCount = std::count(solution.begin(), solution.end(), i);
-		if (currCount > count) {
-			res = i;
-			count = currCount;
-		}
-	}
-	//The result is the classification prediction
-	return res;
-
-}
-
-
+//int kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point, int k) {
+//	//Vector that stores a set of vectors that have the distance to the point, this is because each index in the vector represents a class,
+//	//This means that each element in the vector is another vector that stores the distances to the point from the ith class
+//	std::vector<std::vector<double>> distances;
+//
+//	//We iterate the classes and fill the vectors
+//	for (int i = 0; i < classes.size(); i++) {
+//		std::vector<double> currClass;
+//		//We first iterate the current class and convert each matrix element into a point
+//		for (int j = 0; j < classes.at(i).rows(); j++) {
+//			Eigen::Vector3d currPoint = classes.at(i).row(j); //We assign the point
+//
+//			currClass.push_back(euclideanDistance(point, currPoint));
+//
+//
+//
+//		}
+//		//we sort the points before adding them
+//		std::sort(currClass.begin(), currClass.end());
+//		//we add the class to the vector
+//		distances.push_back(currClass);
+//	}
+//
+//
+//	//Now that are points are stored and sorted we will begin to check which are the k nearest neighbours, to do this we will first, from each class we will
+//	//only keep the k first elements because in the worst case the k nearest neighbours are from only one class
+//
+//	for (int i = 0; i < distances.size(); i++) {
+//		if (distances.at(i).size() > k) {
+//			distances.at(i).erase(distances.at(i).begin() + k, distances.at(i).end());
+//		}
+//	}
+//	//Now that each class has their k nearest neighbours we will see which ones are the k closest in general, to do this we will iterate each class for their first
+//	//element and when we find the one that is the smallest, we will add it to our solution vector and remove that element from the class vector, and repeat this
+//	//process until the solution vector is of size k
+//
+//	std::vector<int> solution;
+//
+//	while (solution.size() < k) {
+//		//We iterate the classes
+//		int mindist = 0; //We assume that the first class is the smallest distance and iterate from there
+//		for (int i = 1; i < distances.size(); i++) {
+//			if (distances.at(i).at(0) < distances.at(mindist).at(0)) {
+//				mindist = i;
+//			}
+//
+//		}
+//
+//		//Now we will add that class to the solution and remove that element
+//		solution.push_back(mindist);
+//		distances.at(mindist).erase(distances.at(mindist).begin());
+//
+//	}
+//
+//	//Now we have the classes of the k nearest neighbours, we will now see what class dominates and make a prediction
+//
+//	//We will first iterate the classes and check the ocurrence the one with the most occurence will be our final result
+//
+//	//We will also first assume that the class 0 is the initial prediction and adjust from there
+//	int res = 0;
+//	int count = std::count(solution.begin(), solution.end(), res);
+//	for (int i = 1; i < classes.size(); i++) {
+//		int currCount = std::count(solution.begin(), solution.end(), i);
+//		if (currCount > count) {
+//			res = i;
+//			count = currCount;
+//		}
+//	}
+//	//The result is the classification prediction
+//	return res;
+//
+//}
+//
+//int kNearestNeighbours(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point, int k) {
+//	//Vector that stores a set of vectors that have the distance to the point, this is because each index in the vector represents a class,
+//	//This means that each element in the vector is another vector that stores the distances to the point from the ith class
+//	std::vector<Eigen::VectorXd> distances;
+//
+//	//We iterate the classes and fill the vectors
+//	for (int i = 0; i < classes.size(); i++) {
+//		Eigen::VectorXd currClass(classes.at(i).rows());
+//		//We first iterate the current class and convert each matrix element into a point
+//		for (int j = 0; j < classes.at(i).rows(); j++) {
+//			Eigen::VectorXd currPoint = classes.at(i).row(j); //We assign the point
+//
+//			currClass(j) = euclideanDistance(point, currPoint);
+//
+//
+//
+//		}
+//		//we sort the points before adding them
+//		std::sort(currClass.begin(), currClass.end());
+//		//we add the class to the vector
+//		distances.push_back(currClass);
+//	}
+//
+//
+//	//Now that are points are stored and sorted we will begin to check which are the k nearest neighbours, to do this we will first, from each class we will
+//	//only keep the k first elements because in the worst case the k nearest neighbours are from only one class
+//
+//	for (int i = 0; i < distances.size(); i++) {
+//		if (distances.at(i).size() > k) {
+//			distances.at(i).conservativeResize(k);
+//		}
+//	}
+//	//Now that each class has their k nearest neighbours we will see which ones are the k closest in general, to do this we will iterate each class for their first
+//	//element and when we find the one that is the smallest, we will add it to our solution vector and remove that element from the class vector, and repeat this
+//	//process until the solution vector is of size k
+//
+//	Eigen::VectorXi solution(k);
+//	int KCount = 0;
+//
+//	while (solution.size() < k) {
+//		//We iterate the classes
+//		int mindist = 0; //We assume that the first class is the smallest distance and iterate from there
+//		for (int i = 1; i < distances.size(); i++) {
+//			if (distances.at(i)(0) < distances.at(mindist)(0)) {
+//				mindist = i;
+//			}
+//
+//		}
+//
+//		//Now we will add that class to the solution and remove that element
+//		solution(KCount) = mindist;
+//		distances[mindist] = distances[mindist].segment(1, distances[mindist].size() - 1);;
+//
+//	}
+//
+//	//Now we have the classes of the k nearest neighbours, we will now see what class dominates and make a prediction
+//
+//	//We will first iterate the classes and check the ocurrence the one with the most occurence will be our final result
+//
+//	//We will also first assume that the class 0 is the initial prediction and adjust from there
+//	int res = 0;
+//	int count = std::count(solution.begin(), solution.end(), res);
+//	for (int i = 1; i < classes.size(); i++) {
+//		int currCount = std::count(solution.begin(), solution.end(), i);
+//		if (currCount > count) {
+//			res = i;
+//			count = currCount;
+//		}
+//	}
+//	//The result is the classification prediction
+//	return res;
+//
+//}
+//
+//
 
 
 
 // 50/50 split
-std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> CrossValidation::crossValidation(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes) {
+
+std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> MachineLearning::CrossValidation::crossValidation(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes) {
 
 	//We will create a test and train split vector's of matrices 
 
@@ -1050,3 +1044,7 @@ double ObjectMetrics::calculateEccentricity(QImage& image)
 
 	return 200.000*e;
 }
+
+
+
+ */
