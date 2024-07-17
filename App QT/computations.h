@@ -14,6 +14,7 @@
 #include <QPoint>
 
 
+
 class Computations { //Base class
 
 public:
