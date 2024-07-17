@@ -479,7 +479,7 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
 
         bool finish = false;
         std::vector<std::string> classNames;
-        count = 0;
+        int count = 0;
         foreach(QString filename, images) {
 
             /*if (count > 200) {
@@ -576,15 +576,13 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
         qDebug() << "size of one image " << vectorImages[0].size();*/
 
         //Now that the images are loaded, we will select the .csv to write the subimage metrics
-<<<<<<< HEAD
 
 
         
 
-        auto metrics= ImageTransformations::computeGistDescriptor(vectorImages);
+        auto metrics= ImageTransformations::computeGistDescriptor(vectorImages,classNames);
 
 
-=======
 
         //QString csvPath = QFileDialog::getSaveFileName(nullptr, "Open CSV File", "FilesOut","CSV Files (*.csv)");
 
@@ -634,7 +632,6 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
        // 
        ////We will write the images to the output file        
        //ImageTransformations::storeImages(outputDir.toStdString(),subImages,0);
->>>>>>> 7aec56e2c974d9237c6bde378b1d486b4bfd8c68
         
         ImageTransformations::computeGistDescriptor(vectorImages,classNames);
 
@@ -774,25 +771,25 @@ bool ComputerVisionApplication::eventFilter(QObject* watched, QEvent* event) {
 void ComputerVisionApplication::on_actionimageProcessingFunction1_triggered() {
 
     Image* img = getImage();
-
-    ImageTransformations::DiscreteFFT(img->image);
+    
+    ImageTransformations::DomainTransforms::DiscreteFFT(img->image);
 
 
     //img->image =ImageTransformations::negativeImage(img->image);
     //img->image = ImageTransformations::logTransform(img->image,20);
     //img->image = ImageTransformations::gammaTransform(img->image, 1, 3);
 
-    std::vector<int> histogram = ImageTransformations::computeHistogram(img->image);
+    std::vector<int> histogram = ImageTransformations::Histogram::computeHistogram(img->image);
 
     Plots::histogram(histogram);
 
     //we now transform that images histogram to the range 255
 
-    std::vector<int> transHist = ImageTransformations::equalizationHistogram(histogram, 64);
+    std::vector<int> transHist = ImageTransformations::Histogram::equalizationHistogram(histogram, 64);
 
     Plots::histogram(transHist);
 
-    img->image = ImageTransformations::histogramToImage(transHist, img->image);
+    img->image = ImageTransformations::Histogram::histogramToImage(transHist, img->image);
 
     updateImage(img->image);
 
@@ -1541,10 +1538,6 @@ void ComputerVisionApplication::on_actionClassify_Image_triggered() {
 
     std::map<int, std::string> namesMap;
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 7aec56e2c974d9237c6bde378b1d486b4bfd8c68
     namesMap[0] = "Cola de Pato";
     namesMap[1] = "Tornillo";
     namesMap[2] = "Rondana";
