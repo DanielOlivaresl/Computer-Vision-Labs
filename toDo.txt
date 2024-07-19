@@ -2,11 +2,12 @@ Things to do
 *Hacer que funcione con un dataset de MNIST
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -Limpiar el codigo
-  *Generar mas subclases para tener mas orden
-  
+  *Generar mas subclases para tener mas orden (Done)
+  *Agregar pragma once para no tener problemas de dependencias de los .h (Done)
+
   *Pasar todas las estructuras de datos a formato MatrixXd, de tam dinamico
   *Agregar clase para poder leer y cargar cualquier tipo de dato
-  *Agregar pragma once para no tener problemas de dependencias de los .h
+  
   *Resolver los problemas de configuraciones
 
 
@@ -19,7 +20,7 @@ Things to do
 
 Computations.h: (Main Class)
   
-  Distances(subclass):
+  Distances(subclass): 
     -Euclidean
     -Manhalanobis
 
@@ -124,8 +125,8 @@ ImageTransformations (main class):
 
   
   
-  Spatial
-    -Convolution
+  Spatial 
+    -Convolution (Daniel)
     -Padding
     -DownN
 
