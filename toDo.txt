@@ -5,7 +5,7 @@ Things to do
   *Generar mas subclases para tener mas orden (Done)
   *Agregar pragma once para no tener problemas de dependencias de los .h (Done)
 
-  *Pasar todas las estructuras de datos a formato MatrixXd, de tam dinamico
+  *Pasar todas las estructuras de datos a formato MatrixXd, de tam dinamico (Daniel)
   *Agregar clase para poder leer y cargar cualquier tipo de dato
   
   *Resolver los problemas de configuraciones
