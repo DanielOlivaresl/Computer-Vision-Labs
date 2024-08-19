@@ -57,42 +57,10 @@ int Computations::Helper::getMaxProb(Eigen::VectorXd probabilities) {
 
 /**
  * @brief function that calculates the probabilities of a point belonging to a set of classes
- * @param std::vector<Eigen::Matrix<double, Eigen::Dynamic,3>> classes: vector of matrices of size nx3 where each matrix represents a class
- * @param Eigen::Vector3d point point that will be used to calculate the probabilities that it belogns to each of the classes passed
+ * @param std::vector<Eigen::MatrixXd> classes: vector of matrices where each matrix represents a class
+ * @param Eigen::VectorXd point point that will be used to calculate the probabilities that it belogns to each of the classes passed
  * @returns std::vector<double> vector of probabilites, that the point belongs to each of the classes
  */
-std::vector<double>  Computations::Helper::max_prob(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
-
-	std::vector<double> manhalanobis_distance = Distances::manhalanobis(classes, point);
-
-	std::vector<double> probabilites;
-
-	for (int i = 0; i < classes.size(); i++) {
-		Eigen::MatrixXd cov = LinearAlgebra::calculateCovMatrix(classes.at(i));
-		double det_cov = cov.determinant();
-
-		double pi_term = pow(2 * EIGEN_PI, (3 / 2));
-
-		double manh_dist = manhalanobis_distance.at(i);
-
-		probabilites.push_back((1 / (
-			pi_term * sqrt(det_cov)
-			)) *
-			exp(-0.5 * manh_dist));
-	}
-
-	double sum = 0;
-	for (int i = 0; i < probabilites.size(); i++) {
-		sum += probabilites.at(i);
-	}
-
-	for (int i = 0; i < probabilites.size(); i++) {
-		probabilites.at(i) = probabilites.at(i) / sum;
-	}
-	return probabilites;
-
-}
-
 Eigen::VectorXd Computations::Helper::max_prob(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point) {
 
 	Eigen::VectorXd manhalanobis_distance = Distances::manhalanobis(classes, point);
