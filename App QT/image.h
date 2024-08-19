@@ -19,7 +19,7 @@ public:
 	int numClasses = 3;
 	std::string currProcess;
 	std::vector<QPointF> rectangles;
-	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> matrixClasses;
+	std::vector<Eigen::MatrixXd> matrixClasses;
 	QImage image;
 
 };
