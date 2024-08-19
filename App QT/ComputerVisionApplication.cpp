@@ -6,17 +6,24 @@
 #include <QFileDialog>
 #include<QMdiSubWindow>
 #include<Eigen/Dense>
+
+
+
 //Constructor
 ComputerVisionApplication::ComputerVisionApplication(QWidget* parent) :
     QMainWindow(parent), ui(new Ui::ComputerVisionApplication)
 {
     qDebug() << "Dock moved";
+
     ui->setupUi(this);
     settings = new QSettings("organization", "application");
     settings->beginGroup("FileDialog");
     lastDirectory = settings->value("lastDirectory", "../Images").toString();
     settings->endGroup();
-    //We disable some of the UI buttons
+
+
+
+  //We disable some of the UI buttons
     ui->menuConvert->setDisabled(true);
     ui->menuDistances->setDisabled(true);
     ui->menuCross_Validation->setDisabled(true);
@@ -29,11 +36,7 @@ ComputerVisionApplication::ComputerVisionApplication(QWidget* parent) :
     ui->Tabs->installEventFilter(this);
     this->setDockOptions(this->AllowNestedDocks);
     QTabBar* tabBar = ui->Tabs->tabBar();
-    connect(tabBar, &QTabBar::tabBarDoubleClicked, [tabBar, this](int index) {
-        /*QMessageBox::warning(this, tr("Confusion Matrix"), QString::number(index));*/
-        convertTabToDock(ui->Tabs, index);
-        });
-
+    
 
     ui->Tabs->setDocumentMode(true);
 
@@ -49,26 +52,42 @@ ComputerVisionApplication::~ComputerVisionApplication()
     QString dir = settings->value("lastDirectory", "null").toString();
     settings->endGroup();
 }
-void ComputerVisionApplication::on_actionSelect_Image_triggered()
-{
+
+
+
+
+
+void ComputerVisionApplication::on_actionSelect_Image_triggered(){
+    
+    //We set our initial directory to the alst image opened
     QString initialDir = lastDirectory.isEmpty() ? QDir::homePath() : lastDirectory;
 
+    //We get the file path from the selected image
     QString filePath = QFileDialog::getOpenFileName(this, tr("Select Image"), initialDir + "/peppers.jpg", tr("Image Files (*.png *.jpg *.jpeg *.bmp *.gif)"));
 
+    
 
+    //We validate that the path exists
     if (!filePath.isEmpty()) {
         // Update lastDirectory with the new directory
         lastDirectory = QFileInfo(filePath).absolutePath();
-        Image* tempImg = new Image();
+        Image* tempImg = new Image(); //We create a new image
 
+        //We load the selected image into the temporal image
         if (tempImg->image.load(filePath)) {
+            //We specify the format of the image
             tempImg->image = tempImg->image.convertToFormat(QImage::Format_RGB888);
+            //We validate that the image is not null
             if (!tempImg->image.isNull()) {
 
+                //We instantiate a tab for the image, and a Layout as well as a label, the label is the most inner container, and then the layout and then the tab
                 QWidget* firsttab = new QWidget();
                 QVBoxLayout* layout = new QVBoxLayout();
                 QLabel* imageLabel = new QLabel("Image Label");
+
+                //We now update the pixmap to the images content
                 imageLabel->setPixmap(QPixmap::fromImage(tempImg->image));
+                //We set the size of the label
                 imageLabel->setFixedSize(QPixmap::fromImage(tempImg->image).size());
                 //We start tracking the position of the mouse so we can see what pixel is being clicked
                 imageLabel->setMouseTracking(true);
@@ -76,7 +95,7 @@ void ComputerVisionApplication::on_actionSelect_Image_triggered()
                 imageLabel->installEventFilter(this);
 
 
-
+                //We add the tab to the layout 
                 layout->addWidget(imageLabel);
                 firsttab->setLayout(layout);
                 firsttab->setProperty("Image", QVariant::fromValue(tempImg));
@@ -357,7 +376,7 @@ void ComputerVisionApplication::on_actionConfusion_Matrix_triggered()
     if (image == NULL) {
         return;
     }
-    std::vector<std::vector<std::vector<double>>> matrices; // stores all the matrices 
+    std::vector<Eigen::MatrixXd> matrices; // stores all the matrices 
     if (image->numClasses == 0) {
         QMessageBox::warning(this, tr("Confusion Matrix"), tr("Tienes que ingresar clases para poder calcularla."));
         return;
@@ -371,10 +390,14 @@ void ComputerVisionApplication::on_actionConfusion_Matrix_triggered()
         int step = 1;
         knn = QInputDialog::getInt(this, tr("KNN"), tr("Type the number of k: "), defaultValue, minVal, maxVal, step, &ok);
     }
-    std::vector<std::vector<double>> matEuc(image->numClasses, std::vector < double>(image->numClasses, 0)); // instance of a confusion matrix
-    std::vector<std::vector<double>> matMan(image->numClasses, std::vector < double>(image->numClasses, 0)); // instance of a confusion matrix
-    std::vector<std::vector<double>> matMax(image->numClasses, std::vector < double>(image->numClasses, 0)); // instance of a confusion matrix
-    std::vector<std::vector<double>> matKnn(image->numClasses, std::vector < double>(image->numClasses, 0)); // instance of a confusion matrix
+    Eigen::MatrixXd matEuc(image->numClasses, image->numClasses); // instance of a confusion matrix
+    matEuc.fill(0);
+    Eigen::MatrixXd matMan(image->numClasses, image->numClasses); // instance of a confusion matrix
+    matMan.fill(0);
+    Eigen::MatrixXd matMax(image->numClasses, image->numClasses); // instance of a confusion matrix
+    matMax.fill(0);
+    Eigen::MatrixXd matKnn(image->numClasses, image->numClasses); // instance of a confusion matrix
+        matKnn.fill(0);
     for (size_t i = 0; i < image->matrixClasses.size(); ++i) {
         for (int j = 0; j < image->matrixClasses[i].rows(); ++j) {
 
@@ -384,20 +407,20 @@ void ComputerVisionApplication::on_actionConfusion_Matrix_triggered()
 
             Eigen::Vector3d vec2class(r, g, b);
 
-            std::vector<double> distances1 = Computations::Distances::euclidean(image->matrixClasses, vec2class);
+            Eigen::VectorXd distances1 = Computations::Distances::euclidean(image->matrixClasses, vec2class);
             int closestClass1 = Computations::Helper::getClosest(distances1);
-            matEuc[i][closestClass1] += 1;
+            matEuc(i,closestClass1) += 1;
 
-            std::vector<double> distances2 = Computations::Distances::manhalanobis(image->matrixClasses, vec2class);
+            Eigen::VectorXd distances2 = Computations::Distances::manhalanobis(image->matrixClasses, vec2class);
             int closestClass2 = Computations::Helper::getClosest(distances2);
-            matMan[i][closestClass2] += 1;
+            matMan(i,closestClass2) += 1;
 
-            std::vector<double> distances3 = Computations::Helper::max_prob(image->matrixClasses, vec2class);
+            Eigen::VectorXd distances3 = Computations::Helper::max_prob(image->matrixClasses, vec2class);
             int closestClass3 = Computations::Helper::getMaxProb(distances3);
-            matMax[i][closestClass3] += 1;
+            matMax(i,closestClass3) += 1;
 
             int result = MachineLearning::kNearestNeighbours(image->matrixClasses, vec2class, knn);
-            matKnn[i][result] += 1;
+            matKnn(i,result) += 1;
 
         }
     }
@@ -410,7 +433,7 @@ void ComputerVisionApplication::on_actionConfusion_Matrix_triggered()
     QString message;
 
 
-    auto addMatrixToMessage = [&message](const QString& title, const std::vector<std::vector<double>>& matrix) {
+    auto addMatrixToMessage = [&message](const QString& title, const Eigen::MatrixXd& matrix) {
         message += title + "\n   ";
         for (int i = 0; i < matrix.size(); ++i) {
             message += "C" + QString::number(i) + " ";
@@ -419,7 +442,7 @@ void ComputerVisionApplication::on_actionConfusion_Matrix_triggered()
         message += "\n";
 
         for (int i = 0; i < matrix.size(); i++) {
-            for (double val : matrix[i]) {
+            for (double val : matrix.row(i)) {
                 message += QString::number(val) + " ";
             }
             message += "\n";
@@ -574,6 +597,9 @@ void ComputerVisionApplication::on_actionLoadDataSet_triggered()
 
         /*qDebug() << "Size of the vector of images " << vectorImages.size();
         qDebug() << "size of one image " << vectorImages[0].size();*/
+
+
+
 
         //Now that the images are loaded, we will select the .csv to write the subimage metrics
 
@@ -796,6 +822,36 @@ void ComputerVisionApplication::on_actionimageProcessingFunction1_triggered() {
 }
 
 
+void ComputerVisionApplication::on_actionConvolution_triggered() {
+
+    Image* img = getImage();
+    
+    qDebug() << "Exited Function";
+
+    for (int i = 0; i < 250; i++) {
+        img->image = ImageTransformations::SpatialOperations::convolve(img->image);
+
+    }
+
+
+
+
+    updateImage(img->image);
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
 void ComputerVisionApplication::paintEvent(QPaintEvent* event)
 {
     Image* image = getImage();
@@ -840,13 +896,13 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
 
     //we will first separate our data with cross validation
 
-    std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> cvSet = MachineLearning::CrossValidation::crossValidation(image->matrixClasses);
-    std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> resSet = MachineLearning::CrossValidation::Restitucion(image->matrixClasses);
+    std::vector<std::vector<Eigen::MatrixXd>> cvSet = MachineLearning::CrossValidation::crossValidation(image->matrixClasses);
+    std::vector<std::vector<Eigen::MatrixXd>> resSet = MachineLearning::CrossValidation::Restitucion(image->matrixClasses);
     //we will now create the data for each of the predictions
 
-    std::vector<std::vector<std::vector<int>>> resPred = MachineLearning::Metrics::generatePredictions(resSet.at(0), resSet.at(1), knn);
-    std::vector<std::vector<std::vector<int>>> cvPred = MachineLearning::Metrics::generatePredictions(cvSet.at(0), cvSet.at(1), knn);
-    std::vector<std::vector<std::vector<int>>> looPredictions(4, std::vector<std::vector<int>>(image->matrixClasses.size(), std::vector<int>(image->matrixClasses.at(0).rows())));
+    std::vector<Eigen::MatrixXd>  resPred = MachineLearning::Metrics::generatePredictions(resSet.at(0), resSet.at(1), knn);
+    std::vector<Eigen::MatrixXd>  cvPred = MachineLearning::Metrics::generatePredictions(cvSet.at(0), cvSet.at(1), knn);
+    std::vector<Eigen::MatrixXd> looPredictions(4, Eigen::MatrixXd(image->matrixClasses.size(), image->matrixClasses[0].rows()));
     //finally for leave one out it's necesarry to iterate the whole set and apply the method n times
 
 
@@ -854,25 +910,25 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
     int currClass = 0;
     for (auto clas : image->matrixClasses) {
         for (int i = 0; i < clas.rows(); i++) {
-            std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> currSplit = MachineLearning::CrossValidation::leaveOneOut(image->matrixClasses, currClass, i);
+            std::vector<std::vector<Eigen::MatrixXd>> currSplit = MachineLearning::CrossValidation::leaveOneOut(image->matrixClasses, currClass, i);
 
             //Euclidean
-            std::vector<double> distances1 = Computations::Distances::euclidean(currSplit.at(1), clas.row(i));
+            Eigen::VectorXd distances1 = Computations::Distances::euclidean(currSplit.at(1), clas.row(i));
             int res = Computations::Helper::getClosest(distances1);
-            looPredictions.at(0).at(currClass).at(i) = res;
+            looPredictions[0](currClass, i) = res;
 
             //Manhalanobis
-            std::vector<double> distances2 = Computations::Distances::manhalanobis(currSplit.at(1), clas.row(i));
+            Eigen::VectorXd distances2 = Computations::Distances::manhalanobis(currSplit.at(1), clas.row(i));
             res = Computations::Helper::getClosest(distances2);
-            looPredictions.at(1).at(currClass).at(i) = res;
+            looPredictions[1](currClass,i) = res;
 
             //MaxProb
-            std::vector<double> distances3 = Computations::Helper::max_prob(currSplit.at(1), clas.row(i));
+            Eigen::VectorXd distances3 = Computations::Helper::max_prob(currSplit.at(1), clas.row(i));
             res = Computations::Helper::getMaxProb(distances3);
-            looPredictions.at(2).at(currClass).at(i) = res;
+            looPredictions[2](currClass,i) = res;
             ////KNN
             res = MachineLearning::kNearestNeighbours(currSplit.at(1), clas.row(i), knn);
-            looPredictions.at(3).at(currClass).at(i) = res;
+            looPredictions[3](currClass,i) = res;
         }
         currClass++;
     }
@@ -882,8 +938,8 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
 
 
 
-    std::vector<std::vector<std::vector<std::vector<int>>>> predSets = { resPred,cvPred,looPredictions };
-    std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> testSets = { resSet.at(0),cvSet.at(0),image->matrixClasses };
+    std::vector<std::vector<Eigen::MatrixXd>> predSets = { resPred,cvPred,looPredictions };
+    std::vector<std::vector<Eigen::MatrixXd>> testSets = { resSet.at(0),cvSet.at(0),image->matrixClasses };
 
 
 
@@ -914,32 +970,32 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
     for (int it = 0; it < 3; it++) {
         std::vector<std::vector<double>> data;
 
-        std::vector<std::vector<double>> eucliMat = MachineLearning::Metrics::get_matrixConfusion(testSets.at(it), predSets.at(it).at(0));
-        std::vector<std::vector<double>> manhMat = MachineLearning::Metrics::get_matrixConfusion(testSets.at(it), predSets.at(it).at(1));
-        std::vector<std::vector<double>> mxprobMat = MachineLearning::Metrics::get_matrixConfusion(testSets.at(it), predSets.at(it).at(2));
-        std::vector<std::vector<double>> knnMat = MachineLearning::Metrics::get_matrixConfusion(testSets.at(it), predSets.at(it).at(3));
+        Eigen::MatrixXd eucliMat = MachineLearning::Metrics::get_matrixConfusion(testSets.at(it), predSets.at(it).at(0));
+        Eigen::MatrixXd manhMat = MachineLearning::Metrics::get_matrixConfusion(testSets.at(it), predSets.at(it).at(1));
+        Eigen::MatrixXd mxprobMat = MachineLearning::Metrics::get_matrixConfusion(testSets.at(it), predSets.at(it).at(2));
+        Eigen::MatrixXd knnMat = MachineLearning::Metrics::get_matrixConfusion(testSets.at(it), predSets.at(it).at(3));
 
 
-        std::vector<std::vector<std::vector<double>>> matrices = {
+        std::vector<Eigen::MatrixXd> matrices = {
             eucliMat,
             manhMat,
             mxprobMat,
             knnMat
         };
 
-        auto addMatrixToMessage = [&message](const QString& title, const std::vector<std::vector<double>>& matrix) {
+        auto addMatrixToMessage = [&message](const QString& title, const Eigen::MatrixXd& matrix) {
             message += title + "\n   ";
             double prom = 0;
             for (int i = 0; i < matrix.size(); ++i) {
                 double sum = 0;
-                for (double val : matrix[i]) {
+                for (double val : matrix.row(i)) {
                     sum += val;
                 }
-                prom += matrix[i][i] / sum;
+                prom += matrix(i,i) / sum;
 
 
             }
-            message += QString::number(((prom / matrix[0].size()))) + "\n";
+            message += QString::number(((prom / matrix.row(0).size()))) + "\n";
 
         };
 
@@ -955,14 +1011,14 @@ void ComputerVisionApplication::on_actionVisualize_Plots_triggered() {
 
         for (int i = 0; i < matrices.size(); i++) {
             std::vector<double> currentPoints;
-            for (int j = 0; j < matrices.at(i).size(); j++) { // Iterate rows
+            for (int j = 0; j < matrices[i].size(); j++) { // Iterate rows
                 double rowSum = 0.0;
-                for (int k = 0; k < matrices.at(i).at(j).size(); k++) { // Iterate cols
+                for (int k = 0; k < matrices[i].row(j).size(); k++) { // Iterate cols
 
-                    rowSum += matrices.at(i).at(j).at(k);
+                    rowSum += matrices[i](j,k);
                 }
                 // Calculate accuracy (normalized diagonal element)
-                double diagonalElement = matrices.at(i).at(j).at(j);
+                double diagonalElement = matrices[i](j,j);
                 double accuracy = diagonalElement / rowSum;
 
                 //currentPoints.push_back(accuracy);
@@ -1066,7 +1122,7 @@ Image* ComputerVisionApplication::getImage() {
     return image;
 }
 
-
+//Double click functionality 
 void ComputerVisionApplication::doubleClickFunctionality(Qt::MouseButton button) {
 
     Image* image = getImage();
@@ -1091,7 +1147,7 @@ void ComputerVisionApplication::doubleClickFunctionality(Qt::MouseButton button)
 
 
 }
-
+//Single click Functionality function: Track the position that was clicked, we will store these in a list of 2d vectors 
 void ComputerVisionApplication::singleClickFunctionality(Qt::MouseButton button, const QPoint& mousePos) {
     qDebug() << "Exeecuting";
 
@@ -1251,7 +1307,7 @@ void ComputerVisionApplication::singleClickFunctionality(Qt::MouseButton button,
 
 
             if (image->currProcess == "Euclidean") {
-                std::vector<double> distances = Computations::Distances::euclidean(image->matrixClasses, vec);
+                Eigen::VectorXd distances = Computations::Distances::euclidean(image->matrixClasses, vec);
                 int closestClass = Computations::Helper::getClosest(distances);
 
                 QString qstr = QString::fromStdString("La clase mas cercana por distance euclidana es: " + std::to_string(closestClass));
@@ -1260,7 +1316,7 @@ void ComputerVisionApplication::singleClickFunctionality(Qt::MouseButton button,
             }
 
             if (image->currProcess == "Manhalanobis") {
-                std::vector<double> distances = Computations::Distances::manhalanobis(image->matrixClasses, vec);
+                Eigen::VectorXd distances = Computations::Distances::manhalanobis(image->matrixClasses, vec);
                 int closestClass = Computations::Helper::getClosest(distances);
 
                 QString qstr = QString::fromStdString("La clase mas cercana por distance manhalanobis es: " + std::to_string(closestClass));
@@ -1269,7 +1325,7 @@ void ComputerVisionApplication::singleClickFunctionality(Qt::MouseButton button,
             }
 
             if (image->currProcess == "MaxProb") {
-                std::vector<double> probabilites = Computations::Helper::max_prob(image->matrixClasses, vec);
+                Eigen::VectorXd probabilites = Computations::Helper::max_prob(image->matrixClasses, vec);
                 int closestClass = Computations::Helper::getMaxProb(probabilites);
 
                 QString qstr = QString::fromStdString("La clase mas cercana por criterio de maxima probabilidad es: " + std::to_string(closestClass));
