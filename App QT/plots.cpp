@@ -218,7 +218,7 @@ void Plots::scatterPlot(std::vector<std::vector<double>> data) {
     chartView->resize(400, 300);
     chartView->show();
 }
-void Plots::ConfusionMatrix(std::vector<std::vector<std::vector<double>>> matrices, std::vector<std::string> names)
+void Plots::ConfusionMatrix(std::vector<Eigen::MatrixXd> matrices, std::vector<std::string> names)
 {
     int n = matrices.size();
 
@@ -240,34 +240,34 @@ void Plots::ConfusionMatrix(std::vector<std::vector<std::vector<double>>> matric
                 QGraphicsScene* scene = new QGraphicsScene(); // new instance of a graphicsScene (to draw the matrix)
                 scene->setSceneRect(0, 0, sceneWidth, sceneHeight);
 
-                int matrixSize = std::min(matrices[index].size(), matrices[index][0].size());
+                int matrixSize = std::min(matrices[index].size(), matrices[index].row(0).size());
                 double squareSize = std::min(sceneWidth / cols, sceneHeight / rows) / matrixSize; // size of each rect
 
 
                 // computes the sum of each row 
                 std::vector<double> rowSums(matrices[index].size(), 0.0);
                 for (int x = 0; x < matrices[index].size(); ++x) {
-                    for (int y = 0; y < matrices[index][x].size(); ++y) {
-                        qDebug() << " matrix" << x << "at value" << matrices[index][x][y];
-                        rowSums[x] += matrices[index][x][y];
+                    for (int y = 0; y < matrices[index].row(x).size(); ++y) {
+                        qDebug() << " matrix" << x << "at value" << matrices[index](x,y);
+                        rowSums[x] += matrices[index](x,y);
                     }
                 }
 
                 for (int x = 0; x < matrices[index].size(); ++x) {
-                    for (int y = 0; y < matrices[index][x].size(); ++y) {
+                    for (int y = 0; y < matrices[index].row(x).size(); ++y) {
                         double squareX = x * squareSize;
                         double squareY = y * squareSize;
 
                         // computes the alpha value for each rect in the row
                         float alpha;
-                        if (matrices[index][x][y] == 0) {
+                        if (matrices[index](x,y) == 0) {
                             alpha = 0;
                         }
                         else {
-                            alpha = matrices[index][x][y] / rowSums[x];
+                            alpha = matrices[index](x, y) / rowSums[x];
                         }
 
-                        qDebug() << "Alpha value for matrix" << index << "at value" << matrices[index][x][y] << ":" << alpha;
+                        qDebug() << "Alpha value for matrix" << index << "at value" << matrices[index](x, y) << ":" << alpha;
 
                         // color of the matrix
                         QColor color(Qt::blue);
