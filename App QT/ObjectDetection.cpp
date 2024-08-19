@@ -497,7 +497,7 @@ std::vector<std::string> ObjectDetection::classifyImage(QImage& image, Eigen::Ma
 		objetitos(i, 1) = pointToClassify(0, 1);
 		objetitos(i, 2) = pointToClassify(0, 2);
 		i++;
-		std::vector<double> distances = Computations::Distances::euclidean(centroids, pointToClassify);
+		Eigen::VectorXd distances = Computations::Distances::euclidean(centroids, pointToClassify);
 		qDebug() << "Distancias para ese objeto ";
 		for (auto d : distances)
 		{
