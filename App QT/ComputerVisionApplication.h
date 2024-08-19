@@ -90,6 +90,7 @@ private slots: // listeners to buttons
     //Image processing Procedures
 
     void on_actionimageProcessingFunction1_triggered();
+    void on_actionConvolution_triggered();
 
 
     // DataSet Procedures
@@ -118,12 +119,16 @@ private:
 
     std::vector<Image> images;
     std::string currFormat = "RGB";
-
     bool classify = false;
-
     int knn = 0;
-
     QTimer* singleClickTimer;
+
+
+    int imageHeight = 600;
+    int imageWidth = 800;
+
+
+
 
 
     //Helper functions
