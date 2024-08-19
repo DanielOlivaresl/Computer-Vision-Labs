@@ -45,6 +45,8 @@ public:
 		static std::vector<std::vector<std::complex<double>>> fft2D(const std::vector<std::vector<std::complex<double>>>& data, bool invert);
 
 
+		static double aproximateDerivative(double point, std::function <double(double)>, double precision = 0.00001);
+		static double aproximateDerivative(Eigen::VectorXd point, std::function<double(Eigen::VectorXd)> , double precision = 0.00001, int numVariable=0);
 
 	};
 

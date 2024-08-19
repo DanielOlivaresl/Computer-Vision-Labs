@@ -70,9 +70,52 @@ std::vector<std::vector<std::complex<double>>> Computations::Math::fft2D(const s
 			result[y][x] = transposed[x][y];
 		}
 	}
-
+		
 	return result;
 
 
 
+}
+
+
+//Function that numerically aproximates the derivative of a given univariable function in one point
+double Computations::Math::aproximateDerivative(double point, std::function<double(double)> f, double precision)
+{
+	//This is calculated by the formula of the definition of a derivative which is the limit of h->0 : {f(x) - f(x-h) }	/h , as h grows smaller the result will be more precise
+
+
+	//First we will calculate f(x) , and f(x-h)
+
+	double f_x = f(point);
+	double f_x_h = f(point - precision);
+
+
+	double res = (f_x_h - f_x) / precision;
+
+	return res;
+
+
+
+
+}
+
+//Function that numerically aproximates the derivative of a multivariable function, given the variable to derivate and a point
+double Computations::Math::aproximateDerivative(Eigen::VectorXd point, std::function<double(Eigen::VectorXd)> f, double precision, int variableNum)
+{
+
+	//We check that the variable to derivate is valid
+	if (variableNum >= point.size()) {
+		throw std::runtime_error("Invalid variable to derivate");
+	}
+
+	//Now that the variables have been validated, we will compute the derivative with respect to that function
+	// 
+	double f_x = f(point);
+	Eigen::VectorXd x_h = point;
+	x_h(variableNum) = point(variableNum) + precision;
+	double f_x_h = f(x_h);
+
+	double res = (f_x_h - f_x) / precision;
+
+	return res;
 }
