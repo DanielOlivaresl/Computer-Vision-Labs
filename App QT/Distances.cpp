@@ -2,61 +2,61 @@
 
 
 
-
 /**
- * @brief Function that calculates the euclidean distance between two points.
- * @param Eigen::VectorXd p1: First Point
- * @param Eigen::VectorXd p2: Second Point
- * @returns double: eucledian distance between two points
+* @brief Function that calculates the euclidean distance between a point and a set of classes
+ * @param std::vector<Eigen::MatrixXd> Vector of matrices that represents each class
+ * @param Eigen::VectorXd vector that represents the point
+ * @return Eigen::VectorXd of distances between point and classes
  *
  */
-double Computations::Distances::euclideanDistance(Eigen::VectorXd p1, Eigen::VectorXd p2) {
-	double powSums=0;
-	if (p1.size() == p2.size()) {
-		for (int i = 0; i < p1.size(); i++) {
-			powSums += pow(p1(i) - p2(i), 2);
-		}
-	}
-	return sqrt(powSums);
-}
+Eigen::VectorXd  Computations::Distances::euclidean(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point) {
 
-/**
-* @brief Function that calculates the euclidean distance between two points
- * @param Eigen::Vector2d vector that represents the first (intiial) point
- * @param Eigen::Vector2d vector that represents the second (destiny) point
- * @return eucleidan distance between the two points
- *
- */
-std::vector<double>  Computations::Distances::euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
+	//Before making any computations, we will 
 
-	std::vector<Eigen::Vector3d> centroids;
+
+
+	//We will create a matrix that holds the centroids of each class, where each row is a class and the cols are the corresponding dimensions  
+	
+	//We will create variables for the number of classes, as well as the dims, this will be to initialize the matrix
+
+	int rows = classes.size(); //Number of classes
+	int cols = point.size(); //Number of dimensions 
+
+
+	Eigen::MatrixXd centroids(rows,cols);
+
+
 
 
 	for (int i = 0; i < classes.size(); i++) {
-		//We add the mean of every class
-		centroids.push_back(
-			Eigen::Vector3d(
-				classes.at(i).colwise().mean()
-
-			));
-
-
-
+		//We will fill the matrix with the means of every class
+	
+		centroids.row(i) = classes.at(i).colwise().mean();
+	
 	}
-	std::vector<double> distances;
+
+
+	//We will now create an Eigen::VectorXd that will store the distances from the point to each centroid stored in the matrix
+
+
+
+
+
+	Eigen::VectorXd distances(rows);
 
 	//We now will calculate the distances for every class
 
 	for (int i = 0; i < classes.size(); i++) {
 
-		distances.push_back(
-			sqrt(
-				pow(point.x() - centroids.at(i).x(), 2) +
-				pow(point.y() - centroids.at(i).y(), 2) +
-				pow(point.z() - centroids.at(i).z(), 2)
+		auto classVector = centroids.row(i); //Vector of the centroid of the i'th class
+		
+		//We now will calculate the difference between the classVector and the point
 
-			));
+		Eigen::VectorXd diffVec = classVector - point;
 
+		//Finally to compute the distance we calculate the dot product of the difference vector with itself
+
+		distances(i) = diffVec.transpose() * diffVec;
 
 
 	}
@@ -65,123 +65,74 @@ std::vector<double>  Computations::Distances::euclidean(std::vector<Eigen::Matri
 
 
 }
+
+
+
+
+
+
+
+
 /**
-* @brief Function that calculates the euclidean distance between two points in n dimensions
- * @param Eigen::MatrixXd Matrix that contains all the points which we want to calc the distance
- * @param Eigen::VectorXd vector of N dimensions, that we want to know the distance to
- * @return Vector of distances
- *
- */
-std::vector<double> Computations::Distances::euclidean(Eigen::MatrixXd points, Eigen::VectorXd point)
+* @brief Function that calculates the euclidean distance between a point and a set of points
+ * @param std::vector<Eigen::MatrixXd> Matrix of points
+ * @param Eigen::VectorXd vector that represents the point
+ * @return Eigen::VectorXd of distances between point and classes
+ * */
+
+Eigen::VectorXd Computations::Distances::euclidean(Eigen::MatrixXd points, Eigen::VectorXd point)
 {
-	std::vector<double> distances(points.rows());
+	
+	//We will first create the vector of distances that will be returned from the function 
 
-	//we iterate the points
-	for (int i = 0; i < points.rows(); i++) {
-
-		//we iterate the dimensions of each point
-		double sum = 0;
-		for (int j = 0; j < points.cols(); j++) {
-			sum += pow(point[j] - points(i, j), 2);
-		}
-		distances[i] = sqrt(sum);
-
-	}
-
-
-
-	return distances;
-}
-
-Eigen::VectorXd Computations::Distances::euclidean(std::vector <Eigen::MatrixXd> classes, Eigen::VectorXd point) {
-
-	std::vector<Eigen::VectorXd> centroids;
-
-
-	for (const auto& cls : classes) {
-		centroids.push_back(cls.colwise().mean());
-	}
-	Eigen::VectorXd distances(classes.size());
-
-	//We now will calculate the distances for every class
-
-	for (int i = 0; i < classes.size(); i++) {
-
-		distances(i) = (point - centroids[i]).norm();
-	}
-
-	return distances;
-
-
-}
-Eigen::VectorXd euclideanGenerelied(Eigen::MatrixXd points, Eigen::VectorXd point)
-{
 	Eigen::VectorXd distances(points.rows());
 
-	//we iterate the points
+
+	//Now we will iterate the matrix rows to calculate the distance of each point 
+
 	for (int i = 0; i < points.rows(); i++) {
-		//we iterate the dimensions of each point
-		double sum = 0;
-		for (int j = 0; j < points.cols(); j++) {
-			sum += pow(point[j] - points(i, j), 2);
-		}
-		distances(i) = sqrt(sum);
+
+		//We will first calculate a difference vector between each of the matrix rows and the point
+
+		Eigen::VectorXd diffVec = points.row(i) - point;
+
+		//Now we will calulate the dot product of the difference Vector with itself and fill the distances vector
+
+		distances(i) = diffVec.transpose() * diffVec;
+
+
 	}
+
+
 	return distances;
+
+
+
+	
+
+
 }
 
 /**
- * @brief function that calculates the manhalanobis distance from a point and a set of points.
- *
- * @param std::vector<Eigen::Matrix<double,Eigen::Dynamic,3>> classes: vector of matrices of size nx3 where each matrix represents a class which we want to know the distance to
- * @param Eigen::Vector3d point: point from which we will calculate the distance to each class
- * @return std::vector<double> vector that stores the distance calculated from the point to each class
- *
- *
- */
-std::vector<double>  Computations::Distances::manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point) {
+* @brief Function that calculates the euclidean distance between Two points
+ * @param Eigen::VectorXd First Point
+ * @param Eigen::VectorXd Second Point
+ * @return double distances between two points
+ * */
 
-	std::vector<Eigen::Vector3d> centroids;
+double Computations::Distances::euclidean(Eigen::VectorXd point1, Eigen::VectorXd point2)
+{
+	//We first compute the difference between the two points
 
-	for (int i = 0; i < classes.size(); i++) {
-		//We add the mean of every class
-		centroids.push_back(
-			Eigen::Vector3d(
-				classes.at(i).col(0).mean(),
-				classes.at(i).col(1).mean(),
-				classes.at(i).col(2).mean()
-			));
+	Eigen::VectorXd diffVec = point1 - point2;
 
-	}
+	//We will now calculate the dot product of the difference vector with itself
 
-	std::vector<double> distances;
-
-
-	for (int i = 0; i < classes.size(); i++) {
-		//We	first transpose the matrix
-
-
-		Eigen::MatrixXd cov = LinearAlgebra::calculateCovMatrix(classes.at(i));
-
-		//The point minus the centroid of the current class
-		Eigen::Vector3d x_minus_mu = point - centroids.at(i);
-
-		Eigen::MatrixXd inv_cov = cov.inverse();
-
-
-
-		Eigen::MatrixXd left_term = x_minus_mu.transpose() * inv_cov;
-		Eigen::MatrixXd res = left_term * x_minus_mu;
-
-
-
-		distances.push_back(res(0, 0));
-
-	}
-
-	return distances;
-
+	return diffVec.transpose() * diffVec;
 }
+
+
+
 
 Eigen::VectorXd Computations::Distances::manhalanobis(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point) {
 

@@ -21,12 +21,13 @@ public:
 
 	class Distances {
 	public:
+		
 		static Eigen::VectorXd euclidean(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point);
-		static double euclideanDistance(Eigen::VectorXd p1, Eigen::VectorXd p2);
-		static Eigen::VectorXd euclideanGenerelied(Eigen::MatrixXd points, Eigen::VectorXd point);
-		static std::vector<double>  euclidean(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);
-		static std::vector<double> euclidean(Eigen::MatrixXd points, Eigen::VectorXd point);
-		static std::vector<double> manhalanobis(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point);
+		static Eigen::VectorXd euclidean(Eigen::MatrixXd, Eigen::VectorXd point);
+		static double euclidean(Eigen::VectorXd point1, Eigen::VectorXd point2);
+
+
+
 		static Eigen::VectorXd manhalanobis(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point);
 	};
 
@@ -42,6 +43,8 @@ public:
 
 		static void fft1D(std::vector<std::complex<double>>& data, bool invert);
 		static std::vector<std::vector<std::complex<double>>> fft2D(const std::vector<std::vector<std::complex<double>>>& data, bool invert);
+
+
 
 	};
 
