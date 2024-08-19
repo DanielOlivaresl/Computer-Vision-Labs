@@ -1,115 +1,94 @@
 #include "machineLearning.h"
 
 
-// 50/50 split
-std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> MachineLearning::CrossValidation::crossValidation(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes) {
 
-	//We will create a test and train split vector's of matrices 
-
-	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> testSplit;
-	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> trainingSplit;
-
-	//we will have train and test splits of the same size, and we will fill these randomly and have them be the same size
-
-	//to do this we will first iterate the original data
-
-	for (Eigen::Matrix<double, Eigen::Dynamic, 3> matrix : classes) {
-		Eigen::Matrix<double, Eigen::Dynamic, 3> test;
-		Eigen::Matrix<double, Eigen::Dynamic, 3> train;
-
-
-		//we will randomly select indexes to add to the test set, until we have enough
-		std::vector<int> indexes;
-
-		while (indexes.size() < (matrix.rows() / 2)) {
-			int index = std::rand() % matrix.rows();
-
-			//we check that the index isn't in the list 
-			while (std::count(indexes.begin(), indexes.end(), index)) {
-				index = std::rand() % matrix.rows();
-			}
-
-			//Now that we know that the element isn't in the list we add it
-			indexes.push_back(index);
-		}
-
-		//We will now fill the test and training sets
-
-		for (int i = 0; i < matrix.rows(); i++) {
-			if (std::count(indexes.begin(), indexes.end(), i)) {
-				test.conservativeResize(test.rows() + 1, Eigen::NoChange);
-				test.row(test.rows() - 1) << matrix.row(i);
-			}
-			else {
-				train.conservativeResize(train.rows() + 1, Eigen::NoChange);
-				train.row(train.rows() - 1) << matrix.row(i);
-			}
-		}
-
-		testSplit.push_back(test);
-		trainingSplit.push_back(train);
-	}
-
-	//Final result
-
-	std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> result = { testSplit,trainingSplit };
-
-
-	return result;
-
-}
-
-
-// 50/50 split
+/**
+* @brief Function that creates a cross validation split (50/50)
+ * @param std::vector<Eigen::MatrixXd> Vector of matrices that represents each class
+ * @return std::vector<std::vector<Eigen::MatrixXd>> std::vector of size 2, where the first element is the training split, and the second is the testing split
+ *
+ */
 std::vector<std::vector<Eigen::MatrixXd>> MachineLearning::CrossValidation::crossValidation(std::vector<Eigen::MatrixXd> classes) {
-	// We will create vectors of matrices for the test and training sets
-	std::vector<Eigen::MatrixXd> testSplit;
-	std::vector<Eigen::MatrixXd> trainingSplit;
 
-	// Seed the random number generator to ensure different results each run
-	std::srand(std::time(nullptr));
 
-	// Iterate over the original dataset
-	for (const Eigen::MatrixXd& matrix : classes) {
-		Eigen::MatrixXd test;
-		Eigen::MatrixXd train;
+	//We will first create two std::vectors that contain matrices that represent each class, these two vectors represent our training/test splits
 
-		// We will randomly select indexes to add to the test set, until we have enough
+	std::vector<Eigen::MatrixXd> testSplit; 
+	std::vector<Eigen::MatrixXd> trainSplit;
+
+	
+	
+	//we will have train and test splits of the same size, and we will fill them randomly 
+
+
+	//To do this, we will first iterate the classes
+
+	for (Eigen::MatrixXd currentClassMatrix : classes) {
+		//We will create variables for the train, and test data
+
+		Eigen::MatrixXd train, test;
+
+
+		//We will now randomly select the indexes to fill these
+
 		std::vector<int> indexes;
 
-		while (indexes.size() < (matrix.rows() / 2)) {
-			int index = std::rand() % matrix.rows();
+		while (indexes.size() < (currentClassMatrix.rows() / 2)) {
+			int index = std::rand() % currentClassMatrix.rows();
 
-			// Check that the index isn't already in the list
+			//We check that the element isn't in the index list, if it is we will recalculate the index until we find an index that is unvisited (unadded)
+
 			while (std::count(indexes.begin(), indexes.end(), index)) {
-				index = std::rand() % matrix.rows();
+				index = std::rand() % currentClassMatrix.rows();
 			}
 
-			// Now that we know the element isn't in the list we add it
+			//Now that we have a valid index we will add it to the list
 			indexes.push_back(index);
+
+
 		}
 
-		// We will now fill the test and training sets
-		for (int i = 0; i < matrix.rows(); i++) {
+		//Now that are indexes are set, we will fill our matrices
+
+		for (int i = 0; i < currentClassMatrix.rows(); i++) {
 			if (std::count(indexes.begin(), indexes.end(), i)) {
 				test.conservativeResize(test.rows() + 1, Eigen::NoChange);
-				test.row(test.rows() - 1) = matrix.row(i);
+				test.row(test.rows() - 1) << currentClassMatrix.row(i);
 			}
 			else {
 				train.conservativeResize(train.rows() + 1, Eigen::NoChange);
-				train.row(train.rows() - 1) = matrix.row(i);
+				train.row(train.rows() - 1) << currentClassMatrix.row(i);
 			}
 		}
 
+		//we add the current class split to the final data
 		testSplit.push_back(test);
-		trainingSplit.push_back(train);
+		trainSplit.push_back(train);
 	}
 
-	// Final result containing test and training splits
-	std::vector<std::vector<Eigen::MatrixXd>> result = { testSplit, trainingSplit };
-	return result;
+
+
+
+
+
+	return {testSplit,trainSplit};
+	
 }
 
+
+
+
+
+
+
+/**
+* @brief Function that creates a leave one out split (n-1/ 1)
+ * @param std::vector<Eigen::MatrixXd> Vector of matrices that represents each class
+ * @param int clas: the current class that the element that will be leaved out belongs to
+ * @param int el: the index of the element that will be leaved out 
+ * @return std::vector<std::vector<Eigen::MatrixXd>> std::vector of size 2, where the first element is the training split, and the second is the testing split
+ *
+ */
 std::vector<std::vector<Eigen::MatrixXd>> MachineLearning::CrossValidation::leaveOneOut(std::vector<Eigen::MatrixXd> classes, int clas, int el) {
 	std::vector<Eigen::MatrixXd> testSplit;
 	std::vector<Eigen::MatrixXd> trainingSplit;
@@ -139,58 +118,20 @@ std::vector<std::vector<Eigen::MatrixXd>> MachineLearning::CrossValidation::leav
 	return result;
 }
 
-// n-1/1 split
-//In the test set only one class will have data at one time thats the element we left out
-std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> MachineLearning::CrossValidation::leaveOneOut(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, int clas, int el) {
-	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> testSplit;
-	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> trainingSplit;
-
-	for (int i = 0; i < classes.size(); i++) {
-		Eigen::Matrix<double, Eigen::Dynamic, 3> trainMatrix;
-
-
-		for (int j = 0; j < classes.at(i).rows(); j++) {
-
-			if (i == clas && j == el) {
-				testSplit.push_back((classes.at(i).row(el)));
-
-			}
-			else {
-				trainMatrix.conservativeResize(trainMatrix.rows() + 1, Eigen::NoChange);
-				trainMatrix.row(trainMatrix.rows() - 1) = classes.at(i).row(j);
-
-			}
-
-		}
-
-		trainingSplit.push_back(trainMatrix);
-
-	}
-
-	std::vector<std::vector< Eigen::Matrix<double, Eigen::Dynamic, 3> > > result = { testSplit,trainingSplit };
-
-	return result;
-}
-// both splits of the same size
-std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> MachineLearning::CrossValidation::Restitucion(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes) {
-	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> testSplit = classes;
-	std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> trainingSplit = classes;
-
-	std::vector<std::vector< Eigen::Matrix<double, Eigen::Dynamic, 3> > > result = { testSplit,trainingSplit };
-
-	return result;
-
-
-
-}
-std::vector<std::vector<Eigen::MatrixXd>> Restitucion(std::vector<Eigen::MatrixXd> classes) {
-	// Directly use the input classes as both test and training splits
+/**
+* @brief Function that creates a restitution split (n/n) 
+ * @param std::vector<Eigen::MatrixXd> Vector of matrices that represents each class
+ * @return std::vector<std::vector<Eigen::MatrixXd>> std::vector of size 2, where the first element is the training split, and the second is the testing split
+ *
+ */
+std::vector<std::vector<Eigen::MatrixXd>> MachineLearning::CrossValidation::Restitucion(std::vector<Eigen::MatrixXd> classes) {
 	std::vector<Eigen::MatrixXd> testSplit = classes;
 	std::vector<Eigen::MatrixXd> trainingSplit = classes;
 
-	// Pack both splits into a single result vector
-	std::vector<std::vector<Eigen::MatrixXd>> result = { testSplit, trainingSplit };
+	std::vector<std::vector< Eigen::MatrixXd>> result = { testSplit,trainingSplit };
 
 	return result;
-}
 
+
+
+}
