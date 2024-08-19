@@ -77,7 +77,7 @@ public:
 		static std::vector<std::vector<double>> padArray(std::vector<std::vector<double>> image, int padSize);
 		QImage gaborFilter(const QImage& image, const QImage& kernel);
 		static std::vector<std::vector<double>> preFilter(const std::vector<std::vector<double>>& image, double fc = 4.0); //Prefilters the image byt preforming high-pass & local contrast normalization 
-
+		static QImage convolve(QImage inputImage, Eigen::MatrixXd kernel = Eigen::MatrixXd::Constant(3, 3, (1.0/ 9.0))); //The default kernel is the smoothing or average kernel
 	};
 
 	
