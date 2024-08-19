@@ -36,8 +36,8 @@ public:
 	static QVector<QVector<QPoint>> rasterScan(QImage& img);
 
 
-	static std::vector<std::string> classifyImage(QImage& image, Eigen::MatrixXd centroids, std::vector < std::function <std::vector<int>(QVector<QPoint>, QImage&)>> functions, std::map<int, std::string> namesMap);
 
+	static std::vector<std::string> classifyImage(QImage& image, Eigen::MatrixXd centroids, std::vector < std::function <std::vector<int>(QVector<QPoint>, QImage&)>> functions, std::map<int, std::string> namesMap);
 	static void calculateBounds(QList<QPoint> objectBorder, int& minX, int& maxX, int& minY, int& maxY);
 
 };
