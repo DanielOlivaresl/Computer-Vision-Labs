@@ -87,7 +87,14 @@
     <property name="title">
      <string>Image Processing</string>
     </property>
-    <addaction name="actionimageProcessingFunction1"/>
+    <widget class="QMenu" name="menuSpatial_Operations">
+     <property name="title">
+      <string>Spatial Operations</string>
+     </property>
+     <addaction name="actionConvolution"/>
+    </widget>
+    <addaction name="menuSpatial_Operations"/>
+    <addaction name="actionFilters"/>
    </widget>
    <widget class="QMenu" name="menuLoadDataSet">
     <property name="title">
@@ -190,11 +197,6 @@
     <string>Confusion Matrix</string>
    </property>
   </action>
-  <action name="actionimageProcessingFunction1">
-   <property name="text">
-    <string>imageProcessingFunction1</string>
-   </property>
-  </action>
   <action name="actionLoadDataSet">
    <property name="text">
     <string>LoadDataSet</string>
@@ -218,6 +220,16 @@
   <action name="actionClassify_Image">
    <property name="text">
     <string>Classify Image</string>
+   </property>
+  </action>
+  <action name="actionConvolution">
+   <property name="text">
+    <string>Convolution</string>
+   </property>
+  </action>
+  <action name="actionFilters">
+   <property name="text">
+    <string>Filters</string>
    </property>
   </action>
  </widget>

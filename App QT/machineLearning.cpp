@@ -593,7 +593,7 @@ Eigen::VectorXd MachineLearning::backwardPass(Eigen::VectorXd gradientVector,std
 
     //We will initialize the Error variable as it will be changed each iteration
 
-    Eigen::MatrixXd Error;
+    Eigen::MatrixXd error;
 
 
     for (int i = preActivationValues.size() - 1; i >= 0; i--) {
