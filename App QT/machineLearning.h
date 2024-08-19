@@ -14,18 +14,27 @@
 class MachineLearning
 {
 public:
+
     //Distance Based Models
-    static int kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point, int k);
+
+    
     static int kNearestNeighbours(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point, int k);
     static std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> Kmeans(const Eigen::MatrixXd data, int k, float threshold); // returns a matrix where each row is a centroid, k centroids so k rows (k = numClasses). 
+
+    //static void gradientDescent(Eigen::MatrixXd data, Eigen::MatrixXd weights, std::function<double(Eigen::MatrixXd)>& loss);
+
+    static void initializeWeights(std::vector<Eigen::MatrixXd>& weights);
+    static Eigen::VectorXd forwardPass(Eigen::MatrixXd data, std::vector<Eigen::MatrixXd>& weights,std::function<double(Eigen::VectorXd)> l, std::vector<std::function<double(double)>>f, Eigen::VectorXd target);
+    static Eigen::VectorXd backwardPass(Eigen::VectorXd lossGradient,std::vector<Eigen::MatrixXd>& weights, std::vector<Eigen::MatrixXd> preActivationValues, std::vector<std::function<double(double)>> f, double alpha = 0.000001);
 
 
     class Metrics {
     public:
-        static std::vector<std::vector<double>> get_matrixConfusion(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> mat, std::vector<std::vector<int>> vectorOfPredictions);
-        static std::vector<Eigen::VectorXd> get_matrixConfusion(std::vector<Eigen::MatrixXd> mat, std::vector<std::vector<int>> vectorOfPredictions);
+        static Eigen::MatrixXd get_matrixConfusion(std::vector<Eigen::MatrixXd> mat, Eigen::MatrixXd matrixOfPredictions);
+
+        //Check structure of output before reformatting (Do this next)
         static std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> train, std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> test, int knn);
-        static std::vector<std::vector<std::vector<int>>> generatePredictions(std::vector<Eigen::MatrixXd> train, std::vector<Eigen::MatrixXd> test, int knn);
+        static std::vector<Eigen::MatrixXd> generatePredictions(std::vector<Eigen::MatrixXd> train, std::vector<Eigen::MatrixXd> test, int knn);
 
     };
 
@@ -33,13 +42,12 @@ public:
     class CrossValidation {
     public:
         static std::vector<std::vector<Eigen::MatrixXd>> leaveOneOut(std::vector<Eigen::MatrixXd> classes, int clas, int el);
-        static std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> leaveOneOut(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, int clas, int el);
         static std::vector<std::vector<Eigen::MatrixXd>> crossValidation(std::vector<Eigen::MatrixXd> classes);
-        static std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> crossValidation(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes);
         static std::vector<std::vector<Eigen::MatrixXd>> Restitucion(std::vector<Eigen::MatrixXd> classes);
-        static std::vector<std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>>> Restitucion(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes);
 
     };
+
+
 
 };
 
