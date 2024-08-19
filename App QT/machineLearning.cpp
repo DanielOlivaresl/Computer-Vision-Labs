@@ -2,22 +2,25 @@
 
 
 
-int MachineLearning::kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen::Dynamic, 3>> classes, Eigen::Vector3d point, int k) {
+int MachineLearning::kNearestNeighbours(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point, int k) {
     //Vector that stores a set of vectors that have the distance to the point, this is because each index in the vector represents a class,
     //This means that each element in the vector is another vector that stores the distances to the point from the ith class
     std::vector<std::vector<double>> distances;
 
     //We iterate the classes and fill the vectors
     for (int i = 0; i < classes.size(); i++) {
+        
+        //We will create a Eigen::VectorXd 
+        
         std::vector<double> currClass;
         //We first iterate the current class and convert each matrix element into a point
         for (int j = 0; j < classes.at(i).rows(); j++) {
-            Eigen::Vector3d currPoint = classes.at(i).row(j); //We assign the point
+            Eigen::VectorXd currPoint = classes.at(i).row(j); //We assign the point
 
-            currClass.push_back(Computations::Distances::euclideanDistance(point, currPoint));
+            
 
 
-
+            currClass.push_back(Computations::Distances::euclidean(point, currPoint));
         }
         //we sort the points before adding them
         std::sort(currClass.begin(), currClass.end());
@@ -73,79 +76,8 @@ int MachineLearning::kNearestNeighbours(std::vector<Eigen::Matrix<double, Eigen:
     //The result is the classification prediction
     return res;
 
-}
-
-int MachineLearning::kNearestNeighbours(std::vector<Eigen::MatrixXd> classes, Eigen::VectorXd point, int k) {
-    //Vector that stores a set of vectors that have the distance to the point, this is because each index in the vector represents a class,
-    //This means that each element in the vector is another vector that stores the distances to the point from the ith class
-    std::vector<Eigen::VectorXd> distances;
-
-    //We iterate the classes and fill the vectors
-    for (int i = 0; i < classes.size(); i++) {
-        Eigen::VectorXd currClass(classes.at(i).rows());
-        //We first iterate the current class and convert each matrix element into a point
-        for (int j = 0; j < classes.at(i).rows(); j++) {
-            Eigen::VectorXd currPoint = classes.at(i).row(j); //We assign the point
-
-            currClass(j) = Computations::Distances::euclideanDistance(point, currPoint);
 
 
-
-        }
-        //we sort the points before adding them
-        std::sort(currClass.begin(), currClass.end());
-        //we add the class to the vector
-        distances.push_back(currClass);
-    }
-
-
-    //Now that are points are stored and sorted we will begin to check which are the k nearest neighbours, to do this we will first, from each class we will
-    //only keep the k first elements because in the worst case the k nearest neighbours are from only one class
-
-    for (int i = 0; i < distances.size(); i++) {
-        if (distances.at(i).size() > k) {
-            distances.at(i).conservativeResize(k);
-        }
-    }
-    //Now that each class has their k nearest neighbours we will see which ones are the k closest in general, to do this we will iterate each class for their first
-    //element and when we find the one that is the smallest, we will add it to our solution vector and remove that element from the class vector, and repeat this
-    //process until the solution vector is of size k
-
-    Eigen::VectorXi solution(k);
-    int KCount = 0;
-
-    while (solution.size() < k) {
-        //We iterate the classes
-        int mindist = 0; //We assume that the first class is the smallest distance and iterate from there
-        for (int i = 1; i < distances.size(); i++) {
-            if (distances.at(i)(0) < distances.at(mindist)(0)) {
-                mindist = i;
-            }
-
-        }
-
-        //Now we will add that class to the solution and remove that element
-        solution(KCount) = mindist;
-        distances[mindist] = distances[mindist].segment(1, distances[mindist].size() - 1);;
-
-    }
-
-    //Now we have the classes of the k nearest neighbours, we will now see what class dominates and make a prediction
-
-    //We will first iterate the classes and check the ocurrence the one with the most occurence will be our final result
-
-    //We will also first assume that the class 0 is the initial prediction and adjust from there
-    int res = 0;
-    int count = std::count(solution.begin(), solution.end(), res);
-    for (int i = 1; i < classes.size(); i++) {
-        int currCount = std::count(solution.begin(), solution.end(), i);
-        if (currCount > count) {
-            res = i;
-            count = currCount;
-        }
-    }
-    //The result is the classification prediction
-    return res;
 
 }
 
@@ -544,3 +476,198 @@ std::pair<std::vector<Eigen::MatrixXd>, Eigen::MatrixXd> MachineLearning::Kmeans
     result = std::make_pair(matrixClassesFinal, centroids);
     return result;
 }
+
+void MachineLearning::initializeWeights(std::vector<Eigen::MatrixXd>& weights)
+{
+
+    //We iterate the networks layers
+
+    for (auto layer : weights) {
+        layer.setRandom(); //We set the layers weights to random values
+    }
+
+
+
+
+}
+//We pass the data through the network and calculate the loss
+Eigen::VectorXd MachineLearning::forwardPass(Eigen::MatrixXd data, std::vector<Eigen::MatrixXd> &weights,std::function<double(Eigen::VectorXd)> l, std::vector<std::function<double(double)>> f, Eigen::VectorXd target)
+{
+
+    //Variable that will represent how the output at each timestep
+    Eigen::MatrixXd z = data;
+    //Variable to express the current layer's index, helps for the activation functions and for more specific errors
+    int currLayer = 0;
+    //Variable to store the preactivation values (Will be useful when doing backpropagation), will be a std::vector, where each element of the vector represents the input before applying
+    //the activation function
+    std::vector<Eigen::MatrixXd> preActivationValues;
+    //We will first iterate the layers of the network to compute the forward pass
+    for (Eigen::MatrixXd layer : weights) {
+
+        //Before computing the result of the current layer we will validate the dimensions of the input and the layers
+
+        if (data.cols() != layer.rows()) {
+            throw std::runtime_error("Invalid dimensions in " + std::to_string(currLayer) + "Layer");
+        }
+        
+        z = z * layer.transpose(); //Missing the bias vector, will add later
+
+        //Before applying the activation function we will store the preactivation values, these will be useful when we need to do backpropagation 
+        preActivationValues.push_back(z);
+
+
+        //we will pass the result through the activation function     
+        z = z.unaryExpr(f[currLayer]);
+
+
+
+    }
+
+    //We check that the final output is of the correct form, i.e. a NX1 vector representing the predictions 
+    
+
+    if (z.cols() > 1) {
+        throw std::runtime_error("Invalid output shape, it should be a Nx1 vector, representing the models predictions");
+    }
+
+    //Now that the output has been validated we will calculate the loss function 
+
+    Eigen::VectorXd y_pred = z.row(0);
+
+
+    //We will now apply the loss function to every data point, and calculate the losses gradient
+    
+    Eigen::VectorXd gradientVector(y_pred.size());
+
+    //we iterate the predicted data points to generate the loss
+    
+    for (int i = 0; i < y_pred.size(); i++) {
+        //We will first store the y_pred and target(y_real) into an Eigen::VectorXd, to aproximate the derivative of the loss function in that point
+        Eigen::VectorXd lossVec(2);
+        lossVec << y_pred(i), target(i);
+        
+        //Now we will compute the derivative of the loss function 
+
+        double lossDerivative = Computations::Math::aproximateDerivative(lossVec,l); 
+        
+        //Once we compute the loss derivative we will store it in a Eigen::VectorXd and return it once all the losses have been processed
+
+        gradientVector(i) = lossDerivative;
+
+        
+        
+
+
+    
+    
+    
+    }
+
+
+
+
+
+    return gradientVector;
+
+
+
+
+    
+    
+
+}
+
+
+//Function that computes the backwardPass(backPropagation)
+Eigen::VectorXd MachineLearning::backwardPass(Eigen::VectorXd gradientVector,std::vector<Eigen::MatrixXd> &weights, std::vector<Eigen::MatrixXd> preActivationValues, std::vector<std::function<double(double)>> f, double alpha)
+{
+    //We will calculate the error for each layer, for that we need to compute the Derivative of the activation function with respect to each layers input before passing it through the'
+    //activation function
+
+    //Variable that stores the loss of each layer
+    std::vector<Eigen::MatrixXd> lossVec;
+
+    //We will calculate the activations function derivative to every element in the preActivationValues matrix at the layer l, to do this we will first iterate each of the layers, but
+    //we will iterate them backwards since we have to backpropagate from the final layer to the beggining of the network
+
+
+    //We will initialize the Error variable as it will be changed each iteration
+
+    Eigen::MatrixXd Error;
+
+
+    for (int i = preActivationValues.size() - 1; i >= 0; i--) {
+
+        //As mentioned we compute the derivative of the activation value
+        Eigen::MatrixXd activationFunctionDerivative(preActivationValues[i].rows(), preActivationValues[i].cols());
+
+        //We will now fill the matrix with the derivatives
+
+        for (int row = 0; row < activationFunctionDerivative.rows(); row++) {
+            for (int col = 0; col < activationFunctionDerivative.cols(); col++) {
+                activationFunctionDerivative(row, col) = Computations::Math::aproximateDerivative(preActivationValues[i](row,col),f[i]);
+            }
+        }
+        
+
+        //We will check if it's the final layer, if it's not the loss vector must be computed with the previous layers loss, thus enabling backpropagation
+
+        if (i != preActivationValues.size() - 1) {
+
+            //In orde r to calculate the loss when it's not the final layer, we must apply the hadamard product (element wise multiplication)
+            // of the weights of the last layer multiplied by the loss of the last layer
+            // with the derivative of the activation function of this layer
+            // by using the weights and loss of the last layer we are carrying the total loss and so backpropagating the error so that the network can learn,
+            // by also using this layers activation function derivative, we are calculating where we need to update the weights to get to a local minimum
+
+            //Now that that has been explained, we will first calculate the multiplication of the previous layers weights and error, given that we checked that this is not the last layer,
+            //there is a previous layer
+
+            gradientVector = weights[i + 1].transpose() * error;
+
+
+
+
+        }
+
+
+
+        //Before we preform the hadamard product (element wise multiplicatio) to calculate the loss, we must check that the dimensions of the loss vector and the derivated activation
+        //function matrix match, in this case since the loss is a vector it obviously does not match, therefor we will directly broadcast the vector so that it matches
+
+        Eigen::MatrixXd broadCastedLossVec = gradientVector.replicate(1, activationFunctionDerivative.cols());
+
+        //Now that  the dimensions are correct we will apply the hadamard product 
+
+        error = broadCastedLossVec.array() * activationFunctionDerivative.array();
+
+        //Using the error that we just calculated, we will now calculate the gradient of the loss, with respect to the Weights of the last layer
+
+        //We compute the activation output from the previous layer
+        //We obtain the activation output from the previous layer, that is the preactivation input of the current layer
+
+        Eigen::MatrixXd activationValueFromPreviousLayer = preActivationValues[i];
+
+        //Now we compute the gradient of the loss with respect to the weights, with the error and activation values calculated
+
+        Eigen::MatrixXd weightLossGradient = error * activationValueFromPreviousLayer.transpose();
+
+        //Now with that result we will update the weights with the gradient Descent function 
+
+        weights[i] = weights[i] - (alpha * weightLossGradient);
+
+
+
+
+
+    }
+
+
+
+    
+
+
+
+
+}
+
