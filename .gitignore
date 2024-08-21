@@ -1,5 +1,12 @@
+# Visual Studio-specific files and folders
 .vs/
+*.opendb
+*.suo
+*.user
+bin/
+obj/
+[Bb]uild/
+[Dd]ebug*/
+[Rr]elease*/
 x64/
-Computer Vision Labs.vcxproj.user
-Computer Vision Labs.vcxproj
-Computer Vision Labs.vcxproj.filters
+x86/
