@@ -119,3 +119,61 @@ double Computations::Math::aproximateDerivative(Eigen::VectorXd point, std::func
 
 	return res;
 }
+
+
+
+
+double Computations::ActivationFunctions::sigmoid(double x) {
+	return 1 / (1 + exp(-x));
+}
+
+
+double Computations::ActivationFunctions::tanh(double x) {
+	return (exp(x) - exp(-x)) / (exp(x) + exp(-x));
+}
+
+
+
+
+double Computations::ActivationFunctions::relu(double x) {
+	return std::max(0.0, x);
+}
+
+double Computations::ActivationFunctions::leakyRelu(double x) {
+
+	if (x >= 0) {
+		return x;
+	}
+	else {
+		return x * 0.01;
+	}
+
+
+}
+
+double Computations::ActivationFunctions::swish(double x) {
+	return x * sigmoid(x);
+}
+
+Eigen::VectorXd Computations::ActivationFunctions::softmax(Eigen::VectorXd input)
+{
+
+
+	//we first compute the sum of the exponential of the input vector
+
+	double sum = input.array().exp().sum();
+
+	//now we compute the softmax function 
+
+	Eigen::VectorXd res = input.array() / sum;
+
+	return res;
+
+	
+
+
+
+
+
+
+}

@@ -1048,3 +1048,4 @@ double ObjectMetrics::calculateEccentricity(QImage& image)
 
 
  */
+
