@@ -48,7 +48,26 @@ public:
 		static double aproximateDerivative(double point, std::function <double(double)>, double precision = 0.00001);
 		static double aproximateDerivative(Eigen::VectorXd point, std::function<double(Eigen::VectorXd)> , double precision = 0.00001, int numVariable=0);
 
+
+		
 	};
+
+	class ActivationFunctions {
+	public:
+
+		static double sigmoid(double x);
+		static double tanh(double x);
+		static double relu(double x);
+		static double leakyRelu(double x);
+		static double swish(double x);
+		static Eigen::VectorXd softmax(Eigen::VectorXd input);
+
+
+
+
+	};
+
+
 
 
 	class Helper {
