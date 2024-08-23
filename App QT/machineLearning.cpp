@@ -491,7 +491,7 @@ void MachineLearning::initializeWeights(std::vector<Eigen::MatrixXd>& weights)
 
 }
 //We pass the data through the network and calculate the loss
-Eigen::VectorXd MachineLearning::forwardPass(Eigen::MatrixXd data, std::vector<Eigen::MatrixXd> &weights,std::function<double(Eigen::VectorXd)> l, std::vector<std::function<double(double)>> f, Eigen::VectorXd target)
+Eigen::VectorXd MachineLearning::forwardPass(Eigen::MatrixXd data, std::vector<Layer> &layers,std::function<double(Eigen::VectorXd)> l, Eigen::VectorXd target)
 {
 
     //Variable that will represent how the output at each timestep
@@ -502,22 +502,35 @@ Eigen::VectorXd MachineLearning::forwardPass(Eigen::MatrixXd data, std::vector<E
     //the activation function
     std::vector<Eigen::MatrixXd> preActivationValues;
     //We will first iterate the layers of the network to compute the forward pass
-    for (Eigen::MatrixXd layer : weights) {
+    for (Layer &layer : layers) {
+
+        //TODO: Add code to handle layer types that are not dense (CONV, POOLING) 
+
+
 
         //Before computing the result of the current layer we will validate the dimensions of the input and the layers
-
-        if (data.cols() != layer.rows()) {
+        if (data.cols() != layer.weights.rows()) {
             throw std::runtime_error("Invalid dimensions in " + std::to_string(currLayer) + "Layer");
         }
         
-        z = z * layer.transpose(); //Missing the bias vector, will add later
+        z = z * layer.weights.transpose(); //Missing the bias vector, will add later
 
         //Before applying the activation function we will store the preactivation values, these will be useful when we need to do backpropagation 
         preActivationValues.push_back(z);
 
 
-        //we will pass the result through the activation function     
-        z = z.unaryExpr(f[currLayer]);
+        //we will pass the result through the activation function, if it's a Dense layer
+        // 
+        // 
+        Dense* densePtr = dynamic_cast<Dense*>(&layer);
+        //We check if the dense pointer isn't null
+        if (densePtr) {
+            Dense dense_layer = *densePtr;
+            
+            z = z.unaryExpr(dense_layer.getActivationFunction());
+
+        }
+
 
 
 
@@ -579,7 +592,7 @@ Eigen::VectorXd MachineLearning::forwardPass(Eigen::MatrixXd data, std::vector<E
 
 
 //Function that computes the backwardPass(backPropagation)
-Eigen::VectorXd MachineLearning::backwardPass(Eigen::VectorXd gradientVector,std::vector<Eigen::MatrixXd> &weights, std::vector<Eigen::MatrixXd> preActivationValues, std::vector<std::function<double(double)>> f, double alpha)
+Eigen::VectorXd MachineLearning::backwardPass(Eigen::VectorXd gradientVector, std::vector<Layer>& layers, std::vector<Eigen::MatrixXd> preActivationValues, double alpha)
 {
     //We will calculate the error for each layer, for that we need to compute the Derivative of the activation function with respect to each layers input before passing it through the'
     //activation function
@@ -593,9 +606,9 @@ Eigen::VectorXd MachineLearning::backwardPass(Eigen::VectorXd gradientVector,std
 
     //We will initialize the Error variable as it will be changed each iteration
 
-    Eigen::MatrixXd Error;
+    Eigen::MatrixXd error;
 
-
+    //We iterate each of the layers
     for (int i = preActivationValues.size() - 1; i >= 0; i--) {
 
         //As mentioned we compute the derivative of the activation value
@@ -603,12 +616,24 @@ Eigen::VectorXd MachineLearning::backwardPass(Eigen::VectorXd gradientVector,std
 
         //We will now fill the matrix with the derivatives
 
-        for (int row = 0; row < activationFunctionDerivative.rows(); row++) {
-            for (int col = 0; col < activationFunctionDerivative.cols(); col++) {
-                activationFunctionDerivative(row, col) = Computations::Math::aproximateDerivative(preActivationValues[i](row,col),f[i]);
+        for (int row = 0; row < activationFunctionDerivative.rows(); row++) { //Each row is a data point
+            for (int col = 0; col < activationFunctionDerivative.cols(); col++) { //Each column is a neuron
+
+                //we check that the layer is a dense layer 
+                Dense* densePtr = dynamic_cast<Dense*>(&layers[i]);
+                //We check that the pointer is not null
+                if (densePtr) {
+                    Dense denseLayer = *densePtr; // We obtain the object that the pointer is pointing to
+                    activationFunctionDerivative(row, col) = Computations::Math::aproximateDerivative(preActivationValues[i](row, col), denseLayer.getActivationFunction());
+
+                }
+                else {
+                    activationFunctionDerivative(row, col) = -1; //Invalid value
+                }
+
             }
         }
-        
+
 
         //We will check if it's the final layer, if it's not the loss vector must be computed with the previous layers loss, thus enabling backpropagation
 
@@ -623,7 +648,7 @@ Eigen::VectorXd MachineLearning::backwardPass(Eigen::VectorXd gradientVector,std
             //Now that that has been explained, we will first calculate the multiplication of the previous layers weights and error, given that we checked that this is not the last layer,
             //there is a previous layer
 
-            gradientVector = weights[i + 1].transpose() * error;
+            gradientVector = layers[i + 1].weights.transpose() * error;
 
 
 
@@ -654,7 +679,7 @@ Eigen::VectorXd MachineLearning::backwardPass(Eigen::VectorXd gradientVector,std
 
         //Now with that result we will update the weights with the gradient Descent function 
 
-        weights[i] = weights[i] - (alpha * weightLossGradient);
+        layers[i].weights = layers[i].weights - (alpha * weightLossGradient);
 
 
 
@@ -664,10 +689,9 @@ Eigen::VectorXd MachineLearning::backwardPass(Eigen::VectorXd gradientVector,std
 
 
 
-    
-
-
-
 
 }
+
+
+
 

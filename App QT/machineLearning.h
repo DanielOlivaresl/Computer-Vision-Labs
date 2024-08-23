@@ -2,10 +2,14 @@
 #include <string>
 #include<Eigen/Dense>
 #include <QString>
-#include "computations.h"
 #include <algorithm>
 #include <cstdlib>
 #include <QDebug>
+
+#include "computations.h"
+#include "Layers.h"
+
+
 
 #ifndef A_MACHINELEARNING
 #define A_MACHINELEARNING
@@ -24,8 +28,8 @@ public:
     //static void gradientDescent(Eigen::MatrixXd data, Eigen::MatrixXd weights, std::function<double(Eigen::MatrixXd)>& loss);
 
     static void initializeWeights(std::vector<Eigen::MatrixXd>& weights);
-    static Eigen::VectorXd forwardPass(Eigen::MatrixXd data, std::vector<Eigen::MatrixXd>& weights,std::function<double(Eigen::VectorXd)> l, std::vector<std::function<double(double)>>f, Eigen::VectorXd target);
-    static Eigen::VectorXd backwardPass(Eigen::VectorXd lossGradient,std::vector<Eigen::MatrixXd>& weights, std::vector<Eigen::MatrixXd> preActivationValues, std::vector<std::function<double(double)>> f, double alpha = 0.000001);
+    static Eigen::VectorXd forwardPass(Eigen::MatrixXd data, std::vector<Layer>& layers,std::function<double(Eigen::VectorXd)> l, Eigen::VectorXd target);
+    static Eigen::VectorXd backwardPass(Eigen::VectorXd lossGradient,std::vector<Layer>& layers, std::vector<Eigen::MatrixXd> preActivationValues, double alpha = 0.000001);
 
 
     class Metrics {
